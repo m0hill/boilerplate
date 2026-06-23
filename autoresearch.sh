@@ -92,7 +92,18 @@ error_model_score = string_reason_errors * 2 + status_string_reasons
 plain_exported_domain_types = len(re.findall(r"export\s+type\s+[A-Z][A-Za-z0-9]*\s*=\s*\{", combined))
 domain_schema_score = plain_exported_domain_types
 
+# Phase 5 score: contributor docs should describe the current helper/service
+# boundaries, not the pre-cleanup raw Datastar wrapping pattern.
+doc_paths = [Path("AGENTS.md"), Path("AGENTS.d/project.md"), Path("README.md")]
+docs_combined = "\n".join(path.read_text() for path in doc_paths if path.exists())
+stale_datastar_docs = docs_combined.count("Wrap datastar-kit responses with `HttpServerResponse.raw") + docs_combined.count(
+    "route handlers return `HttpServerResponse.raw"
+)
+docs_staleness_score = stale_datastar_docs
+
 metrics = {
+    "docs_staleness_score": docs_staleness_score,
+    "stale_datastar_docs": stale_datastar_docs,
     "domain_schema_score": domain_schema_score,
     "plain_exported_domain_types": plain_exported_domain_types,
     "error_model_score": error_model_score,

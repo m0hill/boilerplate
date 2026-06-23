@@ -8,8 +8,10 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary (phase 4)**: `domain_schema_score` (unitless, lower is better) — exported domain records that are plain object type aliases instead of deriving from an Effect `Schema`/`Schema.Class` source of truth.
+- **Primary (phase 5)**: `docs_staleness_score` (unitless, lower is better) — contributor docs that still describe old raw Datastar wrapping instead of the current helper/service boundaries.
 - **Secondary**:
+  - `stale_datastar_docs` — docs that tell route authors to call `HttpServerResponse.raw(...)` directly instead of the shared Datastar HTTP helpers.
+  - `domain_schema_score` — phase 4 schema-backed domain model score; should stay at zero.
   - `plain_exported_domain_types` — `export type PascalCase = { ... }` domain records crossing module boundaries.
   - `error_model_score` — phase 3 structured error score; should stay at zero.
   - `string_reason_errors` — tagged errors whose reason is any string instead of a closed union/structured fields.
@@ -90,5 +92,7 @@ The target is not raw speed. The target is Effect architecture quality with auto
   to zero.
 - Kept: changed `GitHubUnavailableError` to a closed reason union plus an optional numeric status,
   bringing `error_model_score` to zero.
-- Phase 4 now targets exported plain domain records (`Repo`, `RepoName`) that should derive from
-  an Effect schema/class source of truth.
+- Kept: changed `Repo` and `RepoName` into `Schema.Class` domain models, bringing
+  `domain_schema_score` to zero.
+- Phase 5 now targets stale contributor docs that still tell route authors to wrap Datastar
+  responses with `HttpServerResponse.raw(...)` directly instead of using the shared helpers.

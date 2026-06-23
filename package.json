@@ -25,7 +25,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "check": "nub run typecheck && nub run lint && nub run format:check && nub run test",
-    "prepare": "simple-git-hooks"
+    "prepare": "[ -n \"$CI\" ] || simple-git-hooks"
   },
   "dependencies": {
     "datastar-kit": "^0.4.0",
@@ -51,14 +51,16 @@
     "pre-commit": "nubx lint-staged"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json}": [
+    "*.{ts,tsx,js,jsx}": [
       "oxlint --fix",
+      "oxfmt"
+    ],
+    "*.{json,md}": [
       "oxfmt"
     ]
   },
   "allowBuilds": {
     "@parcel/watcher": true,
-    "esbuild": true,
-    "simple-git-hooks": true
+    "esbuild": true
   }
 }

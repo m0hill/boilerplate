@@ -68,13 +68,15 @@ Add a page: create `src/pages/<name>/<name>.tsx` exporting a Hono sub-app, then 
 - `nub run cf-typegen` — regenerate `worker-configuration.d.ts` after editing `wrangler.jsonc`.
 - `nub run test` / `nub run test:watch` — vitest.
 - `nub run check` — typecheck (3 configs) + lint + format check + test. CI
-  (`.github/workflows/ci.yml`) runs `nub ci` → `nub run build` → `nub run check`.
-  Deploys are handled by Cloudflare Workers Builds (GitHub App), not CI — see README.
+  (`.github/workflows/ci.yml`) runs `nub ci --ignore-scripts` → `nub run check` (the check needs
+  no built assets or native binaries). Deploys are handled by Cloudflare Workers Builds (GitHub
+  App), not CI — see README.
 - `nub run lint:fix` / `nub run format` — autofix.
 
-Packages with build scripts (esbuild, @parcel/watcher, simple-git-hooks) are allow-listed in
-package.json's `allowBuilds` so `nub ci` runs their postinstalls. Approve new ones with
-`nub approve-builds`.
+Packages whose build scripts we run (esbuild, @parcel/watcher) are allow-listed in package.json's
+`allowBuilds`. Approve new ones with `nub approve-builds`. CI installs with `--ignore-scripts`, so
+those postinstalls only run on a normal local `nub install`. Git hooks are set by the `prepare`
+script (skipped when `$CI` is set).
 
 nub is the package manager and script runner: `nub install` / `nub add` / `nub run <script>` /
 `nubx <bin>`. The lockfile is nub's native `lock.yaml` (pnpm-compatible format). Default to nub.

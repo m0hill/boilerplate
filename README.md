@@ -55,8 +55,8 @@ A pre-commit hook runs `lint-staged` (oxlint --fix + oxfmt) on staged files.
 
 ## CI / CD
 
-**CI** — `.github/workflows/ci.yml` runs on every push and PR: installs nub, `nub ci`,
-`nub run build`, then `nub run check` (typecheck + lint + format + test).
+**CI** — `.github/workflows/ci.yml` runs on every push and PR: installs nub, `nub ci --ignore-scripts`,
+then `nub run check` (typecheck + lint + format + test). No build/native binaries needed for the check.
 
 **CD** — handled by [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)
 (the GitHub App), which auto-deploys on push and adds PR preview URLs — no GitHub secret needed.

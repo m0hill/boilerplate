@@ -28,10 +28,7 @@ jobs:
           echo "$HOME/.nub/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: nub ci
-
-      - name: Build
-        run: nub run build
+        run: nub ci --ignore-scripts
 
       - name: Check
         run: nub run check

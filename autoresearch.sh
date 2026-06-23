@@ -101,7 +101,16 @@ stale_datastar_docs = docs_combined.count("Wrap datastar-kit responses with `Htt
 )
 docs_staleness_score = stale_datastar_docs
 
+binding_docs_paths = doc_paths + [Path("src/cloudflare-env.ts")]
+binding_docs_combined = "\n".join(path.read_text() for path in binding_docs_paths if path.exists())
+stale_binding_docs = binding_docs_combined.count("const { COUNTER_KV } = yield* CloudflareEnv") + binding_docs_combined.count(
+    "`store.ts` wraps `COUNTER_KV` in Effects"
+) + binding_docs_combined.count("handler(request, Context.make(CloudflareEnv, env))")
+binding_docs_staleness_score = stale_binding_docs
+
 metrics = {
+    "binding_docs_staleness_score": binding_docs_staleness_score,
+    "stale_binding_docs": stale_binding_docs,
     "docs_staleness_score": docs_staleness_score,
     "stale_datastar_docs": stale_datastar_docs,
     "domain_schema_score": domain_schema_score,

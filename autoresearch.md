@@ -8,8 +8,10 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary (phase 5)**: `docs_staleness_score` (unitless, lower is better) — contributor docs that still describe old raw Datastar wrapping instead of the current helper/service boundaries.
+- **Primary (phase 6)**: `binding_docs_staleness_score` (unitless, lower is better) — docs/comments that still describe handlers reading `COUNTER_KV` directly through `CloudflareEnv` instead of the current request-scoped `CounterStore` adapter.
 - **Secondary**:
+  - `stale_binding_docs` — stale Worker binding examples/comments.
+  - `docs_staleness_score` — phase 5 Datastar docs score; should stay at zero.
   - `stale_datastar_docs` — docs that tell route authors to call `HttpServerResponse.raw(...)` directly instead of the shared Datastar HTTP helpers.
   - `domain_schema_score` — phase 4 schema-backed domain model score; should stay at zero.
   - `plain_exported_domain_types` — `export type PascalCase = { ... }` domain records crossing module boundaries.
@@ -94,5 +96,7 @@ The target is not raw speed. The target is Effect architecture quality with auto
   bringing `error_model_score` to zero.
 - Kept: changed `Repo` and `RepoName` into `Schema.Class` domain models, bringing
   `domain_schema_score` to zero.
-- Phase 5 now targets stale contributor docs that still tell route authors to wrap Datastar
-  responses with `HttpServerResponse.raw(...)` directly instead of using the shared helpers.
+- Kept: updated AGENTS docs to point route authors at Datastar response helpers, bringing
+  `docs_staleness_score` to zero.
+- Phase 6 now targets stale Worker binding docs/comments that still describe handlers reading
+  `COUNTER_KV` directly from `CloudflareEnv` instead of using request-scoped services.

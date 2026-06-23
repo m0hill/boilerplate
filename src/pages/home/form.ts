@@ -1,11 +1,9 @@
 import { Schema } from "effect"
 import { state } from "datastar-kit"
+import { maxCompareRepos } from "./compare-board.js"
 
 /** Message shown when a repository field is not in `owner/repo` form. */
 export const invalidRepoMessage = "Use the owner/repo format, e.g. mswjs/cloudflare"
-
-/** Maximum number of repositories allowed on the compare board. */
-export const maxCompareRepos = 4
 
 const defaultCompareRepos: readonly string[] = []
 
@@ -19,17 +17,17 @@ export const lookupForm = state({
   },
 })
 
-const RepoName = Schema.Trim.check(Schema.isPattern(/^[\w.-]+\/[\w.-]+$/))
+const RepoInput = Schema.Trim.check(Schema.isMinLength(1))
 
 /** Signals accepted by the `/lookup` route. */
 export const RepoSignals = Schema.Struct({
-  repo: RepoName,
+  repo: RepoInput,
 })
 
 /** Signals accepted by the `/compare/*` routes. */
 export const CompareBoardSignals = Schema.Struct({
-  repo: RepoName,
+  repo: RepoInput,
   compareRepos: Schema.optionalKey(
-    Schema.Array(RepoName).check(Schema.isMaxLength(maxCompareRepos)),
+    Schema.Array(RepoInput).check(Schema.isMaxLength(maxCompareRepos)),
   ),
 })

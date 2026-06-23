@@ -200,6 +200,42 @@ describe("home page", () => {
     expect(body).toContain('<output id="stars" class="text-xl">—</output>')
   })
 
+  it("rejects malformed Datastar lookup signals with a form error", async () => {
+    const app = await loadApp()
+    const response = await app.fetch(
+      request("/lookup", {
+        method: "POST",
+        headers: { "datastar-request": "true" },
+        body: "not json",
+      }),
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(body).toContain("event: datastar-patch-signals")
+    expect(body).toContain("Use the owner/repo format")
+    expect(body).toContain("event: datastar-patch-elements")
+    expect(body).toContain('<output id="stars" class="text-xl">—</output>')
+  })
+
+  it("rejects malformed Datastar compare signals with a board error", async () => {
+    const app = await loadApp()
+    const response = await app.fetch(
+      request("/compare/add", {
+        method: "POST",
+        headers: { "datastar-request": "true" },
+        body: "not json",
+      }),
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(body).toContain("event: datastar-patch-signals")
+    expect(body).toContain("Choose a valid repository to compare.")
+  })
+
   it("shows a friendly error when the repo does not exist", async () => {
     mockRepo({ message: "Not Found" }, { status: 404 })
 

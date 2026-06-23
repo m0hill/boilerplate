@@ -1,32 +1,45 @@
-import { Effect, Layer, Result } from "effect"
+import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { reply } from "datastar-kit"
 import { pageHead } from "../../ui/head.js"
-import { currentCount, incrementCount } from "./store.js"
+import { currentCount, incrementCount, type CounterStoreError } from "./store.js"
 import { CounterMain, CountView } from "./views.js"
 
+type CounterAction = "view" | "increment"
+type CounterStoreReason = CounterStoreError["reason"]
+
+const counterUnavailable = Effect.fnUntraced(function* (
+  action: CounterAction,
+  reason: CounterStoreReason,
+) {
+  yield* Effect.annotateLogsScoped({
+    counter: { ok: false, action, reason },
+  })
+  return HttpServerResponse.text("Counter unavailable", { status: 503 })
+})
+
 const counterPage = Effect.gen(function* () {
-  const count = yield* Effect.result(currentCount)
-  yield* Effect.annotateLogsScoped({ counter: { ok: Result.isSuccess(count), action: "view" } })
+  const count = yield* currentCount
+  yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "view" } })
 
   return HttpServerResponse.raw(
-    reply.page(<CounterMain count={Result.isSuccess(count) ? count.success : 0} />, {
+    reply.page(<CounterMain count={count} />, {
       title: "KV counter",
       head: pageHead(),
     }),
   )
+}).pipe(Effect.catchTag("CounterStoreError", (error) => counterUnavailable("view", error.reason)))
+
+const incrementSuccess = Effect.gen(function* () {
+  const count = yield* incrementCount
+  yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "increment" } })
+
+  return HttpServerResponse.raw(reply.patch(<CountView count={count} />))
 })
 
-const increment = Effect.gen(function* () {
-  const count = yield* Effect.result(incrementCount)
-  yield* Effect.annotateLogsScoped({
-    counter: { ok: Result.isSuccess(count), action: "increment" },
-  })
-
-  return HttpServerResponse.raw(
-    reply.patch(<CountView count={Result.isSuccess(count) ? count.success : 0} />),
-  )
-})
+const increment = incrementSuccess.pipe(
+  Effect.catchTag("CounterStoreError", (error) => counterUnavailable("increment", error.reason)),
+)
 
 /** Routes for the KV-backed counter demo page. */
 export const counterRoutes = Layer.mergeAll(

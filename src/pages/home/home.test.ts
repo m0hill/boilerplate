@@ -46,7 +46,7 @@ describe("home page", () => {
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/html; charset=utf-8")
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain(">GitHub Repo Compare</h1>")
+    expect(html).toContain(">Boilerplate</h1>")
     expect(html).toContain('<link rel="stylesheet" href="/app.css">')
     expect(html).not.toContain("/js/clock.js")
     expect(html).toContain('data-bind="repo"')

@@ -1,0 +1,78 @@
+#!/bin/bash
+set -euo pipefail
+
+python3 - <<'PY'
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+root = Path("src")
+production_files = [
+    path
+    for path in sorted(root.rglob("*.ts")) + sorted(root.rglob("*.tsx"))
+    if not path.name.endswith(".test.ts")
+    and not path.name.endswith(".test.tsx")
+    and not path.name.endswith(".e2e.ts")
+    and not path.name.endswith(".e2e.tsx")
+    and "src/client" not in path.as_posix()
+    and path.name not in {"test-utils.ts", "test-env.d.ts"}
+]
+
+texts = {path: path.read_text() for path in production_files}
+combined = "\n".join(texts.values())
+
+# Broad, intentionally transparent audit signals. These are not correctness
+# checks; they are reminders to move real production code toward the Effect
+# patterns documented in the vendored Effect examples.
+data_tagged_error = combined.count("Data.TaggedError")
+
+# Functions that manufacture Effect.gen inline are harder to trace and compose
+# than named Effect.fn functions. Constant route effects are not counted.
+effect_gen_factory_pattern = re.compile(
+    r"(?:export\s+)?const\s+[a-z][A-Za-z0-9]*\s*=\s*(?:\([^=]*?\)|[A-Za-z_$][\w$]*)\s*=>\s*Effect\.gen",
+    re.S,
+)
+effect_gen_factories = sum(len(effect_gen_factory_pattern.findall(text)) for text in texts.values())
+
+# Exported effectful helpers should generally be named Effect.fn functions or
+# service methods so traces and dependencies are explicit.
+untraced_effect_export_pattern = re.compile(
+    r"export\s+const\s+[a-z][A-Za-z0-9]*\s*=\s*(?!Effect\.fn)(?:.|\n){0,180}?Effect\.(?:gen|all|try|tryPromise|succeed|fail)",
+    re.S,
+)
+untraced_effect_exports = sum(len(untraced_effect_export_pattern.findall(text)) for text in texts.values())
+
+# Domain capabilities that perform HTTP/KV/platform work should usually be
+# modeled as services/layers. Keep this as a nudge, not an absolute rule.
+direct_platform_dependencies = sum(
+    text.count("HttpClient.HttpClient") + text.count("CloudflareEnv")
+    for path, text in texts.items()
+    if path.as_posix() not in {"src/server.tsx", "src/cloudflare-env.ts"}
+)
+
+effect_fn_calls = combined.count("Effect.fn(") + combined.count("Effect.fnUntraced(")
+service_classes = combined.count("Context.Service")
+src_lines = sum(text.count("\n") + 1 for text in texts.values())
+
+score = (
+    data_tagged_error * 2
+    + effect_gen_factories * 3
+    + untraced_effect_exports * 2
+    + direct_platform_dependencies * 4
+)
+
+metrics = {
+    "effect_audit_score": score,
+    "data_tagged_error": data_tagged_error,
+    "effect_gen_factories": effect_gen_factories,
+    "untraced_effect_exports": untraced_effect_exports,
+    "direct_platform_dependencies": direct_platform_dependencies,
+    "effect_fn_calls": effect_fn_calls,
+    "service_classes": service_classes,
+    "src_lines": src_lines,
+}
+
+for name, value in metrics.items():
+    print(f"METRIC {name}={value}")
+PY

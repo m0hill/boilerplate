@@ -112,7 +112,13 @@ domain_modules = [Path("src/pages/home/repo-name.ts"), Path("src/pages/home/comp
 missing_domain_tests = sum(1 for path in domain_modules if path.exists() and not path.with_name(f"{path.stem}.test.ts").exists())
 domain_test_gap_score = missing_domain_tests
 
+test_combined = "\n".join(path.read_text() for path in sorted(root.rglob("*.test.ts")))
+duplicated_load_app_helpers = test_combined.count("const loadApp = async")
+test_helper_duplication_score = duplicated_load_app_helpers
+
 metrics = {
+    "test_helper_duplication_score": test_helper_duplication_score,
+    "duplicated_load_app_helpers": duplicated_load_app_helpers,
     "domain_test_gap_score": domain_test_gap_score,
     "missing_domain_tests": missing_domain_tests,
     "binding_docs_staleness_score": binding_docs_staleness_score,

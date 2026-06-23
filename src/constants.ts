@@ -1,0 +1,6 @@
+export const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+
+export const SITE_TITLE = "Boilerplate"
+
+export const isDev = process.env.NODE_ENV !== "production"

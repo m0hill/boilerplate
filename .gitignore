@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/app.css
+public/js/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example

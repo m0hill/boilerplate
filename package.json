@@ -1,0 +1,63 @@
+{
+  "name": "boilerplate",
+  "version": "1.0.0",
+  "description": "Hypermedia-driven Node boilerplate: nub + datastar-kit + oxlint/oxfmt",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "src/index.tsx",
+  "scripts": {
+    "dev": "concurrently -k -n css,js,srv -c green,yellow,cyan \"nub run css:watch\" \"nub run client:watch\" \"nub watch src/index.tsx\"",
+    "start": "nub src/index.tsx",
+    "prestart": "nub run build",
+    "build": "nub run css:build && nub run client:build",
+    "css:build": "tailwindcss -i ./src/styles.css -o ./public/app.css --minify",
+    "css:watch": "tailwindcss -i ./src/styles.css -o ./public/app.css --watch",
+    "client:build": "nub scripts/build-client.ts",
+    "client:watch": "nub scripts/build-client.ts --watch",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.client.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint --type-aware --disable-nested-config",
+    "lint:fix": "oxlint --type-aware --fix --disable-nested-config",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "check": "nub run typecheck && nub run lint && nub run format:check && nub run test",
+    "prepare": "simple-git-hooks"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.0.3",
+    "datastar-kit": "^0.4.0",
+    "hono": "^4.12.19",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "@types/node": "^24.10.1",
+    "concurrently": "^9.1.0",
+    "esbuild": "^0.25.0",
+    "lint-staged": "^17.0.8",
+    "oxfmt": "^0.56.0",
+    "oxlint": "^1.71.0",
+    "oxlint-tsgolint": "^0.23.0",
+    "simple-git-hooks": "^2.13.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^7.0.1-rc",
+    "vitest": "^4.0.14"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "nubx lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json}": [
+      "oxlint --fix",
+      "oxfmt"
+    ]
+  },
+  "allowBuilds": {
+    "@parcel/watcher": true,
+    "esbuild": true,
+    "simple-git-hooks": true
+  }
+}

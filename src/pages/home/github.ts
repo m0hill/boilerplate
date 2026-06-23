@@ -2,13 +2,14 @@ import { Context, Effect, Layer, Schema, flow } from "effect"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { RepoName } from "./repo-name.js"
 
-export type Repo = {
-  readonly fullName: string
-  readonly stars: number
-  readonly forks: number
-  readonly openIssues: number
-  readonly language: string | null
-}
+/** Public GitHub repository stats rendered by the home page. */
+export class Repo extends Schema.Class<Repo>("Repo")({
+  fullName: Schema.String.check(Schema.isMinLength(1)),
+  stars: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
+  forks: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
+  openIssues: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
+  language: Schema.NullOr(Schema.String.check(Schema.isMinLength(1))),
+}) {}
 
 /** The requested repository does not exist on GitHub. */
 export class RepoNotFoundError extends Schema.TaggedErrorClass<RepoNotFoundError>()(
@@ -86,13 +87,13 @@ export class GitHubRepos extends Context.Service<
           Effect.mapError(() => new GitHubUnavailableError({ reason: "invalid_body" })),
         )
 
-        return {
+        return new Repo({
           fullName: data.full_name,
           stars: data.stargazers_count,
           forks: data.forks_count,
           openIssues: data.open_issues_count,
           language: data.language,
-        }
+        })
       })
 
       const fetchMany = Effect.fn("GitHubRepos.fetchMany")(function* (

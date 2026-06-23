@@ -1,10 +1,14 @@
 import { Effect, Schema } from "effect"
 
-export type RepoName = {
-  readonly owner: string
-  readonly repo: string
-  readonly fullName: string
-}
+const repoPartPattern = /^[\w.-]+$/
+const RepoPart = Schema.String.check(Schema.isPattern(repoPartPattern))
+
+/** Parsed GitHub repository name in `owner/repo` form. */
+export class RepoName extends Schema.Class<RepoName>("RepoName")({
+  owner: RepoPart,
+  repo: RepoPart,
+  fullName: Schema.String.check(Schema.isMinLength(3)),
+}) {}
 
 /** A repository name was not supplied in `owner/repo` form. */
 export class InvalidRepoNameError extends Schema.TaggedErrorClass<InvalidRepoNameError>()(
@@ -13,8 +17,6 @@ export class InvalidRepoNameError extends Schema.TaggedErrorClass<InvalidRepoNam
     input: Schema.String,
   },
 ) {}
-
-const repoPartPattern = /^[\w.-]+$/
 
 /** Parses and normalizes a GitHub repository name from user input. */
 export const parseRepoName = Effect.fn("parseRepoName")(function* (
@@ -27,7 +29,7 @@ export const parseRepoName = Effect.fn("parseRepoName")(function* (
     return yield* new InvalidRepoNameError({ input })
   }
 
-  return { owner, repo, fullName: `${owner}/${repo}` }
+  return new RepoName({ owner, repo, fullName: `${owner}/${repo}` })
 })
 
 /** Removes duplicate repository names, comparing case-insensitively. */

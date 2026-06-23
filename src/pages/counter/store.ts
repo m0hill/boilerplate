@@ -1,10 +1,13 @@
-import { Data, Effect } from "effect"
+import { Effect, Schema } from "effect"
 import { CloudflareEnv } from "../../cloudflare-env.js"
 
 /** Reading or writing the counter in KV failed. */
-export class CounterStoreError extends Data.TaggedError("CounterStoreError")<{
-  readonly reason: "read_failed" | "write_failed"
-}> {}
+export class CounterStoreError extends Schema.TaggedErrorClass<CounterStoreError>()(
+  "CounterStoreError",
+  {
+    reason: Schema.Literals(["read_failed", "write_failed"]),
+  },
+) {}
 
 const COUNT_KEY = "count"
 

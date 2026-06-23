@@ -8,11 +8,13 @@ import { CounterMain, CountView } from "./views.js"
 type CounterAction = "view" | "increment"
 type CounterStoreReason = CounterStoreError["reason"]
 
-const counterUnavailable = (action: CounterAction, reason: CounterStoreReason) =>
-  Effect.gen(function* () {
-    yield* Effect.annotateLogsScoped({ counter: { ok: false, action, reason } })
-    return HttpServerResponse.text("Counter unavailable", { status: 503 })
-  })
+const counterUnavailable = Effect.fn("counter.counterUnavailable")(function* (
+  action: CounterAction,
+  reason: CounterStoreReason,
+) {
+  yield* Effect.annotateLogsScoped({ counter: { ok: false, action, reason } })
+  return HttpServerResponse.text("Counter unavailable", { status: 503 })
+})
 
 const counterPage = Effect.gen(function* () {
   const count = yield* currentCount

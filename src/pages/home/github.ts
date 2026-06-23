@@ -1,4 +1,4 @@
-import { Data, Effect, Schema } from "effect"
+import { Effect, Schema } from "effect"
 import { HttpClient, HttpClientResponse } from "effect/unstable/http"
 import type { RepoName } from "./repo-name.js"
 
@@ -11,15 +11,21 @@ export type Repo = {
 }
 
 /** The requested repository does not exist on GitHub. */
-export class RepoNotFoundError extends Data.TaggedError("RepoNotFoundError")<{
-  readonly owner: string
-  readonly repo: string
-}> {}
+export class RepoNotFoundError extends Schema.TaggedErrorClass<RepoNotFoundError>()(
+  "RepoNotFoundError",
+  {
+    owner: Schema.String,
+    repo: Schema.String,
+  },
+) {}
 
 /** GitHub could not be reached, replied with an error, or returned an unexpected body. */
-export class GitHubUnavailableError extends Data.TaggedError("GitHubUnavailableError")<{
-  readonly reason: string
-}> {}
+export class GitHubUnavailableError extends Schema.TaggedErrorClass<GitHubUnavailableError>()(
+  "GitHubUnavailableError",
+  {
+    reason: Schema.String,
+  },
+) {}
 
 const RepoResponse = Schema.Struct({
   full_name: Schema.String.check(Schema.isMinLength(1)),
@@ -38,36 +44,35 @@ const USER_AGENT = "boilerplate-worker"
  * {@link RepoNotFoundError}, any transport/HTTP/parse problem as
  * {@link GitHubUnavailableError}. Requires an {@link HttpClient.HttpClient}.
  */
-export const fetchRepoStats = (
+export const fetchRepoStats = Effect.fn("fetchRepoStats")(function* (
   repoName: RepoName,
-): Effect.Effect<Repo, RepoNotFoundError | GitHubUnavailableError, HttpClient.HttpClient> =>
-  Effect.gen(function* () {
-    const response = yield* HttpClient.get(
-      `https://api.github.com/repos/${repoName.owner}/${repoName.repo}`,
-      {
-        headers: {
-          "user-agent": USER_AGENT,
-          accept: "application/vnd.github+json",
-        },
+): Effect.fn.Return<Repo, RepoNotFoundError | GitHubUnavailableError, HttpClient.HttpClient> {
+  const response = yield* HttpClient.get(
+    `https://api.github.com/repos/${repoName.owner}/${repoName.repo}`,
+    {
+      headers: {
+        "user-agent": USER_AGENT,
+        accept: "application/vnd.github+json",
       },
-    ).pipe(Effect.mapError(() => new GitHubUnavailableError({ reason: "request_failed" })))
+    },
+  ).pipe(Effect.mapError(() => new GitHubUnavailableError({ reason: "request_failed" })))
 
-    if (response.status === 404) {
-      return yield* new RepoNotFoundError({ owner: repoName.owner, repo: repoName.repo })
-    }
-    if (response.status >= 400) {
-      return yield* new GitHubUnavailableError({ reason: `status_${response.status}` })
-    }
+  if (response.status === 404) {
+    return yield* new RepoNotFoundError({ owner: repoName.owner, repo: repoName.repo })
+  }
+  if (response.status >= 400) {
+    return yield* new GitHubUnavailableError({ reason: `status_${response.status}` })
+  }
 
-    const data = yield* HttpClientResponse.schemaBodyJson(RepoResponse)(response).pipe(
-      Effect.mapError(() => new GitHubUnavailableError({ reason: "invalid_body" })),
-    )
+  const data = yield* HttpClientResponse.schemaBodyJson(RepoResponse)(response).pipe(
+    Effect.mapError(() => new GitHubUnavailableError({ reason: "invalid_body" })),
+  )
 
-    return {
-      fullName: data.full_name,
-      stars: data.stargazers_count,
-      forks: data.forks_count,
-      openIssues: data.open_issues_count,
-      language: data.language,
-    }
-  })
+  return {
+    fullName: data.full_name,
+    stars: data.stargazers_count,
+    forks: data.forks_count,
+    openIssues: data.open_issues_count,
+    language: data.language,
+  }
+})

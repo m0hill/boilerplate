@@ -56,7 +56,7 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 - Use `nub` for scripts and package operations.
 - Route handlers remain Effect `HttpRouter` handlers returning `HttpServerResponse`.
-- Wrap Datastar `reply.*` responses with `HttpServerResponse.raw(...)`.
+- Return Datastar responses from route handlers through `src/http/datastar.ts` helpers.
 - Validate untrusted signals at the boundary with Effect `Schema.decodeUnknownEffect`.
 - Expected failures stay in the Effect error channel as tagged errors and surface as Datastar signal/element patches where user-fixable.
 - Use Workers-pool Vitest seams (`app.fetch(request(...))`) and MSW only for external HTTP.

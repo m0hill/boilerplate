@@ -11,8 +11,9 @@
   toolchain; the app _runs_ on the Workers runtime.
 - **Hypermedia**: [Datastar](https://data-star.dev/) + `datastar-kit` for server-rendered TSX,
   `reply.*` responses, signals, and SSE patches. The HTTP layer is **Effect's `HttpRouter`**
-  (`effect/unstable/http`); route handlers return `HttpServerResponse.raw(datastarResponse)` to
-  pass datastar-kit's Web `Response` (including SSE streams) through untouched.
+  (`effect/unstable/http`); route handlers return Datastar responses through the helpers in
+  `src/http/datastar.ts` so datastar-kit's Web `Response` objects (including SSE streams) pass
+  through untouched.
 - **Core & validation**: [Effect](https://effect.website/) is the functional core. Route handlers
   are `Effect`s that return an `HttpServerResponse`; I/O lives in Effects with typed (tagged) errors
   (`src/pages/home/github.ts`), and validation uses Effect `Schema` (`Schema.decodeUnknownEffect`)

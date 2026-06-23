@@ -41,13 +41,16 @@ nub run check      # typecheck (3 configs) + lint + format check + test
 Page-based MPA on Workers — `server.tsx` is the worker entry, merging page route layers into an
 Effect `HttpRouter` and exporting a Web handler (`export default { fetch }`):
 
-- `src/server.tsx` — worker entry (`HttpRouter.toWebHandler` → `export default { fetch }`).
+- `src/server.tsx` — worker entry, live service composition, and Web handler export
+  (`HttpRouter.toWebHandler` → `export default { fetch }`).
 - `wrangler.jsonc` — Workers config; static files come from `assets.directory` (`./public`).
 - `src/pages/<name>/` — one folder per page, split into a route layer, signal schemas,
   capability/domain modules, views, and colocated tests.
   `home/` is the GitHub repo-lookup demo (`home.test.ts` integration, `home.e2e.ts` browser);
-  `counter/` is a KV-binding demo (persistent counter via the `COUNTER_KV` namespace).
-- `src/cloudflare-env.ts` — `CloudflareEnv` service that exposes worker `env` bindings to Effects.
+  `counter/` is a KV-binding demo (persistent counter via a request-scoped `CounterStore` service
+  adapted from the `COUNTER_KV` namespace).
+- `src/cloudflare-env.ts` — low-level `CloudflareEnv` service for raw Worker binding access when a
+  feature cannot use a narrower domain capability.
 - `src/ui/` — shared view helpers (`pageHead`, `clientScript`).
 - `src/client/*.ts` — browser islands, bundled by esbuild to `public/js/`. Use sparingly —
   keep interactivity server-driven where possible.

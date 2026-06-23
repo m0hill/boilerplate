@@ -16,12 +16,13 @@
 - **Core & validation**: [Effect](https://effect.website/) is the functional core. Route handlers
   are `Effect`s that return an `HttpServerResponse`; I/O lives in Effects with typed (tagged) errors
   (`src/pages/home/github.ts`), and validation uses Effect `Schema` (`Schema.decodeUnknownEffect`)
-  instead of zod. Handlers parse signals, `Effect.result` the work, branch on the `Result`, and
-  return field errors via `reply.signals(...)`/`event.signals(...)` inside a stream when an element
-  patch is also needed. `HttpClient` is supplied once at the app boundary with
-  `HttpRouter.provideRequest(FetchHttpClient.layer)` in `src/server.tsx`; `FetchHttpClient` keeps the
-  same code running on workerd and the Workers test pool — don't reach for Node/Bun platform HTTP
-  clients in worker code. Request logging is Effect's built-in router logger; attach domain fields
+  instead of zod. Handlers parse signals, run named `Effect.fn(...)` workflows, catch tagged
+  expected failures with `Effect.catchTags(...)`, and return field errors via `reply.signals(...)`/
+  `event.signals(...)` inside a stream when an element patch is also needed. HTTP capabilities are
+  composed at the app boundary with `FetchHttpClient.layer` (for example `GitHubReposLive` in
+  `src/server.tsx`); `FetchHttpClient` keeps the same code running on workerd and the Workers test
+  pool — don't reach for Node/Bun platform HTTP clients in worker code. Request logging is Effect's
+  built-in router logger; attach domain fields
   with `Effect.annotateLogsScoped(...)`. A page folder splits into `form.ts` (signals + `Schema`),
   small domain modules such as `repo-name.ts`/`compare-board.ts`, capability modules such as
   `github.ts` (service + HTTP/Schema fetch), `views.tsx` (TSX), and `home.tsx` (route handlers +
@@ -41,21 +42,23 @@
 - **Hooks**: `simple-git-hooks` + `lint-staged` (pre-commit lints & formats staged files).
 
 There is no `process.env` on Workers — env comes from bindings (typed in `worker-configuration.d.ts`,
-regenerate with `nub run cf-typegen` after editing `wrangler.jsonc`). Bindings reach Effect handlers
-through the `CloudflareEnv` service (`src/cloudflare-env.ts`): `server.tsx`'s `fetch(request, env)`
-passes `Context.make(CloudflareEnv, env)` as the per-request context, and a handler reads a binding
-with `const { COUNTER_KV } = yield* CloudflareEnv`. The Workers test pool and `wrangler dev` supply
-local bindings, so a KV/D1/etc. demo runs the same in tests (`import { env } from "cloudflare:test"`).
-Don't reintroduce Node APIs (`fs`, `process`, `@hono/node-server`) into worker code; Node is fine in
-`scripts/` and tests.
+regenerate with `nub run cf-typegen` after editing `wrangler.jsonc`). Feature code should usually see
+bindings through domain capabilities rather than raw env bags: `server.tsx` adapts `COUNTER_KV` into
+`CounterStore` for the request context. Keep `CloudflareEnv` (`src/cloudflare-env.ts`) available for
+low-level/raw binding access when a feature genuinely needs the full Worker env, but prefer narrow
+services for page/domain code. The Workers test pool and `wrangler dev` supply local bindings, so a
+KV/D1/etc. demo runs the same in tests (`import { env } from "cloudflare:test"`). Don't reintroduce
+Node APIs (`fs`, `process`, `@hono/node-server`) into worker code; Node is fine in `scripts/` and
+tests.
 
 ## Layout
 
 Page-based MPA. `server.tsx` assembles the app; each page exports a `homeRoutes`-style `Layer` of
 `HttpRouter.add(method, path, handler)` routes, merged into one router.
 
-- `src/server.tsx` — worker entry: merges page route layers + the not-found route, provides
-  `FetchHttpClient` and the logger, and `export default { fetch }` from `HttpRouter.toWebHandler`.
+- `src/server.tsx` — worker entry: composes live services (`GitHubReposLive`, request-scoped
+  `CounterStore`), merges page route layers + the not-found route, provides the logger, and
+  `export default { fetch }` from `HttpRouter.toWebHandler`.
 - `wrangler.jsonc` — Workers config (`main`, `compatibility_date`, `assets.directory`).
 - `worker-configuration.d.ts` — generated binding/runtime types (committed; `nub run cf-typegen`).
 - `src/constants.ts` — shared constants (Datastar runtime URL, site title).
@@ -65,7 +68,8 @@ Page-based MPA. `server.tsx` assembles the app; each page exports a `homeRoutes`
   from the tests. `src/pages/home/` is the GitHub repo-lookup demo (form → external fetch → SSE
   patch); `src/pages/counter/` is the KV-binding demo (`store.ts` wraps `COUNTER_KV` in Effects,
   `counter.tsx` holds the routes); `src/pages/not-found.ts` is the catch-all 404 route.
-- `src/cloudflare-env.ts` — `CloudflareEnv` service exposing the per-request worker `env` bindings.
+- `src/cloudflare-env.ts` — low-level `CloudflareEnv` service exposing per-request worker `env`
+  bindings when a narrow domain service is not the right fit.
 - `src/ui/` — shared view helpers: `head.tsx` (`pageHead()` + `clientScript()`).
 - `src/client/*.ts` — browser islands; bundled to `public/js/*.js` (gitignored) by
   `scripts/build-client.ts` (esbuild). Type-checked separately with DOM libs via `src/client/tsconfig.json`.

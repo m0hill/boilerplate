@@ -65,4 +65,15 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## What's Been Tried
 
-- Baseline pending.
+- Baseline audit found Effect code shaped around old handlers: `Data.TaggedError`, anonymous
+  `Effect.gen` factories, direct `HttpClient`/`CloudflareEnv` use, and shallow repo helpers.
+- Kept: converted production errors to `Schema.TaggedErrorClass` and effectful helpers to named
+  `Effect.fn(...)`; behavior stayed green under `nub run check`.
+- Kept: introduced `GitHubRepos` and `CounterStore` services so routes depend on capabilities.
+  `GitHubReposLive` is composed with `FetchHttpClient` at the app boundary; `CounterStore` is
+  adapted from `COUNTER_KV` in the Worker `fetch` boundary.
+- Kept: removed the pass-through `repos.ts` helper and moved multi-repo fetch into
+  `GitHubRepos.fetchMany`; removed the one-use `parseRepoNames` helper.
+- The audit script was refined after those refactors so direct platform lookup is only counted when
+  it appears outside `Context.Service` modules; service/layer implementations are the intended
+  adapter boundary.

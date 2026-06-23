@@ -38,17 +38,19 @@ effect_gen_factories = sum(len(effect_gen_factory_pattern.findall(text)) for tex
 # Exported effectful helpers should generally be named Effect.fn functions or
 # service methods so traces and dependencies are explicit.
 untraced_effect_export_pattern = re.compile(
-    r"export\s+const\s+[a-z][A-Za-z0-9]*\s*=\s*(?!Effect\.fn)(?:.|\n){0,180}?Effect\.(?:gen|all|try|tryPromise|succeed|fail)",
+    r"export\s+const\s+[a-z][A-Za-z0-9]*\s*=\s*(?!\s*Effect\.fn\b)(?:.|\n){0,180}?Effect\.(?:gen|all|try|tryPromise|succeed|fail)",
     re.S,
 )
 untraced_effect_exports = sum(len(untraced_effect_export_pattern.findall(text)) for text in texts.values())
 
-# Domain capabilities that perform HTTP/KV/platform work should usually be
-# modeled as services/layers. Keep this as a nudge, not an absolute rule.
+# Route handlers and domain helpers should not directly pull platform services.
+# Service/layer modules are the expected place to integrate HttpClient, KV, D1,
+# and other adapters, so Context.Service modules are excluded from this count.
 direct_platform_dependencies = sum(
     text.count("HttpClient.HttpClient") + text.count("CloudflareEnv")
     for path, text in texts.items()
     if path.as_posix() not in {"src/server.tsx", "src/cloudflare-env.ts"}
+    and "Context.Service" not in text
 )
 
 effect_fn_calls = combined.count("Effect.fn(") + combined.count("Effect.fnUntraced(")

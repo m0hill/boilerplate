@@ -68,6 +68,7 @@
   "allowBuilds": {
     "@parcel/watcher": true,
     "esbuild": true,
+    "simple-git-hooks": false,
     "workerd": true
   }
 }

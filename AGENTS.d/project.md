@@ -84,7 +84,8 @@ Add a page: create `src/pages/<name>/<name>.tsx` exporting a Hono sub-app, then 
 Packages whose build scripts we run (esbuild, @parcel/watcher, workerd) are allow-listed in
 package.json's `allowBuilds`. Approve new ones with `nub approve-builds`. CI runs `nub ci` (not
 `--ignore-scripts`) because the Workers-pool tests need workerd's binary wired up by its
-postinstall. Git hooks are set by the `prepare` script (skipped when `$CI` is set).
+postinstall. `simple-git-hooks` is explicitly denied as a dependency build because hooks are set by
+the root `prepare` script (skipped when `$CI` is set).
 
 nub is the package manager and script runner: `nub install` / `nub add` / `nub run <script>` /
 `nubx <bin>`. The lockfile is nub's native `lock.yaml` (pnpm-compatible format). Default to nub.

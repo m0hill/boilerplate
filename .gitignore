@@ -8,3 +8,6 @@ public/js/
 .env.*
 !.env.example
 .wrangler/
+test-results/
+playwright-report/
+.playwright/

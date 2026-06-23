@@ -6,6 +6,6 @@
     "lib": ["esnext"],
     "types": ["node"]
   },
-  "include": ["**/*.ts", "../vitest.config.ts"],
+  "include": ["**/*.ts", "../vitest.config.ts", "../playwright.config.ts"],
   "exclude": []
 }

@@ -84,9 +84,10 @@ describe("createLogger", () => {
     log.set({ user: { id: "42" } })
     log.emit({ status: 200 })
 
-    const output = consoleLog.mock.calls
+    const raw = consoleLog.mock.calls
       .flat()
       .find((value): value is string => typeof value === "string")
+    const output = raw?.replace(/\[[0-9;]*m/g, "")
     expect(output).toContain("INFO [test-app] GET /pretty 200 in 25ms")
     expect(output).toContain('├─ requestId: "req_123"')
     expect(output).toContain('└─ user: { id: "42" }')

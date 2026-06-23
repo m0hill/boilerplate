@@ -13,7 +13,7 @@ A TypeScript starter for hypermedia-driven apps on **Cloudflare Workers**.
 | Client islands | [esbuild](https://esbuild.github.io/) bundles                      |
 | Lint           | `oxlint` (type-aware)                                              |
 | Format         | `oxfmt` (no semicolons)                                            |
-| Tests          | `vitest`                                                           |
+| Tests          | `vitest` (Workers pool) + `msw` mocks, `@playwright/test` (e2e)    |
 | Git hooks      | `simple-git-hooks` + `lint-staged`                                 |
 
 ## Setup
@@ -31,7 +31,8 @@ nub run build      # build public/app.css + public/js/*.js
 nub run deploy     # build, then wrangler deploy --minify
 nub run preview    # build, then wrangler dev
 nub run cf-typegen # regenerate worker-configuration.d.ts after editing wrangler.jsonc
-nub run test       # vitest (use test:watch for watch mode)
+nub run test       # vitest in the Workers runtime (use test:watch for watch mode)
+nub run test:e2e   # Playwright browser tests (first run: nubx playwright install chromium)
 nub run check      # typecheck (3 configs) + lint + format check + test
 ```
 
@@ -43,7 +44,7 @@ Page-based MPA on Workers — `server.tsx` is the worker entry and mounts page s
 - `src/server.tsx` — worker entry (`export default app`).
 - `wrangler.jsonc` — Workers config; static files come from `assets.directory` (`./public`).
 - `src/pages/<name>/` — one folder per page (Hono sub-app + views + colocated test).
-  `home/` is the counter demo.
+  `home/` is the GitHub repo-lookup demo (`home.tsx` page, `home.test.ts` integration, `home.e2e.ts` browser).
 - `src/ui/` — shared view helpers (`pageHead`, `clientScript`).
 - `src/client/*.ts` — browser islands, bundled by esbuild to `public/js/`. Use sparingly —
   keep interactivity server-driven where possible.
@@ -55,8 +56,8 @@ A pre-commit hook runs `lint-staged` (oxlint --fix + oxfmt) on staged files.
 
 ## CI / CD
 
-**CI** — `.github/workflows/ci.yml` runs on every push and PR: installs nub, `nub ci --ignore-scripts`,
-then `nub run check` (typecheck + lint + format + test). No build/native binaries needed for the check.
+**CI** — `.github/workflows/ci.yml` runs on every push and PR: installs nub, `nub ci`,
+then `nub run check` (typecheck + lint + format + test). The Workers-pool tests run on workerd, so its binary is built on install (allow-listed in `allowBuilds`).
 
 **CD** — handled by [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)
 (the GitHub App), which auto-deploys on push and adds PR preview URLs — no GitHub secret needed.

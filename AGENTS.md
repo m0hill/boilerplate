@@ -20,7 +20,12 @@ Node + TypeScript boilerplate for hypermedia-driven apps.
   `public/js/<name>.js`. Reference one from a view with `clientScript("name")`. Use only for
   behavior `data-*` attributes can't express — keep most interactivity server-driven.
 - **Lint / format**: `oxlint` (type-aware) and `oxfmt`.
-- **Tests**: `vitest` — drive the app directly with `app.fetch(new Request(...))`, no port/runtime.
+- **Tests**: `vitest` under `@cloudflare/vitest-pool-workers` — runs inside the Workers runtime
+  (workerd/Miniflare), the same runtime prod deploys to. Drive the app directly with
+  `app.fetch(new Request(...))`. Mock outbound HTTP with **MSW** via `@msw/cloudflare`.
+- **E2E**: `@playwright/test` — colocated `*.e2e.ts` specs (`nub run test:e2e`), real browser
+  against `wrangler dev`, for client-side behavior (Datastar SSE DOM patches, client islands).
+  Not part of `nub run check`.
 - **Hooks**: `simple-git-hooks` + `lint-staged` (pre-commit lints & formats staged files).
 
 There is no `process.env` on Workers — env comes from bindings (typed in `worker-configuration.d.ts`,
@@ -38,7 +43,8 @@ mounted under its URL prefix with `app.route(prefix, page)`.
 - `worker-configuration.d.ts` — generated binding/runtime types (committed; `nub run cf-typegen`).
 - `src/constants.ts` — shared constants (Datastar runtime URL, site title).
 - `src/pages/<name>/` — one folder per page: a Hono sub-app (`export default`) with its colocated
-  views and `*.test.ts`. `src/pages/home/` is the counter demo; `src/pages/not-found.ts` is the 404.
+  views and `*.test.ts`. `src/pages/home/` is the GitHub repo-lookup demo (form → external fetch →
+  SSE patch); `src/pages/not-found.ts` is the 404.
 - `src/ui/` — shared view helpers: `head.tsx` (`pageHead()` + `clientScript()`).
 - `src/client/*.ts` — browser islands; bundled to `public/js/*.js` (gitignored) by
   `scripts/build-client.ts` (esbuild). Type-checked separately with DOM libs via `src/client/tsconfig.json`.
@@ -66,17 +72,17 @@ Add a page: create `src/pages/<name>/<name>.tsx` exporting a Hono sub-app, then 
 - `nub run build` — build minified `public/app.css` + `public/js/*.js`.
 - `nub run deploy` — build, then `wrangler deploy --minify`. `nub run preview` runs `wrangler dev`.
 - `nub run cf-typegen` — regenerate `worker-configuration.d.ts` after editing `wrangler.jsonc`.
-- `nub run test` / `nub run test:watch` — vitest.
+- `nub run test` / `nub run test:watch` — vitest (Workers pool). `nub run test:e2e` — Playwright.
 - `nub run check` — typecheck (3 configs) + lint + format check + test. CI
-  (`.github/workflows/ci.yml`) runs `nub ci --ignore-scripts` → `nub run check` (the check needs
-  no built assets or native binaries). Deploys are handled by Cloudflare Workers Builds (GitHub
+  (`.github/workflows/ci.yml`) runs `nub ci` → `nub run check`. Builds run (allow-listed in
+  `allowBuilds`): the Workers-pool tests need workerd's binary. Deploys are handled by Cloudflare Workers Builds (GitHub
   App), not CI — see README.
 - `nub run lint:fix` / `nub run format` — autofix.
 
-Packages whose build scripts we run (esbuild, @parcel/watcher) are allow-listed in package.json's
-`allowBuilds`. Approve new ones with `nub approve-builds`. CI installs with `--ignore-scripts`, so
-those postinstalls only run on a normal local `nub install`. Git hooks are set by the `prepare`
-script (skipped when `$CI` is set).
+Packages whose build scripts we run (esbuild, @parcel/watcher, workerd) are allow-listed in
+package.json's `allowBuilds`. Approve new ones with `nub approve-builds`. CI runs `nub ci` (not
+`--ignore-scripts`) because the Workers-pool tests need workerd's binary wired up by its
+postinstall. Git hooks are set by the `prepare` script (skipped when `$CI` is set).
 
 nub is the package manager and script runner: `nub install` / `nub add` / `nub run <script>` /
 `nubx <bin>`. The lockfile is nub's native `lock.yaml` (pnpm-compatible format). Default to nub.
@@ -175,14 +181,17 @@ Loosely follows [Artem Zakharchenko](https://www.epicweb.dev/contributors/artem-
 - **Colocate tests** next to the code (`foo.tsx` → `foo.test.ts`), not in a separate tree.
 - **Don't over-mock.** Run the whole app for real; mock only what's _outside_ the boundary:
   network calls to external services, side effects, and non-deterministic values (time, random).
-  There's nothing external here yet, so there are no mocks — keep it that way until there is.
-- **Don't assert on outgoing requests** — assert on the resulting outcome. If/when you add
-  external HTTP, intercept at the network with **MSW**: validate the payload _inside_ the handler
-  and let a wrong request surface as a failed outcome assertion.
+  The app itself has no external calls yet — keep it that way until there is one.
+- **Don't assert on outgoing requests** — assert on the resulting outcome. For external HTTP,
+  intercept at the network with **MSW** (`@msw/cloudflare`'s `setupNetwork`): validate the payload
+  _inside_ the handler and let a wrong request surface as a failed outcome assertion. See
+  `src/pages/home/home.test.ts`: it mocks the GitHub call and tests the real `/lookup` route.
 - **Trust Vitest's defaults** (isolated files, parallel execution, explicit imports over
   `globals`). Keep `vitest.config.ts` minimal. Prefer `.resolves`/`.rejects` chaining.
-- **Real browser over JSDOM** if client-side behavior ever needs testing (Vitest browser mode or
-  Playwright) — but server-rendered output is tested directly in the node environment.
+- **Real browser over JSDOM** for client-side behavior: colocated `*.e2e.ts` Playwright specs drive
+  a real browser against `wrangler dev` (`nub run test:e2e`; first run `nubx playwright install
+chromium`). Keep e2e offline/deterministic — cover external-dependent happy paths in the
+  MSW-mocked Workers-pool tests, and use e2e for the client round-trip (form → SSE patch → DOM).
 
 ## Vendored Repositories
 

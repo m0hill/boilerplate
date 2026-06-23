@@ -116,7 +116,24 @@ test_combined = "\n".join(path.read_text() for path in sorted(root.rglob("*.test
 duplicated_load_app_helpers = test_combined.count("const loadApp = async")
 test_helper_duplication_score = duplicated_load_app_helpers
 
+missing_jsdoc_exports = 0
+for path, text in texts.items():
+    if path.name.endswith((".test.ts", ".test.tsx")):
+        continue
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if not (line.startswith("export const ") or line.startswith("export class ") or line.startswith("export function ") or line.startswith("export type ") or line.startswith("export default")):
+            continue
+        previous = index - 1
+        while previous >= 0 and not lines[previous].strip():
+            previous -= 1
+        if previous < 0 or not lines[previous].strip().endswith("*/"):
+            missing_jsdoc_exports += 1
+jsdoc_export_score = missing_jsdoc_exports
+
 metrics = {
+    "jsdoc_export_score": jsdoc_export_score,
+    "missing_jsdoc_exports": missing_jsdoc_exports,
     "test_helper_duplication_score": test_helper_duplication_score,
     "duplicated_load_app_helpers": duplicated_load_app_helpers,
     "domain_test_gap_score": domain_test_gap_score,

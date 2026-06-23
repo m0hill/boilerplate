@@ -8,8 +8,10 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary (phase 8)**: `test_helper_duplication_score` (unitless, lower is better) — duplicated app-loading helpers across Workers-pool integration tests.
+- **Primary (phase 9)**: `jsdoc_export_score` (unitless, lower is better) — exported production/test-helper APIs missing a short JSDoc comment.
 - **Secondary**:
+  - `missing_jsdoc_exports` — exported const/class/function/type/default declarations without preceding JSDoc.
+  - `test_helper_duplication_score` — phase 8 shared app test helper score; should stay at zero.
   - `duplicated_load_app_helpers` — local `loadApp` helper declarations in `*.test.ts` files.
   - `domain_test_gap_score` — phase 7 focused pure-domain test score; should stay at zero.
   - `missing_domain_tests` — `repo-name.ts`/`compare-board.ts` modules without colocated focused tests.
@@ -106,4 +108,6 @@ The target is not raw speed. The target is Effect architecture quality with auto
   request-scoped binding adapter, bringing `binding_docs_staleness_score` to zero.
 - Kept: added focused `repo-name.test.ts` and `compare-board.test.ts`, bringing
   `domain_test_gap_score` to zero.
-- Phase 8 now targets duplicated Workers-pool app-loading helpers in integration tests.
+- Kept: moved duplicated `loadApp` setup into `src/test-utils.ts`, bringing
+  `test_helper_duplication_score` to zero.
+- Phase 9 now targets exported APIs that lack a short JSDoc comment.

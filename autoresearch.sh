@@ -57,15 +57,29 @@ effect_fn_calls = combined.count("Effect.fn(") + combined.count("Effect.fnUntrac
 service_classes = combined.count("Context.Service")
 src_lines = sum(text.count("\n") + 1 for text in texts.values())
 
-score = (
+# Phase 1 score: coarse Effect anti-patterns. Kept as a secondary guard now
+# that it has reached zero.
+effect_audit_score = (
     data_tagged_error * 2
     + effect_gen_factories * 3
     + untraced_effect_exports * 2
     + direct_platform_dependencies * 4
 )
 
+# Phase 2 score: route modules should read as product workflows, not repeated
+# protocol-adapter ceremony. Datastar/Web response wrapping belongs in the
+# shared HTTP boundary, and route effects should be named for traces.
+raw_datastar_wrappers = combined.count("HttpServerResponse.raw(")
+route_effect_constants = len(
+    re.findall(r"const\s+[a-z][A-Za-z0-9]*\s*=\s*Effect\.gen\(function\*", combined)
+)
+route_noise_score = raw_datastar_wrappers * 2 + route_effect_constants
+
 metrics = {
-    "effect_audit_score": score,
+    "route_noise_score": route_noise_score,
+    "raw_datastar_wrappers": raw_datastar_wrappers,
+    "route_effect_constants": route_effect_constants,
+    "effect_audit_score": effect_audit_score,
     "data_tagged_error": data_tagged_error,
     "effect_gen_factories": effect_gen_factories,
     "untraced_effect_exports": untraced_effect_exports,

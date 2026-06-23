@@ -8,12 +8,15 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary**: `effect_audit_score` (unitless, lower is better) — static count of broad Effect anti-pattern signals in `src/` production code.
+- **Primary (phase 2)**: `route_noise_score` (unitless, lower is better) — repeated protocol-adapter ceremony in route modules. It weights raw Datastar response wrapping and unnamed route `Effect.gen` constants.
 - **Secondary**:
+  - `raw_datastar_wrappers` — `HttpServerResponse.raw(...)` call sites that should usually be centralized in the Datastar HTTP boundary.
+  - `route_effect_constants` — route-level `Effect.gen(function*)` constants; prefer named `Effect.fn(...)` when the effect represents a handler/workflow and benefits from tracing.
+  - `effect_audit_score` — phase 1 coarse Effect anti-pattern score; should stay at zero.
   - `data_tagged_error` — uses of `Data.TaggedError`; prefer `Schema.TaggedErrorClass` for typed/schema-aware errors.
   - `effect_gen_factories` — functions returning `Effect.gen`; prefer named `Effect.fn("Name")` for effectful functions.
   - `untraced_effect_exports` — exported effectful functions not using `Effect.fn`/service methods.
-  - `direct_platform_dependencies` — domain/page functions directly requiring platform services such as `HttpClient`; prefer cohesive services/layers when the capability is meaningful.
+  - `direct_platform_dependencies` — route/domain helpers directly requiring platform services such as `HttpClient`; service/layer modules are the intended adapter boundary.
   - `effect_fn_calls` — informational count of named `Effect.fn` use.
   - `service_classes` — informational count of `Context.Service` use.
   - `src_lines` — production source size monitor.

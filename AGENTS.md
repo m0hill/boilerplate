@@ -12,7 +12,7 @@ This root file is the index. Before changing an area, read the matching guide in
   decisions.
 - `AGENTS.d/testing.md` — TDD workflow, Vitest/Workers-pool seams, Playwright, MSW, and mocking.
 - `AGENTS.d/styling.md` — Tailwind v4 and vanilla CSS split.
-- `AGENTS.d/vendored-repos.md` — how to use the vendored Datastar Kit repo.
+- `AGENTS.d/vendored-repos.md` — how to use vendored Datastar Kit and Effect repos.
 
 ## Quick rules
 

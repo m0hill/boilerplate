@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 import type { Hono } from "hono"
+import type { AppEnv } from "../../app-env.js"
 import { datastarPost, request } from "../../test-utils.js"
 
-const loadApp = async (): Promise<Hono> => {
+const loadApp = async (): Promise<Hono<AppEnv>> => {
   vi.resetModules()
   return (await import("../../server.js")).default
 }

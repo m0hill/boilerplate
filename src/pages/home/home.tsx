@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { z } from "zod"
 import { event, mod, post, read, reply, state } from "datastar-kit"
+import type { AppEnv } from "../../app-env.js"
 import { SITE_TITLE } from "../../constants.js"
 import { pageHead, clientScript } from "../../ui/head.js"
 
@@ -19,10 +20,12 @@ const StepSignals = z.object({
 
 const Count = () => <output id="count">{count}</output>
 
-const home = new Hono()
+const home: Hono<AppEnv> = new Hono<AppEnv>()
 
-home.get("/", () =>
-  reply.page(
+home.get("/", (c) => {
+  c.get("log").set({ page: { name: "home" } })
+
+  return reply.page(
     <main
       id="app"
       data-signals={mod(counterForm.defaults, { ifMissing: true })}
@@ -69,20 +72,25 @@ home.get("/", () =>
       title: SITE_TITLE,
       head: [...pageHead(), clientScript("clock")],
     },
-  ),
-)
+  )
+})
 
 home.post("/increment", async (c) => {
+  const log = c.get("log")
   const result = StepSignals.safeParse(await read.signals(c.req.raw))
 
   if (!result.success) {
     const { fieldErrors } = z.flattenError(result.error)
+    log.warn("Invalid counter step", { counter: { accepted: false } })
     return reply.signals(
       counterForm.patch({ errors: { step: fieldErrors.step?.[0] ?? "Invalid step." } }),
     )
   }
 
+  const before = count
   count += result.data.step
+  log.set({ counter: { accepted: true, before, after: count, step: result.data.step } })
+
   return reply.stream([
     event.signals(counterForm.patch({ errors: { step: "" } })),
     event.patch(<Count />),

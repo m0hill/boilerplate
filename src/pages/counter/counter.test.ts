@@ -1,16 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it } from "vitest"
 import { env } from "cloudflare:test"
-import { datastarPost, request } from "../../test-utils.js"
+import { datastarPost, loadApp, request } from "../../test-utils.js"
 
 beforeEach(() => env.COUNTER_KV.delete("count"))
-
-type WebHandler = { fetch: (request: Request) => Promise<Response> }
-
-const loadApp = async (): Promise<WebHandler> => {
-  vi.resetModules()
-  const app = (await import("../../server.js")).default
-  return { fetch: (request) => app.fetch(request, env) }
-}
 
 describe("counter page", () => {
   it("renders the counter starting at zero", async () => {

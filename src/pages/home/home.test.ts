@@ -1,22 +1,13 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest"
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest"
 import { http, HttpResponse } from "msw"
 import { setupNetwork } from "@msw/cloudflare"
-import { env } from "cloudflare:test"
-import { datastarPost, request } from "../../test-utils.js"
+import { datastarPost, loadApp, request } from "../../test-utils.js"
 
 const network = setupNetwork()
 
 beforeAll(() => network.enable())
 afterEach(() => network.resetHandlers())
 afterAll(() => network.disable())
-
-type WebHandler = { fetch: (request: Request) => Promise<Response> }
-
-const loadApp = async (): Promise<WebHandler> => {
-  vi.resetModules()
-  const app = (await import("../../server.js")).default
-  return { fetch: (request) => app.fetch(request, env) }
-}
 
 type GitHubRepoBody = Record<string, unknown>
 

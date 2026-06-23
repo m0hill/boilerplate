@@ -1,6 +1,6 @@
 import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
-import { reply } from "datastar-kit"
+import { datastarPage, datastarPatch } from "../../http/datastar.js"
 import { pageHead } from "../../ui/head.js"
 import { CounterStore, type CounterStoreError } from "./store.js"
 import { CounterMain, CountView } from "./views.js"
@@ -21,12 +21,10 @@ const counterPage = Effect.gen(function* () {
   const count = yield* counter.current
   yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "view" } })
 
-  return HttpServerResponse.raw(
-    reply.page(<CounterMain count={count} />, {
-      title: "KV counter",
-      head: pageHead(),
-    }),
-  )
+  return datastarPage(<CounterMain count={count} />, {
+    title: "KV counter",
+    head: pageHead(),
+  })
 }).pipe(Effect.catchTag("CounterStoreError", (error) => counterUnavailable("view", error.reason)))
 
 const increment = Effect.gen(function* () {
@@ -34,7 +32,7 @@ const increment = Effect.gen(function* () {
   const count = yield* counter.increment
   yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "increment" } })
 
-  return HttpServerResponse.raw(reply.patch(<CountView count={count} />))
+  return datastarPatch(<CountView count={count} />)
 }).pipe(
   Effect.catchTag("CounterStoreError", (error) => counterUnavailable("increment", error.reason)),
 )

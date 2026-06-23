@@ -1,8 +1,13 @@
 import { Effect, Layer } from "effect"
-import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
-import { event, reply } from "datastar-kit"
+import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
+import { event } from "datastar-kit"
 import { SITE_TITLE } from "../../constants.js"
-import { decodeSignals } from "../../http/datastar.js"
+import {
+  datastarPage,
+  datastarSignals,
+  datastarStream,
+  decodeSignals,
+} from "../../http/datastar.js"
 import { pageHead } from "../../ui/head.js"
 import { addCompareRepo, removeCompareRepo } from "./compare-board.js"
 import { CompareBoardSignals, invalidRepoMessage, lookupForm, RepoSignals } from "./form.js"
@@ -14,12 +19,10 @@ import { CompareBoard, HomeMain, LookupResult } from "./views.js"
 const homePage = Effect.gen(function* () {
   yield* Effect.annotateLogsScoped({ page: { name: "home" } })
 
-  return HttpServerResponse.raw(
-    reply.page(<HomeMain />, {
-      title: SITE_TITLE,
-      head: pageHead(),
-    }),
-  )
+  return datastarPage(<HomeMain />, {
+    title: SITE_TITLE,
+    head: pageHead(),
+  })
 })
 
 // --- /lookup: look up a single repository and patch the result panel ---
@@ -29,12 +32,10 @@ const lookupFailed = Effect.fn("home.lookupFailed")(function* (
   message: string,
 ) {
   yield* Effect.annotateLogsScoped({ lookup: { ok: false, reason } })
-  return HttpServerResponse.raw(
-    reply.stream([
-      event.signals(lookupForm.patch({ errors: { repo: message } })),
-      event.patch(<LookupResult />),
-    ]),
-  )
+  return datastarStream([
+    event.signals(lookupForm.patch({ errors: { repo: message } })),
+    event.patch(<LookupResult />),
+  ])
 })
 
 const lookup = Effect.fn("home.lookup")(
@@ -47,12 +48,10 @@ const lookup = Effect.fn("home.lookup")(
     yield* Effect.annotateLogsScoped({
       lookup: { ok: true, repo: result.fullName, stars: result.stars },
     })
-    return HttpServerResponse.raw(
-      reply.stream([
-        event.signals(lookupForm.patch({ errors: { repo: "" } })),
-        event.patch(<LookupResult result={result} />),
-      ]),
-    )
+    return datastarStream([
+      event.signals(lookupForm.patch({ errors: { repo: "" } })),
+      event.patch(<LookupResult result={result} />),
+    ])
   },
   Effect.catchTags({
     InvalidSignalsError: () => lookupFailed("invalid_repo", invalidRepoMessage),
@@ -73,18 +72,16 @@ const compareFailed = Effect.fn("home.compareFailed")(function* (
   message: string,
 ) {
   yield* Effect.annotateLogsScoped({ compare: { ok: false, reason } })
-  return HttpServerResponse.raw(reply.signals(lookupForm.patch({ errors: { compare: message } })))
+  return datastarSignals(lookupForm.patch({ errors: { compare: message } }))
 })
 
 const compareUpdated = Effect.fn("home.compareUpdated")(function* (repos: readonly Repo[]) {
   const compareRepos = repos.map((repo) => repo.fullName)
   yield* Effect.annotateLogsScoped({ compare: { ok: true, repos: compareRepos.length } })
-  return HttpServerResponse.raw(
-    reply.stream([
-      event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
-      event.patch(<CompareBoard repos={repos} />),
-    ]),
-  )
+  return datastarStream([
+    event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
+    event.patch(<CompareBoard repos={repos} />),
+  ])
 })
 
 const decodeCompareRequest = Effect.fn("home.decodeCompareRequest")(function* (

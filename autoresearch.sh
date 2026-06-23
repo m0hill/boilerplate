@@ -69,9 +69,12 @@ effect_audit_score = (
 # Phase 2 score: route modules should read as product workflows, not repeated
 # protocol-adapter ceremony. Datastar/Web response wrapping belongs in the
 # shared HTTP boundary, and route effects should be named for traces.
-raw_datastar_wrappers = combined.count("HttpServerResponse.raw(")
+route_combined = "\n".join(
+    text for text in texts.values() if "HttpRouter.add" in text or "homeRoutes" in text or "counterRoutes" in text
+)
+raw_datastar_wrappers = route_combined.count("HttpServerResponse.raw(")
 route_effect_constants = len(
-    re.findall(r"const\s+[a-z][A-Za-z0-9]*\s*=\s*Effect\.gen\(function\*", combined)
+    re.findall(r"const\s+[a-z][A-Za-z0-9]*\s*=\s*Effect\.gen\(function\*", route_combined)
 )
 route_noise_score = raw_datastar_wrappers * 2 + route_effect_constants
 

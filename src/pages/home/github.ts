@@ -1,8 +1,11 @@
 import { z } from "zod"
 
 export type Repo = {
-  fullName: string
-  stars: number
+  readonly fullName: string
+  readonly stars: number
+  readonly forks: number
+  readonly openIssues: number
+  readonly language: string | null
 }
 
 export class RepoNotFoundError extends Error {
@@ -15,11 +18,14 @@ export class RepoNotFoundError extends Error {
 const RepoResponse = z.object({
   full_name: z.string().min(1),
   stargazers_count: z.number().int().nonnegative(),
+  forks_count: z.number().int().nonnegative(),
+  open_issues_count: z.number().int().nonnegative(),
+  language: z.string().min(1).nullable(),
 })
 
 const USER_AGENT = "boilerplate-worker"
 
-export const fetchRepoStars = async (owner: string, repo: string): Promise<Repo> => {
+export const fetchRepoStats = async (owner: string, repo: string): Promise<Repo> => {
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
     headers: {
       "user-agent": USER_AGENT,
@@ -40,5 +46,11 @@ export const fetchRepoStars = async (owner: string, repo: string): Promise<Repo>
     throw new Error("GitHub API returned an unexpected response")
   }
 
-  return { fullName: result.data.full_name, stars: result.data.stargazers_count }
+  return {
+    fullName: result.data.full_name,
+    stars: result.data.stargazers_count,
+    forks: result.data.forks_count,
+    openIssues: result.data.open_issues_count,
+    language: result.data.language,
+  }
 }

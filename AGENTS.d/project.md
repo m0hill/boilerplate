@@ -67,8 +67,9 @@ Page-based MPA. `server.tsx` assembles the app; each page exports a `homeRoutes`
   plus colocated signal schemas, capability/domain modules, views, and `*.test.ts`. Add a local
   README only when the page/feature has domain vocabulary or workflow rules that are not obvious
   from the tests. `src/pages/home/` is the GitHub repo-lookup demo (form → external fetch → SSE
-  patch); `src/pages/counter/` is the KV-binding demo (`store.ts` wraps `COUNTER_KV` in Effects,
-  `counter.tsx` holds the routes); `src/pages/not-found.ts` is the catch-all 404 route.
+  patch); `src/pages/counter/` is the KV-binding demo (`store.ts` defines the `CounterStore`
+  service adapter and `counter.tsx` holds the routes); `src/pages/not-found.ts` is the catch-all 404
+  route.
 - `src/cloudflare-env.ts` — low-level `CloudflareEnv` service exposing per-request worker `env`
   bindings when a narrow domain service is not the right fit.
 - `src/ui/` — shared view helpers: `head.tsx` (`pageHead()` + `clientScript()`).

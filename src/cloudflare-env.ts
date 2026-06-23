@@ -1,11 +1,12 @@
 import { Context } from "effect"
 
 /**
- * Per-request Cloudflare Worker bindings (`env`), made available to Effects.
+ * Low-level per-request Cloudflare Worker bindings (`env`) for Effects that
+ * genuinely need raw Worker access.
  *
- * Provided at the worker boundary in `src/server.tsx`:
- * `handler(request, Context.make(CloudflareEnv, env))`. Yield it inside an
- * Effect to reach a binding, e.g. `const { COUNTER_KV } = yield* CloudflareEnv`.
+ * Prefer narrow domain services for feature code. For example, `src/server.tsx`
+ * adapts `env.COUNTER_KV` into the request-scoped `CounterStore` service while
+ * also keeping `CloudflareEnv` available for lower-level integrations.
  */
 export class CloudflareEnv extends Context.Service<CloudflareEnv, CloudflareBindings>()(
   "CloudflareEnv",

@@ -12,6 +12,7 @@ export class CompareBoardFullError extends Schema.TaggedErrorClass<CompareBoardF
   },
 ) {}
 
+/** Adds a repository to the board, preserving unique names and the board size limit. */
 export const addCompareRepo = Effect.fn("addCompareRepo")(function* (
   current: readonly RepoName[],
   repo: RepoName,
@@ -24,6 +25,7 @@ export const addCompareRepo = Effect.fn("addCompareRepo")(function* (
   return repoNames
 })
 
+/** Removes a repository from the board, comparing names case-insensitively. */
 export const removeCompareRepo = (
   current: readonly RepoName[],
   repo: RepoName,

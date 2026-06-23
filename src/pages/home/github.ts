@@ -23,7 +23,8 @@ export class RepoNotFoundError extends Schema.TaggedErrorClass<RepoNotFoundError
 export class GitHubUnavailableError extends Schema.TaggedErrorClass<GitHubUnavailableError>()(
   "GitHubUnavailableError",
   {
-    reason: Schema.String,
+    reason: Schema.Literals(["request_failed", "unexpected_status", "invalid_body"]),
+    status: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThanOrEqualTo(400))),
   },
 ) {}
 
@@ -75,7 +76,10 @@ export class GitHubRepos extends Context.Service<
           return yield* new RepoNotFoundError({ owner: repoName.owner, repo: repoName.repo })
         }
         if (response.status >= 400) {
-          return yield* new GitHubUnavailableError({ reason: `status_${response.status}` })
+          return yield* new GitHubUnavailableError({
+            reason: "unexpected_status",
+            status: response.status,
+          })
         }
 
         const data = yield* HttpClientResponse.schemaBodyJson(RepoResponse)(response).pipe(

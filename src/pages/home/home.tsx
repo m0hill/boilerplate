@@ -16,14 +16,14 @@ import type { Repo } from "./github.js"
 import { parseRepoName } from "./repo-name.js"
 import { CompareBoard, HomeMain, LookupResult } from "./views.js"
 
-const homePage = Effect.gen(function* () {
+const homePage = Effect.fn("home.page")(function* () {
   yield* Effect.annotateLogsScoped({ page: { name: "home" } })
 
   return datastarPage(<HomeMain />, {
     title: SITE_TITLE,
     head: pageHead(),
   })
-})
+})()
 
 // --- /lookup: look up a single repository and patch the result panel ---
 

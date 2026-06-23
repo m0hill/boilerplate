@@ -28,7 +28,7 @@ export class CounterStore extends Context.Service<
 >()("boilerplate/pages/counter/CounterStore") {}
 
 /** Adapts a Workers KV namespace into the counter service interface. */
-export const makeCounterStore = (counterKv: CounterNamespace): CounterStore["Service"] => {
+export function makeCounterStore(counterKv: CounterNamespace): CounterStore["Service"] {
   const current = Effect.fn("CounterStore.current")(function* () {
     const raw = yield* Effect.tryPromise({
       try: () => counterKv.get(countKey),

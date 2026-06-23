@@ -44,6 +44,9 @@ export class GitHubRepos extends Context.Service<
     readonly fetch: (
       repoName: RepoName,
     ) => Effect.Effect<Repo, RepoNotFoundError | GitHubUnavailableError>
+    readonly fetchMany: (
+      repoNames: readonly RepoName[],
+    ) => Effect.Effect<readonly Repo[], RepoNotFoundError | GitHubUnavailableError>
   }
 >()("boilerplate/pages/home/GitHubRepos") {
   static readonly layer = Layer.effect(
@@ -88,7 +91,18 @@ export class GitHubRepos extends Context.Service<
         }
       })
 
-      return GitHubRepos.of({ fetch })
+      const fetchMany = Effect.fn("GitHubRepos.fetchMany")(function* (
+        repoNames: readonly RepoName[],
+      ): Effect.fn.Return<readonly Repo[], RepoNotFoundError | GitHubUnavailableError> {
+        return yield* Effect.all(
+          repoNames.map((repoName) => fetch(repoName)),
+          {
+            concurrency: "unbounded",
+          },
+        )
+      })
+
+      return GitHubRepos.of({ fetch, fetchMany })
     }),
   )
 }

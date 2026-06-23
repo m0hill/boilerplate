@@ -8,8 +8,7 @@ import { addCompareRepo, removeCompareRepo } from "./compare-board.js"
 import { CompareBoardSignals, invalidRepoMessage, lookupForm, RepoSignals } from "./form.js"
 import { GitHubRepos } from "./github.js"
 import type { Repo } from "./github.js"
-import { parseRepoName, parseRepoNames } from "./repo-name.js"
-import { fetchCompareRepos } from "./repos.js"
+import { parseRepoName } from "./repo-name.js"
 import { CompareBoard, HomeMain, LookupResult } from "./views.js"
 
 const homePage = Effect.gen(function* () {
@@ -93,7 +92,7 @@ const decodeCompareRequest = Effect.fn("home.decodeCompareRequest")(function* (
 ) {
   const signals = yield* decodeSignals(request, CompareBoardSignals)
   const repo = yield* parseRepoName(signals.repo)
-  const compareRepos = yield* parseRepoNames(signals.compareRepos ?? [])
+  const compareRepos = yield* Effect.all((signals.compareRepos ?? []).map(parseRepoName))
   return { repo, compareRepos }
 })
 
@@ -101,7 +100,8 @@ const compareAdd = Effect.fn("home.compareAdd")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const { repo, compareRepos } = yield* decodeCompareRequest(request)
     const repoNames = yield* addCompareRepo(compareRepos, repo)
-    const repos = yield* fetchCompareRepos(repoNames)
+    const github = yield* GitHubRepos
+    const repos = yield* github.fetchMany(repoNames)
 
     return yield* compareUpdated(repos)
   },
@@ -120,7 +120,8 @@ const compareAdd = Effect.fn("home.compareAdd")(
 const compareRemove = Effect.fn("home.compareRemove")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const { repo, compareRepos } = yield* decodeCompareRequest(request)
-    const repos = yield* fetchCompareRepos(removeCompareRepo(compareRepos, repo))
+    const github = yield* GitHubRepos
+    const repos = yield* github.fetchMany(removeCompareRepo(compareRepos, repo))
 
     return yield* compareUpdated(repos)
   },

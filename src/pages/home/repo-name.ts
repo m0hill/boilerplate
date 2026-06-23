@@ -30,12 +30,6 @@ export const parseRepoName = Effect.fn("parseRepoName")(function* (
   return { owner, repo, fullName: `${owner}/${repo}` }
 })
 
-export const parseRepoNames = Effect.fn("parseRepoNames")(function* (
-  inputs: readonly string[],
-): Effect.fn.Return<readonly RepoName[], InvalidRepoNameError> {
-  return yield* Effect.all(inputs.map(parseRepoName))
-})
-
 /** Removes duplicate repository names, comparing case-insensitively. */
 export const uniqueRepoNames = (names: readonly RepoName[]): readonly RepoName[] => {
   const seen = new Set<string>()

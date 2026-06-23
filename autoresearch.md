@@ -27,7 +27,7 @@ The target is not raw speed. The target is Effect architecture quality with auto
 - `src/server.tsx` — Worker entry, route-layer composition, Effect HTTP handler wiring.
 - `src/cloudflare-env.ts` — Effect service for per-request Workers bindings.
 - `src/http/*` — HTTP/Datastar boundary helpers.
-- `src/pages/home/*` — GitHub repo lookup demo: form schemas, repo-name domain, GitHub HTTP capability, compare-board domain, route handlers, views, tests.
+- `src/pages/home/*` — GitHub repo lookup demo: form schemas, repo-name domain, GitHub HTTP capability service, compare-board domain, route handlers, views, tests.
 - `src/pages/counter/*` — KV counter demo: KV capability, route handlers, views, tests.
 - `src/pages/not-found.ts` — catch-all route.
 - `src/ui/*` — shared TSX view helpers.

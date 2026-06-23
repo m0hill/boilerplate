@@ -23,8 +23,9 @@
   same code running on workerd and the Workers test pool — don't reach for Node/Bun platform HTTP
   clients in worker code. Request logging is Effect's built-in router logger; attach domain fields
   with `Effect.annotateLogsScoped(...)`. A page folder splits into `form.ts` (signals + `Schema`),
-  `repos.ts` (domain helpers), `github.ts` (HTTP/Schema fetch), `views.tsx` (TSX), and `home.tsx`
-  (route handlers + the exported `homeRoutes` layer).
+  small domain modules such as `repo-name.ts`/`compare-board.ts`, capability modules such as
+  `github.ts` (service + HTTP/Schema fetch), `views.tsx` (TSX), and `home.tsx` (route handlers +
+  the exported `homeRoutes` layer).
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) via the standalone CLI (zero runtime).
   `src/styles.css` is the entry; the CLI builds `public/app.css`, served from `assets` at `/app.css`.
 - **Client islands**: [esbuild](https://esbuild.github.io/) bundles `src/client/<name>.ts` →
@@ -59,7 +60,7 @@ Page-based MPA. `server.tsx` assembles the app; each page exports a `homeRoutes`
 - `worker-configuration.d.ts` — generated binding/runtime types (committed; `nub run cf-typegen`).
 - `src/constants.ts` — shared constants (Datastar runtime URL, site title).
 - `src/pages/<name>/` — one folder per page: a route-layer module (`export const <name>Routes`)
-  plus its colocated `form.ts`/`repos.ts`/`github.ts`/`views.tsx` and `*.test.ts`. Add a local
+  plus colocated signal schemas, capability/domain modules, views, and `*.test.ts`. Add a local
   README only when the page/feature has domain vocabulary or workflow rules that are not obvious
   from the tests. `src/pages/home/` is the GitHub repo-lookup demo (form → external fetch → SSE
   patch); `src/pages/counter/` is the KV-binding demo (`store.ts` wraps `COUNTER_KV` in Effects,

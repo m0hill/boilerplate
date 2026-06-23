@@ -43,8 +43,8 @@ Effect `HttpRouter` and exporting a Web handler (`export default { fetch }`):
 
 - `src/server.tsx` — worker entry (`HttpRouter.toWebHandler` → `export default { fetch }`).
 - `wrangler.jsonc` — Workers config; static files come from `assets.directory` (`./public`).
-- `src/pages/<name>/` — one folder per page, split into `home.tsx` (route layer), `form.ts`
-  (signals/Schema), `repos.ts` (domain), `github.ts` (HTTP), `views.tsx`, and colocated tests.
+- `src/pages/<name>/` — one folder per page, split into a route layer, signal schemas,
+  capability/domain modules, views, and colocated tests.
   `home/` is the GitHub repo-lookup demo (`home.test.ts` integration, `home.e2e.ts` browser);
   `counter/` is a KV-binding demo (persistent counter via the `COUNTER_KV` namespace).
 - `src/cloudflare-env.ts` — `CloudflareEnv` service that exposes worker `env` bindings to Effects.

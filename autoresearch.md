@@ -8,8 +8,10 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary (phase 6)**: `binding_docs_staleness_score` (unitless, lower is better) — docs/comments that still describe handlers reading `COUNTER_KV` directly through `CloudflareEnv` instead of the current request-scoped `CounterStore` adapter.
+- **Primary (phase 7)**: `domain_test_gap_score` (unitless, lower is better) — focused tests missing for pure home-domain modules whose behavior should be specified outside the HTTP route seam.
 - **Secondary**:
+  - `missing_domain_tests` — `repo-name.ts`/`compare-board.ts` modules without colocated focused tests.
+  - `binding_docs_staleness_score` — phase 6 binding docs score; should stay at zero.
   - `stale_binding_docs` — stale Worker binding examples/comments.
   - `docs_staleness_score` — phase 5 Datastar docs score; should stay at zero.
   - `stale_datastar_docs` — docs that tell route authors to call `HttpServerResponse.raw(...)` directly instead of the shared Datastar HTTP helpers.
@@ -98,5 +100,7 @@ The target is not raw speed. The target is Effect architecture quality with auto
   `domain_schema_score` to zero.
 - Kept: updated AGENTS docs to point route authors at Datastar response helpers, bringing
   `docs_staleness_score` to zero.
-- Phase 6 now targets stale Worker binding docs/comments that still describe handlers reading
-  `COUNTER_KV` directly from `CloudflareEnv` instead of using request-scoped services.
+- Kept: updated `CloudflareEnv` comments and project docs to describe `CounterStore` as the
+  request-scoped binding adapter, bringing `binding_docs_staleness_score` to zero.
+- Phase 7 now targets missing focused tests for pure domain modules (`repo-name.ts`,
+  `compare-board.ts`) whose behavior should be specified without going through HTTP.

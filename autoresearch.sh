@@ -108,7 +108,13 @@ stale_binding_docs = binding_docs_combined.count("const { COUNTER_KV } = yield* 
 ) + binding_docs_combined.count("handler(request, Context.make(CloudflareEnv, env))")
 binding_docs_staleness_score = stale_binding_docs
 
+domain_modules = [Path("src/pages/home/repo-name.ts"), Path("src/pages/home/compare-board.ts")]
+missing_domain_tests = sum(1 for path in domain_modules if path.exists() and not path.with_name(f"{path.stem}.test.ts").exists())
+domain_test_gap_score = missing_domain_tests
+
 metrics = {
+    "domain_test_gap_score": domain_test_gap_score,
+    "missing_domain_tests": missing_domain_tests,
     "binding_docs_staleness_score": binding_docs_staleness_score,
     "stale_binding_docs": stale_binding_docs,
     "docs_staleness_score": docs_staleness_score,

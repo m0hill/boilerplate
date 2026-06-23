@@ -6,7 +6,7 @@ import { decodeSignals } from "../../http/datastar.js"
 import { pageHead } from "../../ui/head.js"
 import { addCompareRepo, removeCompareRepo } from "./compare-board.js"
 import { CompareBoardSignals, invalidRepoMessage, lookupForm, RepoSignals } from "./form.js"
-import { fetchRepoStats } from "./github.js"
+import { GitHubRepos } from "./github.js"
 import type { Repo } from "./github.js"
 import { parseRepoName, parseRepoNames } from "./repo-name.js"
 import { fetchCompareRepos } from "./repos.js"
@@ -42,7 +42,8 @@ const lookup = Effect.fn("home.lookup")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const signals = yield* decodeSignals(request, RepoSignals)
     const repoName = yield* parseRepoName(signals.repo)
-    const result = yield* fetchRepoStats(repoName)
+    const github = yield* GitHubRepos
+    const result = yield* github.fetch(repoName)
 
     yield* Effect.annotateLogsScoped({
       lookup: { ok: true, repo: result.fullName, stars: result.stars },

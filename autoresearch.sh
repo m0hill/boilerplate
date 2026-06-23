@@ -86,7 +86,15 @@ string_reason_errors = len(
 status_string_reasons = combined.count("status_${")
 error_model_score = string_reason_errors * 2 + status_string_reasons
 
+# Phase 4 score: exported domain records should come from schemas/classes when
+# they cross module boundaries, so runtime validation and static types share one
+# source of truth.
+plain_exported_domain_types = len(re.findall(r"export\s+type\s+[A-Z][A-Za-z0-9]*\s*=\s*\{", combined))
+domain_schema_score = plain_exported_domain_types
+
 metrics = {
+    "domain_schema_score": domain_schema_score,
+    "plain_exported_domain_types": plain_exported_domain_types,
     "error_model_score": error_model_score,
     "string_reason_errors": string_reason_errors,
     "status_string_reasons": status_string_reasons,

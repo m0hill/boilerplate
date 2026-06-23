@@ -8,8 +8,10 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary (phase 3)**: `error_model_score` (unitless, lower is better) — stringly-typed expected-failure context. It weights broad `reason: Schema.String` fields and dynamic `status_${code}` reason strings.
+- **Primary (phase 4)**: `domain_schema_score` (unitless, lower is better) — exported domain records that are plain object type aliases instead of deriving from an Effect `Schema`/`Schema.Class` source of truth.
 - **Secondary**:
+  - `plain_exported_domain_types` — `export type PascalCase = { ... }` domain records crossing module boundaries.
+  - `error_model_score` — phase 3 structured error score; should stay at zero.
   - `string_reason_errors` — tagged errors whose reason is any string instead of a closed union/structured fields.
   - `status_string_reasons` — status codes encoded into a reason string rather than a numeric field.
   - `route_noise_score` — phase 2 route readability score; should stay at zero.
@@ -86,5 +88,7 @@ The target is not raw speed. The target is Effect architecture quality with auto
 - Kept: centralized Datastar `reply.*` → `HttpServerResponse.raw(...)` wrapping in `src/http/datastar.ts`
   and named the remaining route handler effects with `Effect.fn(...)`, bringing `route_noise_score`
   to zero.
-- Phase 3 now targets stringly-typed expected failures, starting with GitHub's broad
-  `GitHubUnavailableError.reason: string` and dynamic `status_${code}` reason.
+- Kept: changed `GitHubUnavailableError` to a closed reason union plus an optional numeric status,
+  bringing `error_model_score` to zero.
+- Phase 4 now targets exported plain domain records (`Repo`, `RepoName`) that should derive from
+  an Effect schema/class source of truth.

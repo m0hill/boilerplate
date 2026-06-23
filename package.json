@@ -8,7 +8,7 @@
   "type": "module",
   "main": "src/server.tsx",
   "scripts": {
-    "dev": "nub run build && concurrently -k -n css,js,cf -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"wrangler dev\"",
+    "dev": "nub run build && concurrently -k -n css,js,cf -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"wrangler dev --live-reload\"",
     "preview": "nub run build && wrangler dev",
     "deploy": "nub run build && wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",

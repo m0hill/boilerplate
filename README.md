@@ -26,7 +26,7 @@ nub install                                       # install deps + git hooks
 ## Develop
 
 ```sh
-nub run dev        # build assets + watch + wrangler dev (http://localhost:8787)
+nub run dev        # build + watch + wrangler dev --live-reload (http://localhost:8787)
 nub run build      # build public/app.css + public/js/*.js
 nub run deploy     # build, then wrangler deploy --minify
 nub run preview    # build, then wrangler dev

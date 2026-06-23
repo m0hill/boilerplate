@@ -60,9 +60,9 @@ Add a page: create `src/pages/<name>/<name>.tsx` exporting a Hono sub-app, then 
 
 ## Commands
 
-- `nub run dev` — build assets, then watch Tailwind + esbuild client bundles + `wrangler dev`
-  (local Workers runtime on http://localhost:8787). wrangler hot-reloads the worker on save;
-  refresh the browser manually.
+- `nub run dev` — build assets, then watch Tailwind + esbuild client bundles + wrangler dev
+  (`--live-reload`) on http://localhost:8787. wrangler hot-reloads the worker and auto-refreshes
+  the browser on change.
 - `nub run build` — build minified `public/app.css` + `public/js/*.js`.
 - `nub run deploy` — build, then `wrangler deploy --minify`. `nub run preview` runs `wrangler dev`.
 - `nub run cf-typegen` — regenerate `worker-configuration.d.ts` after editing `wrangler.jsonc`.

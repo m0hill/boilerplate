@@ -10,9 +10,14 @@
   toolchain; the app _runs_ on the Workers runtime.
 - **Hypermedia**: [Datastar](https://data-star.dev/) + `datastar-kit` for server-rendered TSX,
   `reply.*` responses, signals, and SSE patches. HTTP framework is **Hono**.
-- **Validation**: [zod](https://zod.dev/) — parse incoming signals from `read.signals(...)` and
-  return field errors via `reply.signals(...)` or `event.signals(...)` inside a stream when an
-  element patch is also needed. See `src/pages/home/home.tsx`.
+- **Core & validation**: [Effect](https://effect.website/) is the functional core. I/O lives in
+  Effects with typed (tagged) errors (`src/pages/home/github.ts`); validation uses Effect `Schema`
+  (`Schema.decodeUnknownEffect`) instead of zod. Route handlers are the imperative shell: they run
+  programs with `runtime.runPromise(...)` (`src/runtime.ts`, which provides a `fetch`-based
+  `HttpClient` via `FetchHttpClient.layer`), branch on the `Result`, and return field errors via
+  `reply.signals(...)` or `event.signals(...)` inside a stream when an element patch is also needed.
+  See `src/pages/home/home.tsx`. `FetchHttpClient` keeps the same code running on workerd and the
+  Workers test pool — don't reach for Node/Bun platform HTTP clients in worker code.
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) via the standalone CLI (zero runtime).
   `src/styles.css` is the entry; the CLI builds `public/app.css`, served from `assets` at `/app.css`.
 - **Client islands**: [esbuild](https://esbuild.github.io/) bundles `src/client/<name>.ts` →

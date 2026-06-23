@@ -1,10 +1,13 @@
 import { Hono } from "hono"
-import { z } from "zod"
+import { Effect, Result, Schema } from "effect"
 import { event, mod, post, read, reply, state } from "datastar-kit"
 import type { AppEnv } from "../../app-env.js"
 import { SITE_TITLE } from "../../constants.js"
+import { runtime } from "../../runtime.js"
 import { pageHead } from "../../ui/head.js"
-import { fetchRepoStats, RepoNotFoundError, type Repo } from "./github.js"
+import { fetchRepoStats, GitHubUnavailableError, type Repo } from "./github.js"
+
+const invalidRepoMessage = "Use the owner/repo format, e.g. mswjs/cloudflare"
 
 const defaultCompareRepos: readonly string[] = []
 const maxCompareRepos = 4
@@ -18,18 +21,17 @@ const lookupForm = state({
   },
 })
 
-const RepoName = z
-  .string()
-  .trim()
-  .regex(/^[\w.-]+\/[\w.-]+$/, "Use the owner/repo format, e.g. mswjs/cloudflare")
+const RepoName = Schema.Trim.check(Schema.isPattern(/^[\w.-]+\/[\w.-]+$/))
 
-const RepoSignals = z.object({
+const RepoSignals = Schema.Struct({
   repo: RepoName,
 })
 
-const CompareBoardSignals = z.object({
+const CompareBoardSignals = Schema.Struct({
   repo: RepoName,
-  compareRepos: z.array(RepoName).max(maxCompareRepos).default([]),
+  compareRepos: Schema.optionalKey(
+    Schema.Array(RepoName).check(Schema.isMaxLength(maxCompareRepos)),
+  ),
 })
 
 const formatCount = (value: number): string => value.toLocaleString()
@@ -173,17 +175,17 @@ const repoParts = (
   return { owner, repo }
 }
 
-const fetchRepoByName = async (fullName: string): Promise<Repo> => {
+const fetchRepoByName = (fullName: string) => {
   const parts = repoParts(fullName)
   if (parts === undefined) {
-    throw new Error(`Invalid repository name: ${fullName}`)
+    return Effect.fail(new GitHubUnavailableError({ reason: "invalid_name" }))
   }
 
   return fetchRepoStats(parts.owner, parts.repo)
 }
 
-const fetchCompareRepos = async (repoNames: readonly string[]): Promise<readonly Repo[]> =>
-  Promise.all(repoNames.map(fetchRepoByName))
+const fetchCompareRepos = (repoNames: readonly string[]) =>
+  Effect.all(repoNames.map(fetchRepoByName), { concurrency: "unbounded" })
 
 const home: Hono<AppEnv> = new Hono<AppEnv>()
 
@@ -235,112 +237,135 @@ home.get("/", (c) => {
   )
 })
 
-home.post("/lookup", async (c) => {
-  const log = c.get("log")
-  const result = RepoSignals.safeParse(await read.signals(c.req.raw))
+home.post("/lookup", (c) =>
+  runtime.runPromise(
+    Effect.gen(function* () {
+      const log = c.get("log")
+      const signals = yield* Effect.promise(() => read.signals(c.req.raw))
+      const parsed = yield* Effect.result(Schema.decodeUnknownEffect(RepoSignals)(signals))
 
-  if (!result.success) {
-    const { fieldErrors } = z.flattenError(result.error)
-    const message = fieldErrors.repo?.[0] ?? "Invalid repository."
-    log.set({ lookup: { ok: false, reason: "invalid_repo" } })
-    return reply.stream([
-      event.signals(lookupForm.patch({ errors: { repo: message } })),
-      event.patch(<LookupResult />),
-    ])
-  }
+      const invalid = (): Response => {
+        log.set({ lookup: { ok: false, reason: "invalid_repo" } })
+        return reply.stream([
+          event.signals(lookupForm.patch({ errors: { repo: invalidRepoMessage } })),
+          event.patch(<LookupResult />),
+        ])
+      }
 
-  const parts = repoParts(result.data.repo)
-  if (parts === undefined) {
-    log.set({ lookup: { ok: false, reason: "invalid_repo" } })
-    return reply.stream([
-      event.signals(lookupForm.patch({ errors: { repo: "Use the owner/repo format." } })),
-      event.patch(<LookupResult />),
-    ])
-  }
+      if (Result.isFailure(parsed)) return invalid()
 
-  try {
-    const found = await fetchRepoStats(parts.owner, parts.repo)
-    log.set({ lookup: { ok: true, repo: found.fullName, stars: found.stars } })
-    return reply.stream([
-      event.signals(lookupForm.patch({ errors: { repo: "" } })),
-      event.patch(<LookupResult result={found} />),
-    ])
-  } catch (error) {
-    const message =
-      error instanceof RepoNotFoundError ? error.message : "Could not reach GitHub. Try again."
-    log.set({ lookup: { ok: false, reason: "fetch_failed" } })
-    return reply.stream([
-      event.signals(lookupForm.patch({ errors: { repo: message } })),
-      event.patch(<LookupResult />),
-    ])
-  }
-})
+      const parts = repoParts(parsed.success.repo)
+      if (parts === undefined) return invalid()
 
-home.post("/compare/add", async (c) => {
-  const log = c.get("log")
-  const result = CompareBoardSignals.safeParse(await read.signals(c.req.raw))
+      const found = yield* Effect.result(fetchRepoStats(parts.owner, parts.repo))
+      if (Result.isFailure(found)) {
+        const error = found.failure
+        const message =
+          error._tag === "RepoNotFoundError"
+            ? `Repository ${error.owner}/${error.repo} not found`
+            : "Could not reach GitHub. Try again."
+        log.set({ lookup: { ok: false, reason: "fetch_failed" } })
+        return reply.stream([
+          event.signals(lookupForm.patch({ errors: { repo: message } })),
+          event.patch(<LookupResult />),
+        ])
+      }
 
-  if (!result.success) {
-    log.set({ compare: { ok: false, reason: "invalid_repo" } })
-    return reply.signals(
-      lookupForm.patch({ errors: { compare: "Choose a valid repository to compare." } }),
-    )
-  }
+      log.set({ lookup: { ok: true, repo: found.success.fullName, stars: found.success.stars } })
+      return reply.stream([
+        event.signals(lookupForm.patch({ errors: { repo: "" } })),
+        event.patch(<LookupResult result={found.success} />),
+      ])
+    }),
+  ),
+)
 
-  const repoNames = uniqueRepoNames([...result.data.compareRepos, result.data.repo])
-  if (repoNames.length > maxCompareRepos) {
-    log.set({ compare: { ok: false, reason: "too_many_repos" } })
-    return reply.signals(
-      lookupForm.patch({ errors: { compare: `Compare up to ${maxCompareRepos} repositories.` } }),
-    )
-  }
+home.post("/compare/add", (c) =>
+  runtime.runPromise(
+    Effect.gen(function* () {
+      const log = c.get("log")
+      const signals = yield* Effect.promise(() => read.signals(c.req.raw))
+      const parsed = yield* Effect.result(Schema.decodeUnknownEffect(CompareBoardSignals)(signals))
 
-  try {
-    const repos = await fetchCompareRepos(repoNames)
-    const compareRepos = repos.map((repo) => repo.fullName)
-    log.set({ compare: { ok: true, repos: compareRepos.length } })
-    return reply.stream([
-      event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
-      event.patch(<CompareBoard repos={repos} />),
-    ])
-  } catch {
-    log.set({ compare: { ok: false, reason: "fetch_failed" } })
-    return reply.signals(
-      lookupForm.patch({ errors: { compare: "Could not refresh the compare board. Try again." } }),
-    )
-  }
-})
+      if (Result.isFailure(parsed)) {
+        log.set({ compare: { ok: false, reason: "invalid_repo" } })
+        return reply.signals(
+          lookupForm.patch({ errors: { compare: "Choose a valid repository to compare." } }),
+        )
+      }
 
-home.post("/compare/remove", async (c) => {
-  const log = c.get("log")
-  const result = CompareBoardSignals.safeParse(await read.signals(c.req.raw))
+      const repoNames = uniqueRepoNames([
+        ...(parsed.success.compareRepos ?? []),
+        parsed.success.repo,
+      ])
+      if (repoNames.length > maxCompareRepos) {
+        log.set({ compare: { ok: false, reason: "too_many_repos" } })
+        return reply.signals(
+          lookupForm.patch({
+            errors: { compare: `Compare up to ${maxCompareRepos} repositories.` },
+          }),
+        )
+      }
 
-  if (!result.success) {
-    log.set({ compare: { ok: false, reason: "invalid_repo" } })
-    return reply.signals(
-      lookupForm.patch({ errors: { compare: "Choose a valid repository to remove." } }),
-    )
-  }
+      const result = yield* Effect.result(fetchCompareRepos(repoNames))
+      if (Result.isFailure(result)) {
+        log.set({ compare: { ok: false, reason: "fetch_failed" } })
+        return reply.signals(
+          lookupForm.patch({
+            errors: { compare: "Could not refresh the compare board. Try again." },
+          }),
+        )
+      }
 
-  const removedKey = result.data.repo.toLowerCase()
-  const repoNames = uniqueRepoNames(result.data.compareRepos).filter(
-    (repoName) => repoName.toLowerCase() !== removedKey,
-  )
+      const repos = result.success
+      const compareRepos = repos.map((repo) => repo.fullName)
+      log.set({ compare: { ok: true, repos: compareRepos.length } })
+      return reply.stream([
+        event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
+        event.patch(<CompareBoard repos={repos} />),
+      ])
+    }),
+  ),
+)
 
-  try {
-    const repos = await fetchCompareRepos(repoNames)
-    const compareRepos = repos.map((repo) => repo.fullName)
-    log.set({ compare: { ok: true, repos: compareRepos.length } })
-    return reply.stream([
-      event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
-      event.patch(<CompareBoard repos={repos} />),
-    ])
-  } catch {
-    log.set({ compare: { ok: false, reason: "fetch_failed" } })
-    return reply.signals(
-      lookupForm.patch({ errors: { compare: "Could not refresh the compare board. Try again." } }),
-    )
-  }
-})
+home.post("/compare/remove", (c) =>
+  runtime.runPromise(
+    Effect.gen(function* () {
+      const log = c.get("log")
+      const signals = yield* Effect.promise(() => read.signals(c.req.raw))
+      const parsed = yield* Effect.result(Schema.decodeUnknownEffect(CompareBoardSignals)(signals))
+
+      if (Result.isFailure(parsed)) {
+        log.set({ compare: { ok: false, reason: "invalid_repo" } })
+        return reply.signals(
+          lookupForm.patch({ errors: { compare: "Choose a valid repository to remove." } }),
+        )
+      }
+
+      const removedKey = parsed.success.repo.toLowerCase()
+      const repoNames = uniqueRepoNames(parsed.success.compareRepos ?? []).filter(
+        (repoName) => repoName.toLowerCase() !== removedKey,
+      )
+
+      const result = yield* Effect.result(fetchCompareRepos(repoNames))
+      if (Result.isFailure(result)) {
+        log.set({ compare: { ok: false, reason: "fetch_failed" } })
+        return reply.signals(
+          lookupForm.patch({
+            errors: { compare: "Could not refresh the compare board. Try again." },
+          }),
+        )
+      }
+
+      const repos = result.success
+      const compareRepos = repos.map((repo) => repo.fullName)
+      log.set({ compare: { ok: true, repos: compareRepos.length } })
+      return reply.stream([
+        event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
+        event.patch(<CompareBoard repos={repos} />),
+      ])
+    }),
+  ),
+)
 
 export default home

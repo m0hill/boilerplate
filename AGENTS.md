@@ -21,8 +21,10 @@ This root file is the index. Before changing an area, read the matching guide in
   `@hono/node-server`) into worker code; Node is fine in `scripts/` and tests.
 - Keep the app hypermedia-driven: server-render TSX, Datastar signals/actions, SSE patches, and
   tiny client islands only when `data-*` behavior cannot express the interaction.
-- Validate untrusted input at the boundary with zod and `safeParse`; return signal patches instead
-  of throwing for user-fixable input errors.
+- Validate untrusted input at the boundary with Effect `Schema` (`Schema.decodeUnknownEffect`);
+  model expected failures as tagged errors in the Effect's error channel and return signal patches
+  instead of throwing for user-fixable input errors. Run Effects at the route boundary with
+  `runtime.runPromise(...)` (see `src/runtime.ts`).
 - Tests should drive real seams: `app.fetch(request("/..."))` for server behavior, MSW only for
   external HTTP, Playwright only for browser/client-island behavior.
 - Strict TypeScript is on. Avoid `any`, non-null assertions, and `as Type` casts (`as const` is

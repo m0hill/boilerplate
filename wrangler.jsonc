@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "boilerplate",
+  "main": "src/server.tsx",
+  "compatibility_date": "2026-05-22",
+  "assets": {
+    "directory": "./public",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

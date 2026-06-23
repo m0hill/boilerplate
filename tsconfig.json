@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "esnext",
-    "lib": ["esnext"],
-    "types": ["node"],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": [],
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "strict": true,
@@ -18,8 +16,9 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "allowJs": false,
-    "checkJs": false
+    "checkJs": false,
+    "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts"],
-  "exclude": ["node_modules", "repos", "public", "src/client"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "worker-configuration.d.ts"],
+  "exclude": ["node_modules", "repos", "public", "src/client", "scripts"]
 }

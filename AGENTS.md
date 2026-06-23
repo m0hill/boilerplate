@@ -4,56 +4,72 @@ Node + TypeScript boilerplate for hypermedia-driven apps.
 
 ## Stack
 
-- **Runtime / toolchain**: [nub](https://nubjs.com/) — runs `.ts`/`.tsx` directly on Node, manages
-  scripts (`nub run`), packages (`nubx`), installs, and the Node version (`.node-version`).
+- **Deploy target**: [Cloudflare Workers](https://workers.cloudflare.com/) (via `wrangler`).
+  `src/server.tsx` is the worker entry (`export default app`). Static files come from the
+  `assets` binding in `wrangler.jsonc`, not from a server route.
+- **Toolchain**: [nub](https://nubjs.com/) — runs `.ts`/`.tsx`, manages scripts (`nub run`),
+  packages (`nubx`), installs, and the Node version (`.node-version`). Node is the _build/dev_
+  toolchain; the app _runs_ on the Workers runtime.
 - **Hypermedia**: [Datastar](https://data-star.dev/) + `datastar-kit` for server-rendered TSX,
   `reply.*` responses, signals, and SSE patches. HTTP framework is **Hono**.
 - **Validation**: [zod](https://zod.dev/) — parse incoming signals from `read.signals(...)` and
   return field errors via `reply.signals(...)`. See `src/pages/home/home.tsx`.
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) via the standalone CLI (zero runtime).
-  `src/styles.css` is the entry; the CLI builds `public/app.css`, which Hono serves at `/app.css`.
+  `src/styles.css` is the entry; the CLI builds `public/app.css`, served from `assets` at `/app.css`.
 - **Client islands**: [esbuild](https://esbuild.github.io/) bundles `src/client/<name>.ts` →
   `public/js/<name>.js`. Reference one from a view with `clientScript("name")`. Use only for
   behavior `data-*` attributes can't express — keep most interactivity server-driven.
 - **Lint / format**: `oxlint` (type-aware) and `oxfmt`.
-- **Tests**: `vitest` — drive the Hono app directly with `app.fetch(new Request(...))`, no port/browser.
+- **Tests**: `vitest` — drive the app directly with `app.fetch(new Request(...))`, no port/runtime.
 - **Hooks**: `simple-git-hooks` + `lint-staged` (pre-commit lints & formats staged files).
+
+There is no `process.env` on Workers — env comes from bindings (typed in `worker-configuration.d.ts`,
+regenerate with `nub run cf-typegen`). Don't reintroduce Node APIs (`fs`, `process`, `@hono/node-server`)
+into worker code; Node is fine in `scripts/` and tests.
 
 ## Layout
 
 Page-based MPA. `server.tsx` assembles the app; each page is a self-contained Hono sub-app
 mounted under its URL prefix with `app.route(prefix, page)`.
 
-- `src/index.tsx` — Node entry: imports `app` and calls `serve`.
-- `src/server.tsx` — assembles `app`: mounts page sub-apps, static files, dev live-reload, notFound.
+- `src/server.tsx` — worker entry: assembles `app` (mounts page sub-apps + notFound) and
+  `export default app`.
+- `wrangler.jsonc` — Workers config (`main`, `compatibility_date`, `assets.directory`).
+- `worker-configuration.d.ts` — generated binding/runtime types (committed; `nub run cf-typegen`).
 - `src/constants.ts` — shared constants (Datastar runtime URL, site title).
 - `src/pages/<name>/` — one folder per page: a Hono sub-app (`export default`) with its colocated
   views and `*.test.ts`. `src/pages/home/` is the counter demo; `src/pages/not-found.ts` is the 404.
-- `src/ui/` — shared view helpers: `head.tsx` (`pageHead()`), `client-script.tsx` (`clientScript()`).
+- `src/ui/` — shared view helpers: `head.tsx` (`pageHead()` + `clientScript()`).
 - `src/client/*.ts` — browser islands; bundled to `public/js/*.js` (gitignored) by
-  `scripts/build-client.ts` (esbuild). Type-checked separately with DOM libs via `tsconfig.client.json`.
+  `scripts/build-client.ts` (esbuild). Type-checked separately with DOM libs via `src/client/tsconfig.json`.
 - `scripts/build-client.ts` — esbuild bundler. Uses esbuild's **JS API**, not its CLI: esbuild's
   `bin` is a native binary and nub's bin shim runs it through `node`, which crashes. Don't switch
   back to the `esbuild` CLI under nub.
-- `src/dev/live-reload.ts` — dev-only live-reload SSE endpoint; client is `public/livereload.js`.
-  Reloads on server restart _and_ on asset rebuild (it watches `public/`).
 - `src/test-utils.ts` — shared `request(...)` / `datastarPost(...)` helpers for tests.
 - `src/styles.css` — Tailwind entry; built to `public/app.css` (gitignored).
-- `public/` — static assets, served at the URL root via one `serveStatic({ root: "./public" })`
-  mounted after routes (handlers win; misses fall through to files, then 404).
+- `public/` — static assets directory served by the Workers `assets` binding. Build output
+  (`app.css`, `js/*`) is gitignored; hand-authored assets (favicon, etc.) are committed.
+
+Three tsconfigs, each in its own directory so editors pick the right one (they only look for the
+nearest `tsconfig.json` by name): `tsconfig.json` (worker/server, Workers libs),
+`src/client/tsconfig.json` (browser/DOM), `scripts/tsconfig.json` (Node, also covers
+`vitest.config.ts`). All three run in `typecheck`.
 
 Add a page: create `src/pages/<name>/<name>.tsx` exporting a Hono sub-app, then mount it in
-`server.tsx`. Tests import the assembled app from `server.js` so they exercise the real seam.
+`server.tsx`. Tests import the assembled app's `default` export from `server.js` (the real seam).
 
 ## Commands
 
-- `nub run dev` — watch Tailwind + the esbuild client bundle + the server (via `concurrently`).
-  Server auto-restarts on change; the browser auto-reloads via dev-only SSE live-reload (covering
-  both server restarts and client/CSS rebuilds).
-- `nub run build` — build minified `public/app.css` + `public/js/*.js` (also runs before `start`).
+- `nub run dev` — build assets, then watch Tailwind + esbuild client bundles + `wrangler dev`
+  (local Workers runtime on http://localhost:8787). wrangler hot-reloads the worker on save;
+  refresh the browser manually.
+- `nub run build` — build minified `public/app.css` + `public/js/*.js`.
+- `nub run deploy` — build, then `wrangler deploy --minify`. `nub run preview` runs `wrangler dev`.
+- `nub run cf-typegen` — regenerate `worker-configuration.d.ts` after editing `wrangler.jsonc`.
 - `nub run test` / `nub run test:watch` — vitest.
-- `nub run check` — typecheck + lint + format check + test. This is what CI runs
-  (`.github/workflows/ci.yml`: `nub ci` → `nub run build` → `nub run check`).
+- `nub run check` — typecheck (3 configs) + lint + format check + test. CI
+  (`.github/workflows/ci.yml`) runs `nub ci` → `nub run build` → `nub run check`.
+  Deploys are handled by Cloudflare Workers Builds (GitHub App), not CI — see README.
 - `nub run lint:fix` / `nub run format` — autofix.
 
 Packages with build scripts (esbuild, @parcel/watcher, simple-git-hooks) are allow-listed in

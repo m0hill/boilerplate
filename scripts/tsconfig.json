@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["esnext"],
+    "types": ["node"]
+  },
+  "include": ["**/*.ts", "../vitest.config.ts"],
+  "exclude": []
+}

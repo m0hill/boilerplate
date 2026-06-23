@@ -7,3 +7,4 @@ public/js/
 .env
 .env.*
 !.env.example
+.wrangler/

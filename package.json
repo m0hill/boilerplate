@@ -6,17 +6,18 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "src/index.tsx",
+  "main": "src/server.tsx",
   "scripts": {
-    "dev": "concurrently -k -n css,js,srv -c green,yellow,cyan \"nub run css:watch\" \"nub run client:watch\" \"nub watch src/index.tsx\"",
-    "start": "nub src/index.tsx",
-    "prestart": "nub run build",
+    "dev": "nub run build && concurrently -k -n css,js,cf -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"wrangler dev\"",
+    "preview": "nub run build && wrangler dev",
+    "deploy": "nub run build && wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "build": "nub run css:build && nub run client:build",
     "css:build": "tailwindcss -i ./src/styles.css -o ./public/app.css --minify",
     "css:watch": "tailwindcss -i ./src/styles.css -o ./public/app.css --watch",
     "client:build": "nub scripts/build-client.ts",
     "client:watch": "nub scripts/build-client.ts --watch",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.client.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p src/client/tsconfig.json && tsc --noEmit -p scripts/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "oxlint --type-aware --disable-nested-config",
@@ -27,7 +28,6 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
-    "@hono/node-server": "^2.0.3",
     "datastar-kit": "^0.4.0",
     "hono": "^4.12.19",
     "zod": "^4.4.3"
@@ -44,7 +44,8 @@
     "simple-git-hooks": "^2.13.1",
     "tailwindcss": "^4.1.0",
     "typescript": "^7.0.1-rc",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.14",
+    "wrangler": "^4.4.0"
   },
   "simple-git-hooks": {
     "pre-commit": "nubx lint-staged"

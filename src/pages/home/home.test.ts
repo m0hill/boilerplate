@@ -4,7 +4,7 @@ import { datastarPost, request } from "../../test-utils.js"
 
 const loadApp = async (): Promise<Hono> => {
   vi.resetModules()
-  return (await import("../../server.js")).app
+  return (await import("../../server.js")).default
 }
 
 describe("home page", () => {

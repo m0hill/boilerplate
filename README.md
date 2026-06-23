@@ -1,19 +1,20 @@
 # boilerplate
 
-A Node + TypeScript starter for hypermedia-driven apps.
+A TypeScript starter for hypermedia-driven apps on **Cloudflare Workers**.
 
-| Concern           | Tool                                                 |
-| ----------------- | ---------------------------------------------------- |
-| Runtime/toolchain | [nub](https://nubjs.com/) (runner, scripts, pm, nvm) |
-| Hypermedia        | [Datastar](https://data-star.dev/) + `datastar-kit`  |
-| HTTP framework    | [Hono](https://hono.dev/)                            |
-| Validation        | [zod](https://zod.dev/)                              |
-| Styling           | [Tailwind CSS v4](https://tailwindcss.com/) (CLI)    |
-| Client islands    | [esbuild](https://esbuild.github.io/) bundles        |
-| Lint              | `oxlint` (type-aware)                                |
-| Format            | `oxfmt` (no semicolons)                              |
-| Tests             | `vitest`                                             |
-| Git hooks         | `simple-git-hooks` + `lint-staged`                   |
+| Concern        | Tool                                                               |
+| -------------- | ------------------------------------------------------------------ |
+| Deploy target  | [Cloudflare Workers](https://workers.cloudflare.com/) (`wrangler`) |
+| Toolchain      | [nub](https://nubjs.com/) (runner, scripts, pm, nvm)               |
+| Hypermedia     | [Datastar](https://data-star.dev/) + `datastar-kit`                |
+| HTTP framework | [Hono](https://hono.dev/)                                          |
+| Validation     | [zod](https://zod.dev/)                                            |
+| Styling        | [Tailwind CSS v4](https://tailwindcss.com/) (CLI)                  |
+| Client islands | [esbuild](https://esbuild.github.io/) bundles                      |
+| Lint           | `oxlint` (type-aware)                                              |
+| Format         | `oxfmt` (no semicolons)                                            |
+| Tests          | `vitest`                                                           |
+| Git hooks      | `simple-git-hooks` + `lint-staged`                                 |
 
 ## Setup
 
@@ -25,35 +26,46 @@ nub install                                       # install deps + git hooks
 ## Develop
 
 ```sh
-nub run dev        # watch Tailwind + client bundles + serve on http://localhost:3000
-nub run build      # build minified public/app.css + public/js/*.js for production
+nub run dev        # build assets + watch + wrangler dev (http://localhost:8787)
+nub run build      # build public/app.css + public/js/*.js
+nub run deploy     # build, then wrangler deploy --minify
+nub run preview    # build, then wrangler dev
+nub run cf-typegen # regenerate worker-configuration.d.ts after editing wrangler.jsonc
 nub run test       # vitest (use test:watch for watch mode)
-nub run check      # typecheck + lint + format check + test
-nub run lint:fix   # autofix lint
-nub run format     # autoformat
+nub run check      # typecheck (3 configs) + lint + format check + test
 ```
-
-Set `PORT` to change the listen port.
 
 ## Layout
 
-Page-based MPA — `server.tsx` mounts page sub-apps with `app.route(prefix, page)`:
+Page-based MPA on Workers — `server.tsx` is the worker entry and mounts page sub-apps with
+`app.route(prefix, page)`:
 
-- `src/index.tsx` — Node entry: serves `app`.
-- `src/server.tsx` — assembles the app (pages + static + dev live-reload + 404).
+- `src/server.tsx` — worker entry (`export default app`).
+- `wrangler.jsonc` — Workers config; static files come from `assets.directory` (`./public`).
 - `src/pages/<name>/` — one folder per page (Hono sub-app + views + colocated test).
   `home/` is the counter demo.
 - `src/ui/` — shared view helpers (`pageHead`, `clientScript`).
 - `src/client/*.ts` — browser islands, bundled by esbuild to `public/js/`. Use sparingly —
   keep interactivity server-driven where possible.
-- `src/dev/live-reload.ts`, `src/constants.ts`, `src/test-utils.ts`, `src/styles.css`.
+- `src/constants.ts`, `src/test-utils.ts`, `src/styles.css`.
 - `repos/` — vendored reference repos (git subtree, read-only). See `AGENTS.md`.
 - `AGENTS.md` — guidance for AI agents and contributors.
 
 A pre-commit hook runs `lint-staged` (oxlint --fix + oxfmt) on staged files.
 
-## CI
+## CI / CD
 
-`.github/workflows/ci.yml` runs on every push to `main` and on pull requests: it installs nub,
-runs `nub ci` (strict install from `lock.yaml`), `nub run build`, then `nub run check`
-(typecheck + lint + format + test).
+**CI** — `.github/workflows/ci.yml` runs on every push and PR: installs nub, `nub ci`,
+`nub run build`, then `nub run check` (typecheck + lint + format + test).
+
+**CD** — handled by [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)
+(the GitHub App), which auto-deploys on push and adds PR preview URLs — no GitHub secret needed.
+One-time setup in the Cloudflare dashboard → **Workers & Pages → your Worker → Settings → Builds →
+Connect repo**, then set:
+
+- **Build command:** `curl -fsSL https://nubjs.com/install.sh | bash && export PATH="$HOME/.nub/bin:$PATH" && nub ci && nub run build`
+- **Deploy command:** `npx wrangler deploy` (the default)
+
+(nub isn't auto-detected from `lock.yaml`, so the build command bootstraps it explicitly.)
+
+To deploy manually instead: `nubx wrangler login` once, then `nub run deploy`.

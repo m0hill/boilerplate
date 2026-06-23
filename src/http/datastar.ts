@@ -12,17 +12,8 @@ export const decodeSignals = <S extends Schema.Top>(
   request: HttpServerRequest.HttpServerRequest,
   schema: S,
 ): Effect.Effect<S["Type"], InvalidSignalsError, S["DecodingServices"]> =>
-  HttpServerRequest.toWeb(request).pipe(
-    Effect.mapError((cause) => new InvalidSignalsError({ cause })),
-    Effect.flatMap((webRequest) =>
-      Effect.tryPromise({
-        try: () => read.signals(webRequest),
-        catch: (cause) => new InvalidSignalsError({ cause }),
-      }),
-    ),
-    Effect.flatMap((signals) =>
-      Schema.decodeUnknownEffect(schema)(signals).pipe(
-        Effect.mapError((cause) => new InvalidSignalsError({ cause })),
-      ),
-    ),
-  )
+  Effect.gen(function* () {
+    const webRequest = yield* HttpServerRequest.toWeb(request)
+    const signals = yield* Effect.tryPromise(() => read.signals(webRequest))
+    return yield* Schema.decodeUnknownEffect(schema)(signals)
+  }).pipe(Effect.mapError((cause) => new InvalidSignalsError({ cause })))

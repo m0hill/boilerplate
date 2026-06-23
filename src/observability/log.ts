@@ -380,22 +380,22 @@ function safeStringify(value: unknown): string {
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) return String(value)
-  if (typeof value === "string") return value
+  if (typeof value === "string") return JSON.stringify(value)
   if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
     return String(value)
   }
+
+  if (Array.isArray(value)) {
+    return `[${value.map(formatValue).join(", ")}]`
+  }
+
   if (!isPlainObject(value)) return safeStringify(value)
 
-  const parts: string[] = []
-  for (const [key, childValue] of Object.entries(value)) {
-    if (childValue === undefined || childValue === null) continue
-    const rendered =
-      isPlainObject(childValue) || Array.isArray(childValue)
-        ? safeStringify(childValue)
-        : formatValue(childValue)
-    parts.push(`${key}=${rendered}`)
-  }
-  return parts.join(" ")
+  const parts = Object.entries(value)
+    .filter(([, childValue]) => childValue !== undefined && childValue !== null)
+    .map(([key, childValue]) => `${key}: ${formatValue(childValue)}`)
+
+  return `{ ${parts.join(", ")} }`
 }
 
 function errorEntry(error: unknown): PrettyEntry {
@@ -403,7 +403,7 @@ function errorEntry(error: unknown): PrettyEntry {
 
   const name = typeof error.name === "string" ? error.name : "Error"
   const message = typeof error.message === "string" ? error.message : formatValue(error)
-  const value = name === "Error" ? message : `${name}: ${message}`
+  const value = name === "Error" ? formatValue(message) : `${name}: ${formatValue(message)}`
   const children: string[] = []
 
   for (const key of ["code", "status", "statusCode"] as const) {

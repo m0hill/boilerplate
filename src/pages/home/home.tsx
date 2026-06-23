@@ -81,7 +81,7 @@ home.post("/increment", async (c) => {
 
   if (!result.success) {
     const { fieldErrors } = z.flattenError(result.error)
-    log.warn("Invalid counter step", { counter: { accepted: false } })
+    log.set({ counter: { accepted: false, reason: "invalid_step" } })
     return reply.signals(
       counterForm.patch({ errors: { step: fieldErrors.step?.[0] ?? "Invalid step." } }),
     )

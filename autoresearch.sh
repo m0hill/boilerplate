@@ -78,7 +78,18 @@ route_effect_constants = len(
 )
 route_noise_score = raw_datastar_wrappers * 2 + route_effect_constants
 
+# Phase 3 score: expected failures should carry structured context rather
+# than stringly-typed reason blobs such as `status_500`.
+string_reason_errors = len(
+    re.findall(r"class\s+[A-Za-z0-9]+Error[\s\S]{0,260}?reason:\s*Schema\.String", combined)
+)
+status_string_reasons = combined.count("status_${")
+error_model_score = string_reason_errors * 2 + status_string_reasons
+
 metrics = {
+    "error_model_score": error_model_score,
+    "string_reason_errors": string_reason_errors,
+    "status_string_reasons": status_string_reasons,
     "route_noise_score": route_noise_score,
     "raw_datastar_wrappers": raw_datastar_wrappers,
     "route_effect_constants": route_effect_constants,

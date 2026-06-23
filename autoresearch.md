@@ -8,8 +8,11 @@ The target is not raw speed. The target is Effect architecture quality with auto
 
 ## Metrics
 
-- **Primary (phase 2)**: `route_noise_score` (unitless, lower is better) — repeated protocol-adapter ceremony in route modules. It weights raw Datastar response wrapping and unnamed route `Effect.gen` constants.
+- **Primary (phase 3)**: `error_model_score` (unitless, lower is better) — stringly-typed expected-failure context. It weights broad `reason: Schema.String` fields and dynamic `status_${code}` reason strings.
 - **Secondary**:
+  - `string_reason_errors` — tagged errors whose reason is any string instead of a closed union/structured fields.
+  - `status_string_reasons` — status codes encoded into a reason string rather than a numeric field.
+  - `route_noise_score` — phase 2 route readability score; should stay at zero.
   - `raw_datastar_wrappers` — `HttpServerResponse.raw(...)` call sites that should usually be centralized in the Datastar HTTP boundary.
   - `route_effect_constants` — route-level `Effect.gen(function*)` constants; prefer named `Effect.fn(...)` when the effect represents a handler/workflow and benefits from tracing.
   - `effect_audit_score` — phase 1 coarse Effect anti-pattern score; should stay at zero.
@@ -80,3 +83,8 @@ The target is not raw speed. The target is Effect architecture quality with auto
 - The audit script was refined after those refactors so direct platform lookup is only counted when
   it appears outside `Context.Service` modules; service/layer implementations are the intended
   adapter boundary.
+- Kept: centralized Datastar `reply.*` → `HttpServerResponse.raw(...)` wrapping in `src/http/datastar.ts`
+  and named the remaining route handler effects with `Effect.fn(...)`, bringing `route_noise_score`
+  to zero.
+- Phase 3 now targets stringly-typed expected failures, starting with GitHub's broad
+  `GitHubUnavailableError.reason: string` and dynamic `status_${code}` reason.

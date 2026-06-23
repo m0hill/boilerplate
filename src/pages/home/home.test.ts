@@ -1,8 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { http, HttpResponse } from "msw"
 import { setupNetwork } from "@msw/cloudflare"
-import type { Hono } from "hono"
-import type { AppEnv } from "../../app-env.js"
+import { env } from "cloudflare:test"
 import { datastarPost, request } from "../../test-utils.js"
 
 const network = setupNetwork()
@@ -11,9 +10,12 @@ beforeAll(() => network.enable())
 afterEach(() => network.resetHandlers())
 afterAll(() => network.disable())
 
-const loadApp = async (): Promise<Hono<AppEnv>> => {
+type WebHandler = { fetch: (request: Request) => Promise<Response> }
+
+const loadApp = async (): Promise<WebHandler> => {
   vi.resetModules()
-  return (await import("../../server.js")).default
+  const app = (await import("../../server.js")).default
+  return { fetch: (request) => app.fetch(request, env) }
 }
 
 type GitHubRepoBody = Record<string, unknown>

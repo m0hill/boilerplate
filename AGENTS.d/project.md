@@ -3,21 +3,28 @@
 ## Stack
 
 - **Deploy target**: [Cloudflare Workers](https://workers.cloudflare.com/) (via `wrangler`).
-  `src/server.tsx` is the worker entry (`export default app`). Static files come from the
+  `src/server.tsx` is the worker entry (`export default { fetch }`, a Web handler built from an
+  Effect `HttpRouter` via `HttpRouter.toWebHandler`). Static files come from the
   `assets` binding in `wrangler.jsonc`, not from a server route.
 - **Toolchain**: [nub](https://nubjs.com/) — runs `.ts`/`.tsx`, manages scripts (`nub run`),
   packages (`nubx`), installs, and the Node version (`.node-version`). Node is the _build/dev_
   toolchain; the app _runs_ on the Workers runtime.
 - **Hypermedia**: [Datastar](https://data-star.dev/) + `datastar-kit` for server-rendered TSX,
-  `reply.*` responses, signals, and SSE patches. HTTP framework is **Hono**.
-- **Core & validation**: [Effect](https://effect.website/) is the functional core. I/O lives in
-  Effects with typed (tagged) errors (`src/pages/home/github.ts`); validation uses Effect `Schema`
-  (`Schema.decodeUnknownEffect`) instead of zod. Route handlers are the imperative shell: they run
-  programs with `runtime.runPromise(...)` (`src/runtime.ts`, which provides a `fetch`-based
-  `HttpClient` via `FetchHttpClient.layer`), branch on the `Result`, and return field errors via
-  `reply.signals(...)` or `event.signals(...)` inside a stream when an element patch is also needed.
-  See `src/pages/home/home.tsx`. `FetchHttpClient` keeps the same code running on workerd and the
-  Workers test pool — don't reach for Node/Bun platform HTTP clients in worker code.
+  `reply.*` responses, signals, and SSE patches. The HTTP layer is **Effect's `HttpRouter`**
+  (`effect/unstable/http`); route handlers return `HttpServerResponse.raw(datastarResponse)` to
+  pass datastar-kit's Web `Response` (including SSE streams) through untouched.
+- **Core & validation**: [Effect](https://effect.website/) is the functional core. Route handlers
+  are `Effect`s that return an `HttpServerResponse`; I/O lives in Effects with typed (tagged) errors
+  (`src/pages/home/github.ts`), and validation uses Effect `Schema` (`Schema.decodeUnknownEffect`)
+  instead of zod. Handlers parse signals, `Effect.result` the work, branch on the `Result`, and
+  return field errors via `reply.signals(...)`/`event.signals(...)` inside a stream when an element
+  patch is also needed. `HttpClient` is supplied once at the app boundary with
+  `HttpRouter.provideRequest(FetchHttpClient.layer)` in `src/server.tsx`; `FetchHttpClient` keeps the
+  same code running on workerd and the Workers test pool — don't reach for Node/Bun platform HTTP
+  clients in worker code. Request logging is Effect's built-in router logger; attach domain fields
+  with `Effect.annotateLogsScoped(...)`. A page folder splits into `form.ts` (signals + `Schema`),
+  `repos.ts` (domain helpers), `github.ts` (HTTP/Schema fetch), `views.tsx` (TSX), and `home.tsx`
+  (route handlers + the exported `homeRoutes` layer).
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) via the standalone CLI (zero runtime).
   `src/styles.css` is the entry; the CLI builds `public/app.css`, served from `assets` at `/app.css`.
 - **Client islands**: [esbuild](https://esbuild.github.io/) bundles `src/client/<name>.ts` →
@@ -33,23 +40,31 @@
 - **Hooks**: `simple-git-hooks` + `lint-staged` (pre-commit lints & formats staged files).
 
 There is no `process.env` on Workers — env comes from bindings (typed in `worker-configuration.d.ts`,
-regenerate with `nub run cf-typegen`). Don't reintroduce Node APIs (`fs`, `process`, `@hono/node-server`)
-into worker code; Node is fine in `scripts/` and tests.
+regenerate with `nub run cf-typegen` after editing `wrangler.jsonc`). Bindings reach Effect handlers
+through the `CloudflareEnv` service (`src/cloudflare-env.ts`): `server.tsx`'s `fetch(request, env)`
+passes `Context.make(CloudflareEnv, env)` as the per-request context, and a handler reads a binding
+with `const { COUNTER_KV } = yield* CloudflareEnv`. The Workers test pool and `wrangler dev` supply
+local bindings, so a KV/D1/etc. demo runs the same in tests (`import { env } from "cloudflare:test"`).
+Don't reintroduce Node APIs (`fs`, `process`, `@hono/node-server`) into worker code; Node is fine in
+`scripts/` and tests.
 
 ## Layout
 
-Page-based MPA. `server.tsx` assembles the app; each page is a self-contained Hono sub-app
-mounted under its URL prefix with `app.route(prefix, page)`.
+Page-based MPA. `server.tsx` assembles the app; each page exports a `homeRoutes`-style `Layer` of
+`HttpRouter.add(method, path, handler)` routes, merged into one router.
 
-- `src/server.tsx` — worker entry: assembles `app` (mounts page sub-apps + notFound) and
-  `export default app`.
+- `src/server.tsx` — worker entry: merges page route layers + the not-found route, provides
+  `FetchHttpClient` and the logger, and `export default { fetch }` from `HttpRouter.toWebHandler`.
 - `wrangler.jsonc` — Workers config (`main`, `compatibility_date`, `assets.directory`).
 - `worker-configuration.d.ts` — generated binding/runtime types (committed; `nub run cf-typegen`).
 - `src/constants.ts` — shared constants (Datastar runtime URL, site title).
-- `src/pages/<name>/` — one folder per page: a Hono sub-app (`export default`) with its colocated
-  views and `*.test.ts`. Add a local README only when the page/feature has domain vocabulary or
-  workflow rules that are not obvious from the tests. `src/pages/home/` is the GitHub repo-lookup
-  demo (form → external fetch → SSE patch); `src/pages/not-found.ts` is the 404.
+- `src/pages/<name>/` — one folder per page: a route-layer module (`export const <name>Routes`)
+  plus its colocated `form.ts`/`repos.ts`/`github.ts`/`views.tsx` and `*.test.ts`. Add a local
+  README only when the page/feature has domain vocabulary or workflow rules that are not obvious
+  from the tests. `src/pages/home/` is the GitHub repo-lookup demo (form → external fetch → SSE
+  patch); `src/pages/counter/` is the KV-binding demo (`store.ts` wraps `COUNTER_KV` in Effects,
+  `counter.tsx` holds the routes); `src/pages/not-found.ts` is the catch-all 404 route.
+- `src/cloudflare-env.ts` — `CloudflareEnv` service exposing the per-request worker `env` bindings.
 - `src/ui/` — shared view helpers: `head.tsx` (`pageHead()` + `clientScript()`).
 - `src/client/*.ts` — browser islands; bundled to `public/js/*.js` (gitignored) by
   `scripts/build-client.ts` (esbuild). Type-checked separately with DOM libs via `src/client/tsconfig.json`.
@@ -66,8 +81,9 @@ nearest `tsconfig.json` by name): `tsconfig.json` (worker/server, Workers libs),
 `src/client/tsconfig.json` (browser/DOM), `scripts/tsconfig.json` (Node, also covers
 `vitest.config.ts` and `playwright.config.ts`). All three run in `typecheck`.
 
-Add a page: create `src/pages/<name>/<name>.tsx` exporting a Hono sub-app, then mount it in
-`server.tsx`. Tests import the assembled app's `default` export from `server.js` (the real seam).
+Add a page: create `src/pages/<name>/<name>.tsx` exporting a `Layer` of `HttpRouter.add(...)`
+routes, then merge it into the router in `server.tsx`. Tests import the assembled app's `default`
+export (`{ fetch }`) from `server.js` and call `app.fetch(request(...))` (the real seam).
 
 ## Commands
 

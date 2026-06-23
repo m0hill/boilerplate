@@ -21,10 +21,12 @@ This root file is the index. Before changing an area, read the matching guide in
   `@hono/node-server`) into worker code; Node is fine in `scripts/` and tests.
 - Keep the app hypermedia-driven: server-render TSX, Datastar signals/actions, SSE patches, and
   tiny client islands only when `data-*` behavior cannot express the interaction.
+- The HTTP layer is Effect's `HttpRouter` (`effect/unstable/http`); route handlers are `Effect`s
+  returning an `HttpServerResponse`, wired up in `src/server.tsx` via `HttpRouter.toWebHandler` →
+  `export default { fetch }`. Wrap datastar-kit responses with `HttpServerResponse.raw(...)`.
 - Validate untrusted input at the boundary with Effect `Schema` (`Schema.decodeUnknownEffect`);
   model expected failures as tagged errors in the Effect's error channel and return signal patches
-  instead of throwing for user-fixable input errors. Run Effects at the route boundary with
-  `runtime.runPromise(...)` (see `src/runtime.ts`).
+  instead of throwing for user-fixable input errors.
 - Tests should drive real seams: `app.fetch(request("/..."))` for server behavior, MSW only for
   external HTTP, Playwright only for browser/client-island behavior.
 - Strict TypeScript is on. Avoid `any`, non-null assertions, and `as Type` casts (`as const` is

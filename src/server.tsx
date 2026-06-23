@@ -1,17 +1,18 @@
-import { Hono } from "hono"
-import type { AppEnv } from "./app-env.js"
-import home from "./pages/home/home.js"
-import { initLog, logger } from "./observability/index.js"
-import { notFound } from "./pages/not-found.js"
+import { Context, Layer, Logger } from "effect"
+import { FetchHttpClient, HttpRouter } from "effect/unstable/http"
+import { CloudflareEnv } from "./cloudflare-env.js"
+import { counterRoutes } from "./pages/counter/counter.js"
+import { homeRoutes } from "./pages/home/home.js"
+import { notFoundRoute } from "./pages/not-found.js"
 
-initLog({ service: "boilerplate" })
+const AppLayer = Layer.mergeAll(homeRoutes, counterRoutes, notFoundRoute).pipe(
+  HttpRouter.provideRequest(FetchHttpClient.layer),
+  Layer.provide(Logger.layer([Logger.consoleJson])),
+)
 
-const app: Hono<AppEnv> = new Hono<AppEnv>()
+const { handler } = HttpRouter.toWebHandler(AppLayer)
 
-app.use(logger())
-
-app.route("/", home)
-
-app.notFound(notFound)
-
-export default app
+export default {
+  fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>
+    handler(request, Context.make(CloudflareEnv, env)),
+}

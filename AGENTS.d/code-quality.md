@@ -5,9 +5,10 @@
 - App is hypermedia-driven: render TSX on the server, return `reply.page(...)` for full documents
   and `reply.patch(...)` for focused updates. Avoid client-side state where a server patch works.
 - `jsxImportSource` is `datastar-kit` (see `tsconfig.json`) — JSX compiles to datastar-kit, not React.
-- Validate untrusted input (signals, params) with a zod schema and `safeParse`; surface failures as
-  signal patches (`reply.signals(...)` or `event.signals(...)`) rather than throwing.
-- Client islands must stay browser-only: do not import worker/server modules, Hono app wiring,
+- Validate untrusted input (signals, params) with an Effect `Schema` (`Schema.decodeUnknownEffect`);
+  surface failures as signal patches (`reply.signals(...)` or `event.signals(...)`) rather than
+  throwing.
+- Client islands must stay browser-only: do not import worker/server modules, router/route wiring,
   Cloudflare bindings, page modules, or persistence adapters into `src/client`. If that boundary
   becomes hard to review manually, add a small lint script instead of relying on convention.
 - If product vocabulary becomes non-trivial, add/update `CONTEXT.md` with a glossary and use that

@@ -6,6 +6,14 @@
   "assets": {
     "directory": "./public",
   },
+  // Run `wrangler kv namespace create COUNTER_KV` and paste the returned id before deploying.
+  // The Workers test pool and `wrangler dev` use a local KV namespace, so any id works there.
+  "kv_namespaces": [
+    {
+      "binding": "COUNTER_KV",
+      "id": "counter_kv_local_placeholder",
+    },
+  ],
   "observability": {
     "enabled": true,
     "logs": {

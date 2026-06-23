@@ -1,4 +1,8 @@
-import type { Context } from "hono"
-import type { AppEnv } from "../app-env.js"
+import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 
-export const notFound = (c: Context<AppEnv>): Response => c.text("Not Found", 404)
+/** Catch-all route returning a plain `404` for unmatched paths. */
+export const notFoundRoute = HttpRouter.add(
+  "*",
+  "/*",
+  HttpServerResponse.text("Not Found", { status: 404 }),
+)

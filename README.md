@@ -7,8 +7,8 @@ A TypeScript starter for hypermedia-driven apps on **Cloudflare Workers**.
 | Deploy target  | [Cloudflare Workers](https://workers.cloudflare.com/) (`wrangler`) |
 | Toolchain      | [nub](https://nubjs.com/) (runner, scripts, pm, nvm)               |
 | Hypermedia     | [Datastar](https://data-star.dev/) + `datastar-kit`                |
-| HTTP framework | [Hono](https://hono.dev/)                                          |
-| Validation     | [zod](https://zod.dev/)                                            |
+| Core / HTTP    | [Effect](https://effect.website/) (`HttpRouter`, `HttpClient`)     |
+| Validation     | [Effect `Schema`](https://effect.website/docs/schema/introduction) |
 | Styling        | [Tailwind CSS v4](https://tailwindcss.com/) (CLI)                  |
 | Client islands | [esbuild](https://esbuild.github.io/) bundles                      |
 | Lint           | `oxlint` (type-aware)                                              |
@@ -38,13 +38,16 @@ nub run check      # typecheck (3 configs) + lint + format check + test
 
 ## Layout
 
-Page-based MPA on Workers — `server.tsx` is the worker entry and mounts page sub-apps with
-`app.route(prefix, page)`:
+Page-based MPA on Workers — `server.tsx` is the worker entry, merging page route layers into an
+Effect `HttpRouter` and exporting a Web handler (`export default { fetch }`):
 
-- `src/server.tsx` — worker entry (`export default app`).
+- `src/server.tsx` — worker entry (`HttpRouter.toWebHandler` → `export default { fetch }`).
 - `wrangler.jsonc` — Workers config; static files come from `assets.directory` (`./public`).
-- `src/pages/<name>/` — one folder per page (Hono sub-app + views + colocated test).
-  `home/` is the GitHub repo-lookup demo (`home.tsx` page, `home.test.ts` integration, `home.e2e.ts` browser).
+- `src/pages/<name>/` — one folder per page, split into `home.tsx` (route layer), `form.ts`
+  (signals/Schema), `repos.ts` (domain), `github.ts` (HTTP), `views.tsx`, and colocated tests.
+  `home/` is the GitHub repo-lookup demo (`home.test.ts` integration, `home.e2e.ts` browser);
+  `counter/` is a KV-binding demo (persistent counter via the `COUNTER_KV` namespace).
+- `src/cloudflare-env.ts` — `CloudflareEnv` service that exposes worker `env` bindings to Effects.
 - `src/ui/` — shared view helpers (`pageHead`, `clientScript`).
 - `src/client/*.ts` — browser islands, bundled by esbuild to `public/js/`. Use sparingly —
   keep interactivity server-driven where possible.

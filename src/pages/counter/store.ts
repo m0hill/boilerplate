@@ -1,6 +1,9 @@
 import { Context, Effect, Schema } from "effect"
 
-/** Reading or writing the counter in KV failed. */
+const countKey = "count"
+
+type CounterNamespace = CloudflareBindings["COUNTER_KV"]
+
 export class CounterStoreError extends Schema.TaggedErrorClass<CounterStoreError>()(
   "CounterStoreError",
   {
@@ -8,17 +11,12 @@ export class CounterStoreError extends Schema.TaggedErrorClass<CounterStoreError
   },
 ) {}
 
-const countKey = "count"
-
-type CounterNamespace = CloudflareBindings["COUNTER_KV"]
-
 const parseCount = (raw: string | null): number => {
   if (raw === null) return 0
   const value = Number.parseInt(raw, 10)
   return Number.isSafeInteger(value) && value >= 0 ? value : 0
 }
 
-/** KV-backed counter capability used by the counter routes. */
 export class CounterStore extends Context.Service<
   CounterStore,
   {
@@ -27,7 +25,6 @@ export class CounterStore extends Context.Service<
   }
 >()("boilerplate/pages/counter/CounterStore") {}
 
-/** Adapts a Workers KV namespace into the counter service interface. */
 export function makeCounterStore(counterKv: CounterNamespace): CounterStore["Service"] {
   const current = Effect.fn("CounterStore.current")(function* () {
     const raw = yield* Effect.tryPromise({

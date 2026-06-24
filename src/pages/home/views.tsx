@@ -1,7 +1,17 @@
-import { mod, post } from "datastar-kit"
+import { mod, post, state } from "datastar-kit"
 import { SITE_TITLE } from "../../constants.js"
-import { lookupForm } from "./form.js"
 import type { Repo } from "./github.js"
+
+const defaultCompareRepos: readonly string[] = []
+
+export const lookupForm = state({
+  repo: "mswjs/cloudflare",
+  compareRepos: defaultCompareRepos,
+  errors: {
+    repo: "",
+    compare: "",
+  },
+})
 
 const formatCount = (value: number): string => value.toLocaleString()
 
@@ -14,7 +24,6 @@ const Stars = ({ result }: { result?: Repo }) => (
   </output>
 )
 
-/** Single-repository lookup result panel; renders a placeholder when empty. */
 export const LookupResult = ({ result }: { result?: Repo }) => (
   <section id="lookup-result" class="rounded border border-gray-200 p-4">
     {result === undefined ? (
@@ -46,7 +55,6 @@ export const LookupResult = ({ result }: { result?: Repo }) => (
   </section>
 )
 
-/** Table of repositories currently pinned to the compare board. */
 export const CompareBoard = ({ repos = [] }: { repos?: readonly Repo[] }) => (
   <section id="compare-board" aria-label="Compare board" class="rounded border border-gray-200 p-4">
     <div class="flex flex-col gap-1">
@@ -119,7 +127,6 @@ export const CompareBoard = ({ repos = [] }: { repos?: readonly Repo[] }) => (
   </section>
 )
 
-/** Full home document body: lookup form, result panel, and compare board. */
 export const HomeMain = () => (
   <main
     id="app"

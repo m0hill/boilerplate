@@ -1,5 +1,5 @@
+import { env } from "cloudflare:workers"
 import { beforeEach, describe, expect, it } from "vitest"
-import { env } from "cloudflare:test"
 import { datastarPost, loadApp, request } from "../../test-utils.js"
 
 beforeEach(() => env.COUNTER_KV.delete("count"))

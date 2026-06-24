@@ -1,8 +1,9 @@
 import { Context, Effect, Layer, Schema, flow } from "effect"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
-import type { RepoName } from "./repo-name.js"
+import type { RepoName } from "./repos.js"
 
-/** Public GitHub repository stats rendered by the home page. */
+const userAgent = "boilerplate-worker"
+
 export class Repo extends Schema.Class<Repo>("Repo")({
   fullName: Schema.String.check(Schema.isMinLength(1)),
   stars: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
@@ -10,24 +11,6 @@ export class Repo extends Schema.Class<Repo>("Repo")({
   openIssues: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
   language: Schema.NullOr(Schema.String.check(Schema.isMinLength(1))),
 }) {}
-
-/** The requested repository does not exist on GitHub. */
-export class RepoNotFoundError extends Schema.TaggedErrorClass<RepoNotFoundError>()(
-  "RepoNotFoundError",
-  {
-    owner: Schema.String,
-    repo: Schema.String,
-  },
-) {}
-
-/** GitHub could not be reached, replied with an error, or returned an unexpected body. */
-export class GitHubUnavailableError extends Schema.TaggedErrorClass<GitHubUnavailableError>()(
-  "GitHubUnavailableError",
-  {
-    reason: Schema.Literals(["request_failed", "unexpected_status", "invalid_body"]),
-    status: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThanOrEqualTo(400))),
-  },
-) {}
 
 const RepoResponse = Schema.Struct({
   full_name: Schema.String.check(Schema.isMinLength(1)),
@@ -37,9 +20,22 @@ const RepoResponse = Schema.Struct({
   language: Schema.NullOr(Schema.String.check(Schema.isMinLength(1))),
 })
 
-const userAgent = "boilerplate-worker"
+export class RepoNotFoundError extends Schema.TaggedErrorClass<RepoNotFoundError>()(
+  "RepoNotFoundError",
+  {
+    owner: Schema.String,
+    repo: Schema.String,
+  },
+) {}
 
-/** GitHub repository lookup capability used by the home page workflows. */
+export class GitHubUnavailableError extends Schema.TaggedErrorClass<GitHubUnavailableError>()(
+  "GitHubUnavailableError",
+  {
+    reason: Schema.Literals(["request_failed", "unexpected_status", "invalid_body"]),
+    status: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThanOrEqualTo(400))),
+  },
+) {}
+
 export class GitHubRepos extends Context.Service<
   GitHubRepos,
   {

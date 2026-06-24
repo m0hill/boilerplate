@@ -12,7 +12,7 @@
 - **Hypermedia**: [Datastar](https://data-star.dev/) + `datastar-kit` for server-rendered TSX,
   `reply.*` responses, signals, and SSE patches. The HTTP layer is **Effect's `HttpRouter`**
   (`effect/unstable/http`); route handlers return Datastar responses through the helpers in
-  `src/http/datastar.ts` so datastar-kit's Web `Response` objects (including SSE streams) pass
+  `src/datastar.ts` so datastar-kit's Web `Response` objects (including SSE streams) pass
   through untouched.
 - **Core & validation**: [Effect](https://effect.website/) is the functional core. Route handlers
   are `Effect`s that return an `HttpServerResponse`; I/O lives in Effects with typed (tagged) errors
@@ -24,10 +24,11 @@
   `src/server.tsx`); `FetchHttpClient` keeps the same code running on workerd and the Workers test
   pool — don't reach for Node/Bun platform HTTP clients in worker code. Request logging is Effect's
   built-in router logger; attach domain fields
-  with `Effect.annotateLogsScoped(...)`. A page folder splits into `form.ts` (signals + `Schema`),
-  small domain modules such as `repo-name.ts`/`compare-board.ts`, capability modules such as
-  `github.ts` (service + HTTP/Schema fetch), `views.tsx` (TSX), and `home.tsx` (route handlers +
-  the exported `homeRoutes` layer).
+  with `Effect.annotateLogsScoped(...)`. Keep a page to a few files with obvious jobs: `home.tsx`
+  (route handlers, the input `Schema`s they validate, and the exported `homeRoutes` layer),
+  `views.tsx` (TSX plus the page's Datastar signal tree), a capability module such as `github.ts`
+  (service + HTTP/Schema fetch), and a domain module such as `repos.ts` (repository-name parsing +
+  compare-board rules). Split further only when a file genuinely stops making sense on its own.
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) via the standalone CLI (zero runtime).
   `src/styles.css` is the entry; the CLI builds `public/app.css`, served from `assets` at `/app.css`.
 - **Client islands**: [esbuild](https://esbuild.github.io/) bundles `src/client/<name>.ts` →
@@ -48,7 +49,7 @@ bindings through domain capabilities rather than raw env bags: `server.tsx` adap
 `CounterStore` for the request context. Keep `CloudflareEnv` (`src/cloudflare-env.ts`) available for
 low-level/raw binding access when a feature genuinely needs the full Worker env, but prefer narrow
 services for page/domain code. The Workers test pool and `wrangler dev` supply local bindings, so a
-KV/D1/etc. demo runs the same in tests (`import { env } from "cloudflare:test"`). Don't reintroduce
+KV/D1/etc. demo runs the same in tests (`import { env } from "cloudflare:workers"`). Don't reintroduce
 Node APIs (`fs`, `process`, `@hono/node-server`) into worker code; Node is fine in `scripts/` and
 tests.
 
@@ -63,6 +64,8 @@ Page-based MPA. `server.tsx` assembles the app; each page exports a `homeRoutes`
 - `wrangler.jsonc` — Workers config (`main`, `compatibility_date`, `assets.directory`).
 - `worker-configuration.d.ts` — generated binding/runtime types (committed; `nub run cf-typegen`).
 - `src/constants.ts` — shared constants (Datastar runtime URL, site title).
+- `src/datastar.ts` — the Datastar ⇄ Effect HTTP bridge: `decodeSignals` for reading/validating
+  request signals and the `datastar*` helpers for returning page/patch/signal/stream responses.
 - `src/pages/<name>/` — one folder per page: a route-layer module (`export const <name>Routes`)
   plus colocated signal schemas, capability/domain modules, views, and `*.test.ts`. Add a local
   README only when the page/feature has domain vocabulary or workflow rules that are not obvious

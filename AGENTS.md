@@ -24,7 +24,7 @@ This root file is the index. Before changing an area, read the matching guide in
 - The HTTP layer is Effect's `HttpRouter` (`effect/unstable/http`); route handlers are `Effect`s
   returning an `HttpServerResponse`, wired up in `src/server.tsx` via `HttpRouter.toWebHandler` →
   `export default { fetch }`. Return Datastar responses through the helpers in
-  `src/http/datastar.ts` (`datastarPage`, `datastarStream`, `datastarPatch`, `datastarSignals`).
+  `src/datastar.ts` (`datastarPage`, `datastarStream`, `datastarPatch`, `datastarSignals`).
 - Validate untrusted input at the boundary with Effect `Schema` (`Schema.decodeUnknownEffect`);
   model expected failures as tagged errors in the Effect's error channel and return signal patches
   instead of throwing for user-fixable input errors.

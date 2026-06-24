@@ -19,7 +19,6 @@ const { handler } = HttpRouter.toWebHandler(AppLayer)
 const requestContext = (env: CloudflareBindings) =>
   Context.make(CloudflareEnv, env).pipe(Context.add(CounterStore, makeCounterStore(env.COUNTER_KV)))
 
-/** Cloudflare Worker module entrypoint. */
 export default {
   fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>
     handler(request, requestContext(env)),

@@ -37,6 +37,15 @@ debuggability.
 **Let types flow from the source of truth.** Derive (`Pick`, `Omit`, `ReturnType`, `typeof`,
 indexed access) instead of restating shapes. Don't duplicate existing entities as new interfaces.
 
+**Order each file the same way.** Read top-to-bottom as: imports → constants → schema/types →
+errors → internal helpers → the module's public surface (its functions, service, components, or
+routes). Because declarations are `const` bindings, this also keeps definitions before their uses.
+In a file with several sections, mark them with a one-line comment (`// Constants`, `// Schema`,
+`// Errors`, `// Helpers`, `// Routes`, …) — like the section headers in the vendored Effect source.
+Group by kind, not by feature: e.g. all route handlers sit together under `// Routes`, with the
+response/decoding helpers they call defined above under `// Helpers`. Skip the headers in
+single-purpose files where the order is already obvious.
+
 **TypeScript safety.** No `any`, no non-null `!`, no `as Type` casts (`as const` is fine) — branch,
 parse, or refine instead. Rare unavoidable casts get a `SAFETY:` comment. Use `import type`. Prefer
 `readonly`/`ReadonlyArray`. Prefer precise file names (`email-address.ts`) over `utils.ts`. Avoid

@@ -1,31 +1,37 @@
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
 import { event } from "datastar-kit"
 import { SITE_TITLE } from "../../constants.js"
-import {
-  datastarPage,
-  datastarSignals,
-  datastarStream,
-  decodeSignals,
-} from "../../http/datastar.js"
+import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "../../datastar.js"
 import { pageHead } from "../../ui/head.js"
-import { addCompareRepo, removeCompareRepo } from "./compare-board.js"
-import { CompareBoardSignals, invalidRepoMessage, lookupForm, RepoSignals } from "./form.js"
 import { GitHubRepos } from "./github.js"
 import type { Repo } from "./github.js"
-import { parseRepoName } from "./repo-name.js"
-import { CompareBoard, HomeMain, LookupResult } from "./views.js"
+import { addCompareRepo, maxCompareRepos, parseRepoName, removeCompareRepo } from "./repos.js"
+import { CompareBoard, HomeMain, lookupForm, LookupResult } from "./views.js"
 
-const homePage = Effect.fn("home.page")(function* () {
-  yield* Effect.annotateLogsScoped({ page: { name: "home" } })
+const invalidRepoMessage = "Use the owner/repo format, e.g. mswjs/cloudflare"
 
-  return datastarPage(<HomeMain />, {
-    title: SITE_TITLE,
-    head: pageHead(),
-  })
-})()
+const boardUnavailable = "Could not refresh the compare board. Try again."
 
-// --- /lookup: look up a single repository and patch the result panel ---
+const RepoInput = Schema.Trim.check(Schema.isMinLength(1))
+
+const LookupSignals = Schema.Struct({ repo: RepoInput })
+
+const CompareSignals = Schema.Struct({
+  repo: RepoInput,
+  compareRepos: Schema.optionalKey(
+    Schema.Array(RepoInput).check(Schema.isMaxLength(maxCompareRepos)),
+  ),
+})
+
+const decodeCompareForm = Effect.fn("home.decodeCompareForm")(function* (
+  request: HttpServerRequest.HttpServerRequest,
+) {
+  const signals = yield* decodeSignals(request, CompareSignals)
+  const repo = yield* parseRepoName(signals.repo)
+  const compareRepos = yield* Effect.all((signals.compareRepos ?? []).map(parseRepoName))
+  return { repo, compareRepos }
+})
 
 const lookupFailed = Effect.fn("home.lookupFailed")(function* (
   reason: "invalid_repo" | "fetch_failed",
@@ -38,9 +44,35 @@ const lookupFailed = Effect.fn("home.lookupFailed")(function* (
   ])
 })
 
+const compareFailed = Effect.fn("home.compareFailed")(function* (
+  reason: "invalid_repo" | "too_many_repos" | "fetch_failed",
+  message: string,
+) {
+  yield* Effect.annotateLogsScoped({ compare: { ok: false, reason } })
+  return datastarSignals(lookupForm.patch({ errors: { compare: message } }))
+})
+
+const compareUpdated = Effect.fn("home.compareUpdated")(function* (repos: readonly Repo[]) {
+  const compareRepos = repos.map((repo) => repo.fullName)
+  yield* Effect.annotateLogsScoped({ compare: { ok: true, repos: compareRepos.length } })
+  return datastarStream([
+    event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
+    event.patch(<CompareBoard repos={repos} />),
+  ])
+})
+
+const homePage = Effect.gen(function* () {
+  yield* Effect.annotateLogsScoped({ page: { name: "home" } })
+
+  return datastarPage(<HomeMain />, {
+    title: SITE_TITLE,
+    head: pageHead(),
+  })
+}).pipe(Effect.withSpan("home.page"))
+
 const lookup = Effect.fn("home.lookup")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const signals = yield* decodeSignals(request, RepoSignals)
+    const signals = yield* decodeSignals(request, LookupSignals)
     const repoName = yield* parseRepoName(signals.repo)
     const github = yield* GitHubRepos
     const result = yield* github.fetch(repoName)
@@ -63,39 +95,9 @@ const lookup = Effect.fn("home.lookup")(
   }),
 )
 
-// --- /compare/add and /compare/remove: maintain the side-by-side compare board ---
-
-const boardUnavailable = "Could not refresh the compare board. Try again."
-
-const compareFailed = Effect.fn("home.compareFailed")(function* (
-  reason: "invalid_repo" | "too_many_repos" | "fetch_failed",
-  message: string,
-) {
-  yield* Effect.annotateLogsScoped({ compare: { ok: false, reason } })
-  return datastarSignals(lookupForm.patch({ errors: { compare: message } }))
-})
-
-const compareUpdated = Effect.fn("home.compareUpdated")(function* (repos: readonly Repo[]) {
-  const compareRepos = repos.map((repo) => repo.fullName)
-  yield* Effect.annotateLogsScoped({ compare: { ok: true, repos: compareRepos.length } })
-  return datastarStream([
-    event.signals(lookupForm.patch({ compareRepos, errors: { compare: "" } })),
-    event.patch(<CompareBoard repos={repos} />),
-  ])
-})
-
-const decodeCompareRequest = Effect.fn("home.decodeCompareRequest")(function* (
-  request: HttpServerRequest.HttpServerRequest,
-) {
-  const signals = yield* decodeSignals(request, CompareBoardSignals)
-  const repo = yield* parseRepoName(signals.repo)
-  const compareRepos = yield* Effect.all((signals.compareRepos ?? []).map(parseRepoName))
-  return { repo, compareRepos }
-})
-
 const compareAdd = Effect.fn("home.compareAdd")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const { repo, compareRepos } = yield* decodeCompareRequest(request)
+    const { repo, compareRepos } = yield* decodeCompareForm(request)
     const repoNames = yield* addCompareRepo(compareRepos, repo)
     const github = yield* GitHubRepos
     const repos = yield* github.fetchMany(repoNames)
@@ -116,7 +118,7 @@ const compareAdd = Effect.fn("home.compareAdd")(
 
 const compareRemove = Effect.fn("home.compareRemove")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const { repo, compareRepos } = yield* decodeCompareRequest(request)
+    const { repo, compareRepos } = yield* decodeCompareForm(request)
     const github = yield* GitHubRepos
     const repos = yield* github.fetchMany(removeCompareRepo(compareRepos, repo))
 
@@ -132,7 +134,6 @@ const compareRemove = Effect.fn("home.compareRemove")(
   }),
 )
 
-/** Routes for the GitHub repo-lookup demo page. */
 export const homeRoutes = Layer.mergeAll(
   HttpRouter.add("GET", "/", homePage),
   HttpRouter.add("POST", "/lookup", lookup),

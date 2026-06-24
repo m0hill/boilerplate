@@ -1,6 +1,6 @@
 import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
-import { datastarPage, datastarPatch } from "../../http/datastar.js"
+import { datastarPage, datastarPatch } from "../../datastar.js"
 import { pageHead } from "../../ui/head.js"
 import { CounterStore, type CounterStoreError } from "./store.js"
 import { CounterMain, CountView } from "./views.js"
@@ -8,7 +8,7 @@ import { CounterMain, CountView } from "./views.js"
 type CounterAction = "view" | "increment"
 type CounterStoreReason = CounterStoreError["reason"]
 
-const counterUnavailable = Effect.fn("counter.counterUnavailable")(function* (
+const counterUnavailable = Effect.fn("counter.unavailable")(function* (
   action: CounterAction,
   reason: CounterStoreReason,
 ) {
@@ -16,32 +16,31 @@ const counterUnavailable = Effect.fn("counter.counterUnavailable")(function* (
   return HttpServerResponse.text("Counter unavailable", { status: 503 })
 })
 
-const counterPage = Effect.fn("counter.page")(
-  function* () {
-    const counter = yield* CounterStore
-    const count = yield* counter.current
-    yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "view" } })
+const counterPage = Effect.gen(function* () {
+  const counter = yield* CounterStore
+  const count = yield* counter.current
+  yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "view" } })
 
-    return datastarPage(<CounterMain count={count} />, {
-      title: "KV counter",
-      head: pageHead(),
-    })
-  },
+  return datastarPage(<CounterMain count={count} />, {
+    title: "KV counter",
+    head: pageHead(),
+  })
+}).pipe(
   Effect.catchTag("CounterStoreError", (error) => counterUnavailable("view", error.reason)),
-)()
+  Effect.withSpan("counter.page"),
+)
 
-const increment = Effect.fn("counter.increment")(
-  function* () {
-    const counter = yield* CounterStore
-    const count = yield* counter.increment
-    yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "increment" } })
+const increment = Effect.gen(function* () {
+  const counter = yield* CounterStore
+  const count = yield* counter.increment
+  yield* Effect.annotateLogsScoped({ counter: { ok: true, action: "increment" } })
 
-    return datastarPatch(<CountView count={count} />)
-  },
+  return datastarPatch(<CountView count={count} />)
+}).pipe(
   Effect.catchTag("CounterStoreError", (error) => counterUnavailable("increment", error.reason)),
-)()
+  Effect.withSpan("counter.increment"),
+)
 
-/** Routes for the KV-backed counter demo page. */
 export const counterRoutes = Layer.mergeAll(
   HttpRouter.add("GET", "/counter", counterPage),
   HttpRouter.add("POST", "/counter/increment", increment),

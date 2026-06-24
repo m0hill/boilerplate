@@ -8,6 +8,7 @@ export class CounterStoreError extends Schema.TaggedErrorClass<CounterStoreError
   "CounterStoreError",
   {
     reason: Schema.Literals(["read_failed", "write_failed"]),
+    cause: Schema.optionalKey(Schema.Defect()),
   },
 ) {}
 
@@ -26,25 +27,22 @@ export class CounterStore extends Context.Service<
 >()("boilerplate/pages/counter/CounterStore") {}
 
 export function makeCounterStore(counterKv: CounterNamespace): CounterStore["Service"] {
-  const current = Effect.fn("CounterStore.current")(function* () {
+  const current = Effect.gen(function* () {
     const raw = yield* Effect.tryPromise({
       try: () => counterKv.get(countKey),
-      catch: () => new CounterStoreError({ reason: "read_failed" }),
+      catch: (cause) => new CounterStoreError({ reason: "read_failed", cause }),
     })
     return parseCount(raw)
-  })
+  }).pipe(Effect.withSpan("CounterStore.current"))
 
-  const increment = Effect.fn("CounterStore.increment")(function* () {
-    const next = (yield* current()) + 1
+  const increment = Effect.gen(function* () {
+    const next = (yield* current) + 1
     yield* Effect.tryPromise({
       try: () => counterKv.put(countKey, String(next)),
-      catch: () => new CounterStoreError({ reason: "write_failed" }),
+      catch: (cause) => new CounterStoreError({ reason: "write_failed", cause }),
     })
     return next
-  })
+  }).pipe(Effect.withSpan("CounterStore.increment"))
 
-  return CounterStore.of({
-    current: current(),
-    increment: increment(),
-  })
+  return CounterStore.of({ current, increment })
 }

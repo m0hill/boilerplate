@@ -5,7 +5,7 @@ import { SITE_TITLE } from "../../constants.js"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "../../datastar.js"
 import { pageHead } from "../../ui/head.js"
 import { GitHubRepos } from "./github.js"
-import type { Repo } from "./github.js"
+import type { GitHubUnavailableError, Repo } from "./github.js"
 import { addCompareRepo, maxCompareRepos, parseRepoName, removeCompareRepo } from "./repos.js"
 import { CompareBoard, HomeMain, lookupForm, LookupResult } from "./views.js"
 
@@ -32,6 +32,11 @@ const decodeCompareForm = Effect.fn("home.decodeCompareForm")(function* (
   const compareRepos = yield* Effect.all((signals.compareRepos ?? []).map(parseRepoName))
   return { repo, compareRepos }
 })
+
+const logGitHubUnavailable = (error: GitHubUnavailableError) =>
+  Effect.annotateLogsScoped({
+    github: { reason: error.reason, status: error.status, cause: error.cause },
+  })
 
 const lookupFailed = Effect.fn("home.lookupFailed")(function* (
   reason: "invalid_repo" | "fetch_failed",
@@ -85,6 +90,7 @@ const lookup = Effect.fn("home.lookup")(
       event.patch(<LookupResult result={result} />),
     ])
   },
+  Effect.tapErrorTag("GitHubUnavailableError", logGitHubUnavailable),
   Effect.catchTags({
     InvalidSignalsError: () => lookupFailed("invalid_repo", invalidRepoMessage),
     InvalidRepoNameError: () => lookupFailed("invalid_repo", invalidRepoMessage),
@@ -104,6 +110,7 @@ const compareAdd = Effect.fn("home.compareAdd")(
 
     return yield* compareUpdated(repos)
   },
+  Effect.tapErrorTag("GitHubUnavailableError", logGitHubUnavailable),
   Effect.catchTags({
     InvalidSignalsError: () =>
       compareFailed("invalid_repo", "Choose a valid repository to compare."),
@@ -124,6 +131,7 @@ const compareRemove = Effect.fn("home.compareRemove")(
 
     return yield* compareUpdated(repos)
   },
+  Effect.tapErrorTag("GitHubUnavailableError", logGitHubUnavailable),
   Effect.catchTags({
     InvalidSignalsError: () =>
       compareFailed("invalid_repo", "Choose a valid repository to remove."),

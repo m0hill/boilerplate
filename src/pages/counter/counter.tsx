@@ -6,13 +6,14 @@ import { CounterStore, type CounterStoreError } from "./store.js"
 import { CounterMain, CountView } from "./views.js"
 
 type CounterAction = "view" | "increment"
-type CounterStoreReason = CounterStoreError["reason"]
 
 const counterUnavailable = Effect.fn("counter.unavailable")(function* (
   action: CounterAction,
-  reason: CounterStoreReason,
+  error: CounterStoreError,
 ) {
-  yield* Effect.annotateLogsScoped({ counter: { ok: false, action, reason } })
+  yield* Effect.annotateLogsScoped({
+    counter: { ok: false, action, reason: error.reason, cause: error.cause },
+  })
   return HttpServerResponse.text("Counter unavailable", { status: 503 })
 })
 
@@ -26,7 +27,7 @@ const counterPage = Effect.gen(function* () {
     head: pageHead(),
   })
 }).pipe(
-  Effect.catchTag("CounterStoreError", (error) => counterUnavailable("view", error.reason)),
+  Effect.catchTag("CounterStoreError", (error) => counterUnavailable("view", error)),
   Effect.withSpan("counter.page"),
 )
 
@@ -37,7 +38,7 @@ const increment = Effect.gen(function* () {
 
   return datastarPatch(<CountView count={count} />)
 }).pipe(
-  Effect.catchTag("CounterStoreError", (error) => counterUnavailable("increment", error.reason)),
+  Effect.catchTag("CounterStoreError", (error) => counterUnavailable("increment", error)),
   Effect.withSpan("counter.increment"),
 )
 

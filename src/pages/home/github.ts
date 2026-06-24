@@ -33,6 +33,7 @@ export class GitHubUnavailableError extends Schema.TaggedErrorClass<GitHubUnavai
   {
     reason: Schema.Literals(["request_failed", "unexpected_status", "invalid_body"]),
     status: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThanOrEqualTo(400))),
+    cause: Schema.optionalKey(Schema.Defect()),
   },
 ) {}
 
@@ -67,7 +68,11 @@ export class GitHubRepos extends Context.Service<
       ): Effect.fn.Return<Repo, RepoNotFoundError | GitHubUnavailableError> {
         const response = yield* client
           .get(`/${repoName.owner}/${repoName.repo}`)
-          .pipe(Effect.mapError(() => new GitHubUnavailableError({ reason: "request_failed" })))
+          .pipe(
+            Effect.mapError(
+              (cause) => new GitHubUnavailableError({ reason: "request_failed", cause }),
+            ),
+          )
 
         if (response.status === 404) {
           return yield* new RepoNotFoundError({ owner: repoName.owner, repo: repoName.repo })
@@ -80,7 +85,7 @@ export class GitHubRepos extends Context.Service<
         }
 
         const data = yield* HttpClientResponse.schemaBodyJson(RepoResponse)(response).pipe(
-          Effect.mapError(() => new GitHubUnavailableError({ reason: "invalid_body" })),
+          Effect.mapError((cause) => new GitHubUnavailableError({ reason: "invalid_body", cause })),
         )
 
         return new Repo({

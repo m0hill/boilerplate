@@ -12,8 +12,11 @@
   tagged errors.
 - **Assets:** static files are served from the `assets` binding in `wrangler.jsonc`; Tailwind builds
   `src/styles.css` to `public/app.css`.
-- **Client islands:** `src/client/<name>.ts` bundles to `public/js/<name>.js` with esbuild. Use
-  islands only when Datastar attributes are not enough.
+- **Browser-only logic:** when Datastar attributes are not enough, the main path is a **web
+  component** in `src/client/<name>.ts` (bundled to `public/js/<name>.js` by esbuild). Datastar
+  keeps ownership of the inputs and state and feeds the element through `data-attr` (in) /
+  `data-on` (out); the custom element holds only the irreducible client logic. `/web-component`
+  (the `<qr-code>` element) is the canonical example.
 - **Tests:** Vitest uses `@cloudflare/vitest-pool-workers`; Playwright e2e runs against
   `wrangler dev` and is separate from `nub run check`.
 
@@ -25,7 +28,7 @@
 - `src/pages/not-found.ts` — catch-all 404 route.
 - `src/cloudflare-env.ts` — raw Worker env service for low-level binding access.
 - `src/ui/` — shared view helpers.
-- `src/client/` — browser-only islands, built by `scripts/build-client.ts`.
+- `src/client/` — browser-only web components / modules, built by `scripts/build-client.ts`.
 - `src/test-utils.ts` — `loadApp`, `request`, and `datastarPost` helpers.
 - `public/` — Worker assets. Generated CSS/JS are gitignored; hand-authored assets are committed.
 - `repos/` — vendored reference repos. See `AGENTS.d/vendored-repos.md`.

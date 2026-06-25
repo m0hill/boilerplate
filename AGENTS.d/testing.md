@@ -6,7 +6,7 @@
   Datastar response payloads, Effect/domain logic, Worker bindings, and external-HTTP flows mocked
   with MSW.
 - `*.e2e.ts` runs with Playwright against `wrangler dev`. Use it only for browser behavior:
-  Datastar DOM updates, real form/click flows, focus/keyboard behavior, and client islands.
+  Datastar DOM updates, real form/click flows, focus/keyboard behavior, and web components.
 - `nub run check` runs Vitest but not Playwright. Run `nub run test:e2e` when browser behavior or
   Playwright config changes.
 

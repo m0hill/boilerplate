@@ -17,11 +17,6 @@ export type ParsedObject = {
   readonly content: string
 }
 
-/**
- * Validate untrusted form input before it reaches R2: a safe, bounded object key
- * and non-empty content within a small byte budget. Failures are tagged so the
- * route can turn each one into a user-fixable message.
- */
 export const parseObject = Effect.fn("parseObject")(function* (
   rawKey: string,
   rawContent: string,
@@ -41,7 +36,6 @@ export const parseObject = Effect.fn("parseObject")(function* (
   return { key, content: rawContent }
 })
 
-/** Parse just a key, e.g. when serving or deleting an existing object. */
 export const parseObjectKey = Effect.fn("parseObjectKey")(function* (
   rawKey: string,
 ): Effect.fn.Return<string, InvalidObjectError> {

@@ -2,7 +2,6 @@ import { Context, Effect, Schema } from "effect"
 
 type Bucket = CloudflareBindings["APP_BUCKET"]
 
-/** A single object as the UI needs it — R2's metadata flattened and serializable. */
 export type StoredObject = {
   readonly key: string
   readonly size: number

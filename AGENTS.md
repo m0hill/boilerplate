@@ -17,8 +17,12 @@ for the area you are changing.
   `nubx`.
 - Worker code must run on Cloudflare Workers. Do not use Node runtime APIs in app code
   (`fs`, `process.env`, Node HTTP servers). Node is fine in `scripts/` and tests.
-- Keep interactions hypermedia-first: server-rendered TSX, Datastar signals/actions, and SSE
-  patches. Add client islands only for browser-only behavior.
+- Keep interactions hypermedia-first and minimize hand-written JS. Prefer, in order: (1)
+  server-rendered TSX + Datastar `data-*` + SSE; (2) native inputs with `data-bind` for all
+  form/state — still zero custom JS; (3) a **web component** for browser-only logic Datastar
+  cannot express (canvas, charts, audio…), with Datastar still owning the inputs and feeding the
+  element via `data-attr` (in) and `data-on` (out); (4) a plain imperative island only as a last
+  resort. Custom elements live in `src/client/`. See `/web-component` for the canonical pattern.
 - Routes use Effect's `HttpRouter`; handlers return `HttpServerResponse`. Return Datastar
   responses through `src/datastar.ts` helpers.
 - Validate untrusted input at boundaries with Effect `Schema`. Model expected failures as tagged

@@ -23,7 +23,7 @@ describe("home index", () => {
     expect(html).toContain('href="/d1"')
     expect(html).toContain('href="/r2"')
     expect(html).toContain('href="/api"')
-    expect(html).toContain('href="/island"')
+    expect(html).toContain('href="/web-component"')
   })
 
   it("returns 404 for unknown routes", async () => {

@@ -33,10 +33,11 @@ const demos: readonly Demo[] = [
     blurb: "Look up a GitHub repo with Effect's HttpClient, parsed with Schema, mocked with MSW.",
   },
   {
-    href: "/island",
-    title: "Client island",
-    tag: "esbuild",
-    blurb: "Browser-only behavior with no server round trip — a QR generator painted on canvas.",
+    href: "/web-component",
+    title: "Web component",
+    tag: "Custom element",
+    blurb:
+      "Browser-only logic the minimal-JS way — a signal feeds a <qr-code> element via data-attr.",
   },
 ]
 

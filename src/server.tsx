@@ -7,12 +7,12 @@ import { GitHubRepos } from "./pages/api-demo/github.js"
 import { d1DemoRoutes } from "./pages/d1-demo/d1-demo.js"
 import { D1CounterStore, makeD1CounterStore } from "./pages/d1-demo/store.js"
 import { homeRoutes } from "./pages/home/home.js"
-import { islandDemoRoutes } from "./pages/island-demo/island-demo.js"
 import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
 import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
 import { notFoundRoute } from "./pages/not-found.js"
 import { r2DemoRoutes } from "./pages/r2-demo/r2-demo.js"
 import { makeR2ObjectStore, R2ObjectStore } from "./pages/r2-demo/store.js"
+import { webComponentDemoRoutes } from "./pages/web-component-demo/web-component-demo.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
@@ -22,7 +22,7 @@ const AppLayer = Layer.mergeAll(
   d1DemoRoutes,
   r2DemoRoutes,
   apiDemoRoutes,
-  islandDemoRoutes,
+  webComponentDemoRoutes,
   notFoundRoute,
 ).pipe(
   HttpRouter.provideRequest(GitHubReposLive),

@@ -1,9 +1,7 @@
 import type { HtmlChild } from "datastar-kit"
 
 export type SourceRef = {
-  /** Path relative to the repo root, e.g. `src/pages/kv-demo/store.ts`. */
   readonly path: string
-  /** One line on what to look at in that file. */
   readonly role: string
 }
 
@@ -21,12 +19,6 @@ const SourceList = ({ sources }: { sources: readonly SourceRef[] }) => (
   </footer>
 )
 
-/**
- * Shared scaffold for every demo page: a back link, a "Demo" eyebrow, the title
- * and tagline, the interactive body, and the list of files that implement it.
- * Keeping the frame in one place is what makes the pages read as one boilerplate
- * rather than a pile of unrelated screens.
- */
 export const DemoLayout = ({
   title,
   tagline,

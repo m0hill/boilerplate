@@ -2,17 +2,26 @@ import { Context, Layer, Logger } from "effect"
 import { FetchHttpClient, HttpRouter } from "effect/unstable/http"
 import { CloudflareEnv } from "./cloudflare-env.js"
 import { Database, makeDatabase } from "./db/database.js"
-import { counterRoutes } from "./pages/counter/counter.js"
-import { CounterStore, makeCounterStore } from "./pages/counter/store.js"
+import { apiDemoRoutes } from "./pages/api-demo/api-demo.js"
+import { GitHubRepos } from "./pages/api-demo/github.js"
 import { d1DemoRoutes } from "./pages/d1-demo/d1-demo.js"
 import { D1CounterStore, makeD1CounterStore } from "./pages/d1-demo/store.js"
-import { GitHubRepos } from "./pages/home/github.js"
 import { homeRoutes } from "./pages/home/home.js"
+import { islandDemoRoutes } from "./pages/island-demo/island-demo.js"
+import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
+import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
 import { notFoundRoute } from "./pages/not-found.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
-const AppLayer = Layer.mergeAll(homeRoutes, counterRoutes, d1DemoRoutes, notFoundRoute).pipe(
+const AppLayer = Layer.mergeAll(
+  homeRoutes,
+  kvDemoRoutes,
+  d1DemoRoutes,
+  apiDemoRoutes,
+  islandDemoRoutes,
+  notFoundRoute,
+).pipe(
   HttpRouter.provideRequest(GitHubReposLive),
   Layer.provide(Logger.layer([Logger.consoleJson])),
 )
@@ -24,7 +33,7 @@ const requestContext = (env: CloudflareBindings) => {
 
   return Context.make(CloudflareEnv, env).pipe(
     Context.add(Database, database),
-    Context.add(CounterStore, makeCounterStore(env.COUNTER_KV)),
+    Context.add(KvCounterStore, makeKvCounterStore(env.COUNTER_KV)),
     Context.add(D1CounterStore, makeD1CounterStore(database)),
   )
 }

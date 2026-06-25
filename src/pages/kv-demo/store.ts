@@ -4,8 +4,8 @@ const countKey = "count"
 
 type CounterNamespace = CloudflareBindings["COUNTER_KV"]
 
-export class CounterStoreError extends Schema.TaggedErrorClass<CounterStoreError>()(
-  "CounterStoreError",
+export class KvCounterStoreError extends Schema.TaggedErrorClass<KvCounterStoreError>()(
+  "KvCounterStoreError",
   {
     reason: Schema.Literals(["read_failed", "write_failed"]),
     cause: Schema.optionalKey(Schema.Defect()),
@@ -18,31 +18,31 @@ const parseCount = (raw: string | null): number => {
   return Number.isSafeInteger(value) && value >= 0 ? value : 0
 }
 
-export class CounterStore extends Context.Service<
-  CounterStore,
+export class KvCounterStore extends Context.Service<
+  KvCounterStore,
   {
-    readonly current: Effect.Effect<number, CounterStoreError>
-    readonly increment: Effect.Effect<number, CounterStoreError>
+    readonly current: Effect.Effect<number, KvCounterStoreError>
+    readonly increment: Effect.Effect<number, KvCounterStoreError>
   }
->()("boilerplate/pages/counter/CounterStore") {}
+>()("boilerplate/pages/kv-demo/KvCounterStore") {}
 
-export function makeCounterStore(counterKv: CounterNamespace): CounterStore["Service"] {
+export function makeKvCounterStore(counterKv: CounterNamespace): KvCounterStore["Service"] {
   const current = Effect.gen(function* () {
     const raw = yield* Effect.tryPromise({
       try: () => counterKv.get(countKey),
-      catch: (cause) => new CounterStoreError({ reason: "read_failed", cause }),
+      catch: (cause) => new KvCounterStoreError({ reason: "read_failed", cause }),
     })
     return parseCount(raw)
-  }).pipe(Effect.withSpan("CounterStore.current"))
+  }).pipe(Effect.withSpan("KvCounterStore.current"))
 
   const increment = Effect.gen(function* () {
     const next = (yield* current) + 1
     yield* Effect.tryPromise({
       try: () => counterKv.put(countKey, String(next)),
-      catch: (cause) => new CounterStoreError({ reason: "write_failed", cause }),
+      catch: (cause) => new KvCounterStoreError({ reason: "write_failed", cause }),
     })
     return next
-  }).pipe(Effect.withSpan("CounterStore.increment"))
+  }).pipe(Effect.withSpan("KvCounterStore.increment"))
 
-  return CounterStore.of({ current, increment })
+  return KvCounterStore.of({ current, increment })
 }

@@ -1,4 +1,3 @@
-import { createSelectSchema } from "drizzle-orm/effect-schema"
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
 import { Schema } from "effect"
 
@@ -15,7 +14,7 @@ export const d1Counters = sqliteTable(
 
 export const databaseSchema = { d1Counters }
 
-export const d1CounterRowSchema = createSelectSchema(d1Counters, {
+export const d1CounterRowSchema = Schema.Struct({
   name: Schema.NonEmptyString,
   value: CounterValue,
 })

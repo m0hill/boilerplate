@@ -17,6 +17,18 @@ nub run dev
 nub run check
 ```
 
+## Demos
+
+The landing page (`/`) is an index of self-contained demos. Each one shows a single capability and
+links to the files that implement it — copy a folder under `src/pages/` to start your own.
+
+| Route     | Capability                                                          |
+| --------- | ------------------------------------------------------------------- |
+| `/kv`     | Counter persisted in Workers KV, incremented server-side in Effect. |
+| `/d1`     | The same counter on D1 (SQLite) via Drizzle, rows parsed by Schema. |
+| `/api`    | GitHub lookup with Effect `HttpClient` + `Schema`, mocked with MSW. |
+| `/island` | Browser-only client island (a QR generator) bundled by esbuild.     |
+
 ## Database
 
 - Drizzle schema lives in `src/db/schema.ts`.

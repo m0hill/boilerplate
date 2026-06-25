@@ -23,7 +23,7 @@ const d1DemoPage = Effect.gen(function* () {
   yield* Effect.annotateLogsScoped({ d1Counter: { ok: true, action: "view" } })
 
   return datastarPage(<D1DemoMain count={count} />, {
-    title: "D1 demo",
+    title: "D1 + Drizzle counter",
     head: pageHead(),
   })
 }).pipe(

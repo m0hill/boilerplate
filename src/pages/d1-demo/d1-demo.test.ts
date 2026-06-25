@@ -14,11 +14,11 @@ describe("D1 demo page", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/html; charset=utf-8")
-    expect(html).toContain(">D1 demo</h1>")
+    expect(html).toContain(">D1 + Drizzle counter</h1>")
     expect(html).toContain(
       '<output id="d1-count" class="text-5xl font-bold tabular-nums">0</output>',
     )
-    expect(html).toContain("Increment D1 counter")
+    expect(html).toContain("Increment")
   })
 
   it("increments the D1 counter and patches the value", async () => {

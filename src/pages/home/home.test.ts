@@ -21,6 +21,7 @@ describe("home index", () => {
 
     expect(html).toContain('href="/kv"')
     expect(html).toContain('href="/d1"')
+    expect(html).toContain('href="/r2"')
     expect(html).toContain('href="/api"')
     expect(html).toContain('href="/island"')
   })

@@ -11,6 +11,8 @@ import { islandDemoRoutes } from "./pages/island-demo/island-demo.js"
 import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
 import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
 import { notFoundRoute } from "./pages/not-found.js"
+import { r2DemoRoutes } from "./pages/r2-demo/r2-demo.js"
+import { makeR2ObjectStore, R2ObjectStore } from "./pages/r2-demo/store.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
@@ -18,6 +20,7 @@ const AppLayer = Layer.mergeAll(
   homeRoutes,
   kvDemoRoutes,
   d1DemoRoutes,
+  r2DemoRoutes,
   apiDemoRoutes,
   islandDemoRoutes,
   notFoundRoute,
@@ -35,6 +38,7 @@ const requestContext = (env: CloudflareBindings) => {
     Context.add(Database, database),
     Context.add(KvCounterStore, makeKvCounterStore(env.COUNTER_KV)),
     Context.add(D1CounterStore, makeD1CounterStore(database)),
+    Context.add(R2ObjectStore, makeR2ObjectStore(env.APP_BUCKET)),
   )
 }
 

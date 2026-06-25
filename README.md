@@ -26,6 +26,7 @@ links to the files that implement it — copy a folder under `src/pages/` to sta
 | --------- | ------------------------------------------------------------------- |
 | `/kv`     | Counter persisted in Workers KV, incremented server-side in Effect. |
 | `/d1`     | The same counter on D1 (SQLite) via Drizzle, rows parsed by Schema. |
+| `/r2`     | Save, list, open, and delete text objects in an R2 bucket.          |
 | `/api`    | GitHub lookup with Effect `HttpClient` + `Schema`, mocked with MSW. |
 | `/island` | Browser-only client island (a QR generator) bundled by esbuild.     |
 
@@ -41,6 +42,7 @@ links to the files that implement it — copy a folder under `src/pages/` to sta
 - Run `wrangler kv namespace create COUNTER_KV` and paste the returned KV id into `wrangler.jsonc`.
 - Run `wrangler d1 create boilerplate` and paste the returned D1 `database_id` into `wrangler.jsonc`.
 - Run `nub run db:migrate:remote` after generating migrations.
+- Run `wrangler r2 bucket create boilerplate` to create the R2 bucket.
 - Run `nub run cf-typegen` after changing Worker bindings.
 - Deploy with `nub run deploy`.
 

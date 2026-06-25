@@ -21,6 +21,12 @@ const demos: readonly Demo[] = [
     blurb: "The same counter on D1 (SQLite) via Drizzle, with rows parsed by Effect Schema.",
   },
   {
+    href: "/r2",
+    title: "R2 object store",
+    tag: "R2",
+    blurb: "Save, list, open, and delete text objects in an R2 bucket, each op a typed Effect.",
+  },
+  {
     href: "/api",
     title: "External API",
     tag: "HttpClient · MSW",

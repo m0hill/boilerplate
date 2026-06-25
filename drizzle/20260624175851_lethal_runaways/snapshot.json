@@ -1,0 +1,40 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "9de19f82-4de2-4d7d-9645-6c30e33458ec",
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
+  "ddl": [
+    {
+      "name": "d1_counters",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "d1_counters"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "value",
+      "entityType": "columns",
+      "table": "d1_counters"
+    },
+    {
+      "columns": ["name"],
+      "nameExplicit": false,
+      "name": "d1_counters_pk",
+      "entityType": "pks",
+      "table": "d1_counters"
+    }
+  ],
+  "renames": []
+}

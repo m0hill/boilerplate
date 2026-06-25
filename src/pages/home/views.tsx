@@ -134,9 +134,14 @@ export const HomeMain = () => (
     class="mx-auto flex max-w-4xl flex-col gap-4 p-8 font-sans"
   >
     <h1 class="text-3xl font-bold">{SITE_TITLE}</h1>
-    <a href="/counter" class="w-fit text-sm text-gray-600 underline">
-      KV counter demo →
-    </a>
+    <nav class="flex flex-wrap gap-3 text-sm">
+      <a href="/counter" class="w-fit text-gray-600 underline">
+        KV counter demo →
+      </a>
+      <a href="/d1" class="w-fit text-gray-600 underline">
+        D1 demo →
+      </a>
+    </nav>
     <form
       id="lookup-form"
       data-on:submit={mod(post("/lookup"), { prevent: true })}

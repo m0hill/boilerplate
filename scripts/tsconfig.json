@@ -4,8 +4,14 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "lib": ["esnext"],
-    "types": ["node"]
+    "types": ["node"],
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": "..",
+    "outDir": "./.tsbuild",
+    "tsBuildInfoFile": "./.tsbuild/tsconfig.tsbuildinfo"
   },
-  "include": ["**/*.ts", "../vitest.config.ts", "../playwright.config.ts"],
+  "include": ["**/*.ts", "../vitest.config.ts", "../playwright.config.ts", "../drizzle.config.ts"],
   "exclude": []
 }

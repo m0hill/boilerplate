@@ -1,14 +1,46 @@
-import { cloudflareTest } from "@cloudflare/vitest-pool-workers"
+import { readdir, readFile } from "node:fs/promises"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+import { cloudflareTest, type D1Migration } from "@cloudflare/vitest-pool-workers"
 import { defineConfig } from "vitest/config"
 
-export default defineConfig({
-  plugins: [
-    cloudflareTest({
-      main: "./src/server.tsx",
-      wrangler: { configPath: "./wrangler.jsonc" },
+const rootDir = path.dirname(fileURLToPath(import.meta.url))
+
+const readDrizzleMigrations = async (migrationsPath: string): Promise<D1Migration[]> => {
+  const { unstable_splitSqlQuery } = await import("wrangler")
+  const entries = await readdir(migrationsPath, { withFileTypes: true })
+  const migrationDirs = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+
+  return Promise.all(
+    migrationDirs.map(async (name) => {
+      const sql = await readFile(path.join(migrationsPath, name, "migration.sql"), "utf8")
+      return {
+        name: `${name}/migration.sql`,
+        queries: unstable_splitSqlQuery(sql),
+      }
     }),
-  ],
-  test: {
-    exclude: ["dist/**", "node_modules/**", "repos/**", "**/*.e2e.ts"],
-  },
+  )
+}
+
+export default defineConfig(async () => {
+  const migrations = await readDrizzleMigrations(path.join(rootDir, "drizzle"))
+
+  return {
+    plugins: [
+      cloudflareTest({
+        main: "./src/server.tsx",
+        wrangler: { configPath: "./wrangler.jsonc" },
+        miniflare: {
+          bindings: { TEST_MIGRATIONS: migrations },
+        },
+      }),
+    ],
+    test: {
+      setupFiles: ["./src/test-d1-migrations.ts"],
+      exclude: ["dist/**", "node_modules/**", "repos/**", "**/*.e2e.ts"],
+    },
+  }
 })

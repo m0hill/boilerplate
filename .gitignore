@@ -11,3 +11,5 @@ public/js/
 test-results/
 playwright-report/
 .playwright/
+.tsbuild/
+*.tsbuildinfo

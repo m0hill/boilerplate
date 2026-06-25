@@ -17,6 +17,9 @@
     "css:watch": "tailwindcss -i ./src/styles.css -o ./public/app.css --watch",
     "client:build": "nub scripts/build-client.ts",
     "client:watch": "nub scripts/build-client.ts --watch",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply boilerplate --local",
+    "db:migrate:remote": "wrangler d1 migrations apply boilerplate --remote",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/client/tsconfig.json && tsc --noEmit -p scripts/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,6 +34,7 @@
   },
   "dependencies": {
     "datastar-kit": "^0.4.0",
+    "drizzle-orm": "1.0.0-rc.2",
     "effect": ">=4.0.0-beta.84|| >=4.0.0"
   },
   "devDependencies": {
@@ -38,8 +42,9 @@
     "@msw/cloudflare": "https://pkg.pr.new/mswjs/cloudflare/@msw/cloudflare@beta",
     "@playwright/test": "^1.61.0",
     "@tailwindcss/cli": "^4.1.0",
-    "@types/node": "^24.10.1",
+    "@types/node": "^26.0.1",
     "concurrently": "^9.1.0",
+    "drizzle-kit": "1.0.0-rc.2",
     "esbuild": "^0.25.0",
     "lint-staged": "^17.0.8",
     "msw": "^2.14.6",

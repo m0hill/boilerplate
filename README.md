@@ -27,15 +27,18 @@ links to the files that implement it — copy a folder under `src/pages/` to sta
 | `/kv`            | Counter persisted in Workers KV, incremented server-side in Effect.           |
 | `/d1`            | The same counter on D1 (SQLite) via Drizzle, rows parsed by Schema.           |
 | `/r2`            | Save, list, open, and delete text objects in an R2 bucket.                    |
+| `/do`            | Per-room chat — each room is a Durable Object with its own Drizzle SQLite DB. |
 | `/api`           | GitHub lookup with Effect `HttpClient` + `Schema`, mocked with MSW.           |
 | `/web-component` | Browser-only logic via a `<qr-code>` custom element fed by a Datastar signal. |
 
 ## Database
 
-- Drizzle schema lives in `src/db/schema.ts`.
-- Generate migrations with `nub run db:generate`.
-- Apply local D1 migrations with `nub run db:migrate:local`.
-- For remote Drizzle Kit commands, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, and `CLOUDFLARE_D1_TOKEN`.
+- D1 schema lives in `src/db/schema.ts`; generate with `nub run db:generate`, apply locally with
+  `nub run db:migrate:local`.
+- Durable Object SQLite schema lives in `src/pages/do-demo/schema.ts`; generate with
+  `nub run db:generate:do` (output in `drizzle-do/`). DO migrations run automatically inside the
+  object on first wake — no apply step.
+- For remote D1 Drizzle Kit commands, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, and `CLOUDFLARE_D1_TOKEN`.
 
 ## Before deploying
 

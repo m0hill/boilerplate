@@ -6,6 +6,8 @@ import { apiDemoRoutes } from "./pages/api-demo/api-demo.js"
 import { GitHubRepos } from "./pages/api-demo/github.js"
 import { d1DemoRoutes } from "./pages/d1-demo/d1-demo.js"
 import { D1CounterStore, makeD1CounterStore } from "./pages/d1-demo/store.js"
+import { doDemoRoutes } from "./pages/do-demo/do-demo.js"
+import { makeRoomClient, RoomClient } from "./pages/do-demo/store.js"
 import { homeRoutes } from "./pages/home/home.js"
 import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
 import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
@@ -21,6 +23,7 @@ const AppLayer = Layer.mergeAll(
   kvDemoRoutes,
   d1DemoRoutes,
   r2DemoRoutes,
+  doDemoRoutes,
   apiDemoRoutes,
   webComponentDemoRoutes,
   notFoundRoute,
@@ -39,8 +42,11 @@ const requestContext = (env: CloudflareBindings) => {
     Context.add(KvCounterStore, makeKvCounterStore(env.COUNTER_KV)),
     Context.add(D1CounterStore, makeD1CounterStore(database)),
     Context.add(R2ObjectStore, makeR2ObjectStore(env.APP_BUCKET)),
+    Context.add(RoomClient, makeRoomClient(env.CHAT_ROOM)),
   )
 }
+
+export { ChatRoom } from "./pages/do-demo/chat-room.js"
 
 export default {
   fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>

@@ -1,0 +1,49 @@
+import { Effect, Schema } from "effect"
+
+const roomPattern = /^[a-z0-9][a-z0-9-]{0,31}$/
+
+export const maxAuthorLength = 40
+export const maxBodyLength = 280
+
+export const presetRooms = ["lobby", "general", "random"] as const
+
+export class InvalidRoomError extends Schema.TaggedErrorClass<InvalidRoomError>()(
+  "InvalidRoomError",
+  { input: Schema.String },
+) {}
+
+export class InvalidMessageError extends Schema.TaggedErrorClass<InvalidMessageError>()(
+  "InvalidMessageError",
+  { reason: Schema.Literals(["empty_author", "empty_body", "too_long"]) },
+) {}
+
+export type ParsedMessage = {
+  readonly author: string
+  readonly body: string
+}
+
+export const parseRoom = Effect.fn("parseRoom")(function* (
+  input: string,
+): Effect.fn.Return<string, InvalidRoomError> {
+  const room = input.trim().toLowerCase()
+  if (!roomPattern.test(room)) {
+    return yield* new InvalidRoomError({ input })
+  }
+  return room
+})
+
+export const parseMessage = Effect.fn("parseMessage")(function* (
+  rawAuthor: string,
+  rawBody: string,
+): Effect.fn.Return<ParsedMessage, InvalidMessageError> {
+  const author = rawAuthor.trim()
+  const body = rawBody.trim()
+
+  if (author.length === 0) return yield* new InvalidMessageError({ reason: "empty_author" })
+  if (body.length === 0) return yield* new InvalidMessageError({ reason: "empty_body" })
+  if (author.length > maxAuthorLength || body.length > maxBodyLength) {
+    return yield* new InvalidMessageError({ reason: "too_long" })
+  }
+
+  return { author, body }
+})

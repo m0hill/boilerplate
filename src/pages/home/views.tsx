@@ -27,6 +27,12 @@ const demos: readonly Demo[] = [
     blurb: "Save, list, open, and delete text objects in an R2 bucket, each op a typed Effect.",
   },
   {
+    href: "/do",
+    title: "Durable Object",
+    tag: "DO · Drizzle",
+    blurb: "Per-room chat — each room is one DO with its own SQLite DB, migrated by Drizzle.",
+  },
+  {
     href: "/api",
     title: "External API",
     tag: "HttpClient · MSW",

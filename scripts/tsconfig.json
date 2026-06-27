@@ -12,6 +12,12 @@
     "outDir": "./.tsbuild",
     "tsBuildInfoFile": "./.tsbuild/tsconfig.tsbuildinfo"
   },
-  "include": ["**/*.ts", "../vitest.config.ts", "../playwright.config.ts", "../drizzle.config.ts"],
+  "include": [
+    "**/*.ts",
+    "../vitest.config.ts",
+    "../playwright.config.ts",
+    "../drizzle.config.ts",
+    "../drizzle.config.do.ts"
+  ],
   "exclude": []
 }

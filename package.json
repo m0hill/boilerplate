@@ -18,6 +18,7 @@
     "client:build": "nub scripts/build-client.ts",
     "client:watch": "nub scripts/build-client.ts --watch",
     "db:generate": "drizzle-kit generate",
+    "db:generate:do": "drizzle-kit generate --config=drizzle.config.do.ts",
     "db:migrate:local": "wrangler d1 migrations apply boilerplate --local",
     "db:migrate:remote": "wrangler d1 migrations apply boilerplate --remote",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/client/tsconfig.json && tsc --noEmit -p scripts/tsconfig.json",

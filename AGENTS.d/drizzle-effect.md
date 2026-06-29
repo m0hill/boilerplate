@@ -55,6 +55,6 @@ export type Row = Schema.Schema.Type<typeof rowSchema>
   failures to an `invalid_row` tagged error and only pass decoded values inward.
 - Keep migrations in Drizzle/Alchemy flow; Effect Schema does not replace migrations or Drizzle table
   definitions.
-- Drizzle Kit schema entry files must export the actual tables at top level. It is fine to also
-  export a grouped `{ table }` object for callers that want one, but do not make that object the only
-  export or generation may think tables were removed.
+- Drizzle Kit schema entry files must export the actual tables at top level. Do not add pass-through
+  files or grouped `{ table }` exports solely for Drizzle Kit; put the table and its derived Effect
+  row schemas in the schema entry file and import tables directly where queries need them.

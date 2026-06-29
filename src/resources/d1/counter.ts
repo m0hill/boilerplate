@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm"
 import { Context, Effect, Schema } from "effect"
-import type { D1Database } from "@/resources/d1/database"
-import { d1CounterRowSchema, d1Counters } from "@/resources/d1/counter-schema"
+import type { D1DrizzleDatabase } from "@/resources/d1/database"
+import { d1CounterRowSchema, d1Counters } from "@/resources/d1/schema"
 
 const countKey = "main"
 
@@ -23,7 +23,7 @@ export class D1Counter extends Context.Service<
   }
 >()("boilerplate/resources/d1/D1Counter") {}
 
-export function makeD1Counter(database: D1Database): D1Counter["Service"] {
+export function makeD1Counter(database: D1DrizzleDatabase): D1Counter["Service"] {
   const current = Effect.gen(function* () {
     const rows = yield* Effect.tryPromise({
       try: () => database.select().from(d1Counters).where(eq(d1Counters.name, countKey)).limit(1),

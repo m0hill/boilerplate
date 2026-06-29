@@ -4,7 +4,7 @@ import { D1Count } from "@/pages/d1-demo/components/count"
 
 const sources = [
   {
-    path: "src/resources/d1/counter-schema.ts",
+    path: "src/resources/d1/schema.ts",
     role: "Drizzle table + Effect Schema for the row",
   },
   {

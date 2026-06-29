@@ -79,7 +79,7 @@
 - `src/pages/<name>/index.tsx` — MPA page boundary: route registration, handlers, page-owned
   Datastar state, request parsing, and page-level error-to-response/UI mapping.
 - `src/pages/<name>/components/` — page-local TSX components. Use simple names such as `page.tsx`,
-  `form.tsx`, `count.tsx`, and `object-list.tsx`; avoid `views.tsx`, `Main`, and `View` suffixes.
+  `form.tsx`, `count.tsx`, and `object-list.tsx`.
 - `src/pages/<name>/tests/` — page route and browser tests (`page.test.ts`, `page.e2e.ts`).
 - `src/pages/not-found.ts` — catch-all 404 route.
 - `src/resources/<name>/` — Cloudflare resource-bound capabilities, adapters, schemas, Durable
@@ -90,8 +90,7 @@
 - `src/resources/chat-room/` — chat Durable Object class, its SQLite schema, and room logic/client.
 - `src/services/<name>/` — non-Cloudflare external services or app capabilities, e.g.
   `github-repos`.
-- `src/lib/observability/` and `src/lib/realtime/` — app glue with specific names; do not create
-  generic `utils.ts` / `helpers.ts` files.
+- `src/lib/observability/` and `src/lib/realtime/` — app glue with specific names.
 - `src/ui/` — shared TSX layout/head helpers such as `layout.tsx` and `head.tsx`.
 - `src/client/` — browser-only web components / modules, built by `scripts/build-client.ts`.
 - `src/test-utils.ts` — `loadApp`, `request`, and `datastarPost` helpers.
@@ -106,8 +105,8 @@ There are three TypeScript projects: root Worker/server code, `src/client` brows
 1. Create `src/pages/<name>/index.tsx` exporting a route `Layer` with `HttpRouter.add(...)` or
    `Layer.mergeAll(...)`.
 2. Keep Datastar `state(...)` in `index.tsx` while the page is small. If handlers split later, move
-   page-owned state to `src/pages/<name>/state.ts`; do not move page state into services.
-3. Put server-rendered TSX in `src/pages/<name>/components/` with boring component names.
+   page-owned state to `src/pages/<name>/state.ts`.
+3. Put server-rendered TSX in `src/pages/<name>/components/`.
 4. Put Cloudflare resource-bound code in focused `src/resources/<resource>/` folders. Put external
    API/service integrations in `src/services/<service>/` folders.
 5. Merge the page route layer in `src/server.tsx` and wire resources/services from raw Cloudflare

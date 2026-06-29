@@ -31,15 +31,12 @@ Follow nearby code first. These rules cover project-specific boundaries that are
   and resource schemas under `src/resources/<resource>/`.
 - Put non-Cloudflare external services and app capabilities under `src/services/<service>/`.
 - Put app glue under specifically named `src/lib/` modules (`datastar.ts`, `observability/`,
-  `realtime/`). Do not create generic `lib/utils.ts` or `lib/helpers.ts`.
+  `realtime/`).
 - Name files after what they do (`counter.ts`, `r2-objects.ts`, `github-repos.ts`, `chat-rooms.ts`).
   Keep D1 schema files in `src/resources/d1/`; keep Durable Object SQLite schema files with the DO
-  resource that owns them, e.g. `src/resources/chat-room/schema.ts`. Avoid generic `store.ts`,
-  `utils.ts`, `helpers.ts`, and broad folders that group unrelated capabilities.
+  resource that owns them, e.g. `src/resources/chat-room/schema.ts`.
 - Page components should use simple names (`page.tsx`, `form.tsx`, `count.tsx`, `message-list.tsx`).
-  Avoid `views.tsx`, `Main`, and `View` suffixes unless the product language truly uses those words.
-- Split a file only when it stops being clear. Avoid catch-all `utils`, `helpers`, and shallow
-  wrappers.
-- Export only what other modules need. Avoid barrel files unless they solve a real import problem.
+- Split a file when separate concepts grow enough to benefit from their own names.
+- Export the API other modules need.
 - Keep I/O, parsing, time/randomness, telemetry, and framework glue at the boundary; keep domain
   rules pure where possible.

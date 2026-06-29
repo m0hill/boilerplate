@@ -34,14 +34,14 @@ export default defineConfig(
   d1Credentials === undefined
     ? {
         schema: "./src/resources/d1/schema.ts",
-        out: "./drizzle",
+        out: "./migrations/drizzle",
         dialect: "sqlite",
         strict: true,
         verbose: true,
       }
     : {
         schema: "./src/resources/d1/schema.ts",
-        out: "./drizzle",
+        out: "./migrations/drizzle",
         dialect: "sqlite",
         driver: "d1-http",
         dbCredentials: d1Credentials,

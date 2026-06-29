@@ -17,8 +17,8 @@
       "binding": "APP_DB",
       "database_name": "boilerplate",
       "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "drizzle",
-      "migrations_pattern": "drizzle/*/migration.sql",
+      "migrations_dir": "migrations/drizzle",
+      "migrations_pattern": "migrations/drizzle/*/migration.sql",
     },
   ],
   "r2_buckets": [

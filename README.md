@@ -50,11 +50,11 @@ Reusable pieces live in `src/lib/realtime/pulse.ts` and `src/lib/realtime/live-v
 
 ## Database
 
-- D1 schema lives in `src/resources/d1/schema.ts`; generate with `nub run db:generate`, apply locally with
-  `nub run db:migrate:local`.
+- D1 schema lives in `src/resources/d1/schema.ts`; generate with `nub run db:generate` (output in
+  `migrations/drizzle/`), apply locally with `nub run db:migrate:local`.
 - Durable Object SQLite schema lives in `src/resources/chat-room/schema.ts`; generate with
-  `nub run db:generate:do` (output in `drizzle-do/`). DO migrations run automatically inside the
-  object on first wake — no apply step.
+  `nub run db:generate:do` (output in `migrations/drizzle-do/`). DO migrations run automatically
+  inside the object on first wake — no apply step.
 - For remote D1 Drizzle Kit commands, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, and `CLOUDFLARE_D1_TOKEN`.
 
 ## Before deploying

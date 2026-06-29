@@ -11,7 +11,7 @@ const sources = [
     path: "src/resources/d1/counter.ts",
     role: "D1Counter: Drizzle query, parsed at the boundary",
   },
-  { path: "drizzle/", role: "generated migrations applied to D1" },
+  { path: "migrations/drizzle/", role: "generated migrations applied to D1" },
 ] as const
 
 export const D1Page = ({ count }: { readonly count: number }) => (

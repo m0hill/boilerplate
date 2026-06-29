@@ -26,7 +26,7 @@ const readDrizzleMigrations = async (migrationsPath: string): Promise<D1Migratio
 }
 
 export default defineConfig(async () => {
-  const migrations = await readDrizzleMigrations(path.join(rootDir, "drizzle"))
+  const migrations = await readDrizzleMigrations(path.join(rootDir, "migrations", "drizzle"))
 
   return {
     plugins: [

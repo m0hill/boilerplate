@@ -1,16 +1,13 @@
 import { event, state } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
-import { datastarPage, datastarStream, decodeSignals } from "../../lib/datastar.js"
-import { annotate } from "../../lib/observability/request-log.js"
-import {
-  GitHubRepos,
-  type GitHubUnavailableError,
-} from "../../services/github-repos/github-repos.js"
-import { parseRepoName } from "../../services/github-repos/repo-name.js"
-import { pageHead } from "../../ui/head.js"
-import { ApiPage } from "./components/page.js"
-import { RepoResult } from "./components/repo-result.js"
+import { datastarPage, datastarStream, decodeSignals } from "@/lib/datastar"
+import { annotate } from "@/lib/observability/request-log"
+import { GitHubRepos, type GitHubUnavailableError } from "@/services/github-repos/github-repos"
+import { parseRepoName } from "@/services/github-repos/repo-name"
+import { pageHead } from "@/ui/head"
+import { ApiPage } from "@/pages/api-demo/components/page"
+import { RepoResult } from "@/pages/api-demo/components/repo-result"
 
 const invalidRepoMessage = "Use the owner/repo format, e.g. honojs/hono"
 

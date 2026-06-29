@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "../../../test/utils.js"
+import { datastarPost, loadApp, request } from "@/test/utils"
 
 describe("Durable Object demo page", () => {
   it("defaults to the lobby room", async () => {

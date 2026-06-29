@@ -1,5 +1,5 @@
 import { mod, type State } from "datastar-kit"
-import { Layout } from "../../../ui/layout.js"
+import { Layout } from "@/ui/layout"
 
 export type QrFormState = State<{ readonly text: string }>
 

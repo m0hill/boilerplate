@@ -1,6 +1,6 @@
 import { mod, post } from "datastar-kit"
-import { Layout } from "../../../ui/layout.js"
-import { D1Count } from "./count.js"
+import { Layout } from "@/ui/layout"
+import { D1Count } from "@/pages/d1-demo/components/count"
 
 const sources = [
   {

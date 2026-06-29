@@ -1,23 +1,23 @@
 import { Context, Layer, Logger } from "effect"
 import { FetchHttpClient, HttpRouter } from "effect/unstable/http"
-import { makeRequestLog, RequestLog } from "./lib/observability/request-log.js"
-import { wideEventLogger } from "./lib/observability/wide-event.js"
-import { apiDemoRoutes } from "./pages/api-demo/index.js"
-import { d1DemoRoutes } from "./pages/d1-demo/index.js"
-import { doDemoRoutes } from "./pages/do-demo/index.js"
-import { homeRoutes } from "./pages/home/index.js"
-import { kvDemoRoutes } from "./pages/kv-demo/index.js"
-import { liveCounterRoutes } from "./pages/live-counter/index.js"
-import { notFoundRoute } from "./pages/not-found.js"
-import { r2DemoRoutes } from "./pages/r2-demo/index.js"
-import { webComponentDemoRoutes } from "./pages/web-component-demo/index.js"
-import { D1Counter, makeD1Counter } from "./resources/d1/counter.js"
-import { makeD1Database } from "./resources/d1/database.js"
-import { GitHubRepos } from "./services/github-repos/github-repos.js"
-import { ChatRooms, makeChatRooms } from "./resources/chat-room/chat-rooms.js"
-import { KvCounter, makeKvCounter } from "./resources/kv-counter/kv-counter.js"
-import { LiveRooms, makeLiveRooms } from "./resources/live-rooms/live-rooms.js"
-import { makeR2Objects, R2Objects } from "./resources/r2-objects/r2-objects.js"
+import { makeRequestLog, RequestLog } from "@/lib/observability/request-log"
+import { wideEventLogger } from "@/lib/observability/wide-event"
+import { apiDemoRoutes } from "@/pages/api-demo/index"
+import { d1DemoRoutes } from "@/pages/d1-demo/index"
+import { doDemoRoutes } from "@/pages/do-demo/index"
+import { homeRoutes } from "@/pages/home/index"
+import { kvDemoRoutes } from "@/pages/kv-demo/index"
+import { liveCounterRoutes } from "@/pages/live-counter/index"
+import { notFoundRoute } from "@/pages/not-found"
+import { r2DemoRoutes } from "@/pages/r2-demo/index"
+import { webComponentDemoRoutes } from "@/pages/web-component-demo/index"
+import { D1Counter, makeD1Counter } from "@/resources/d1/counter"
+import { makeD1Database } from "@/resources/d1/database"
+import { GitHubRepos } from "@/services/github-repos/github-repos"
+import { ChatRooms, makeChatRooms } from "@/resources/chat-room/chat-rooms"
+import { KvCounter, makeKvCounter } from "@/resources/kv-counter/kv-counter"
+import { LiveRooms, makeLiveRooms } from "@/resources/live-rooms/live-rooms"
+import { makeR2Objects, R2Objects } from "@/resources/r2-objects/r2-objects"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
@@ -52,8 +52,8 @@ const requestContext = (env: CloudflareBindings) => {
   )
 }
 
-export { ChatRoom } from "./resources/chat-room/chat-room.js"
-export { LiveRoom } from "./resources/live-rooms/live-room.js"
+export { ChatRoom } from "@/resources/chat-room/chat-room"
+export { LiveRoom } from "@/resources/live-rooms/live-room"
 
 export default {
   fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>

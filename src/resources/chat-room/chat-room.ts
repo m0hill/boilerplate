@@ -2,10 +2,10 @@ import { DurableObject } from "cloudflare:workers"
 import { drizzle } from "drizzle-orm/durable-sqlite"
 import { migrate } from "drizzle-orm/durable-sqlite/migrator"
 import { Effect } from "effect"
-import migrations from "../../../migrations/drizzle-do/migrations"
-import { makePulseHub, type PulseHub } from "../../lib/realtime/pulse.js"
-import { type Message, makeRoom } from "./room.js"
-import { roomSchema } from "./schema.js"
+import migrations from "@/migrations/drizzle-do/migrations"
+import { makePulseHub, type PulseHub } from "@/lib/realtime/pulse"
+import { type Message, makeRoom } from "@/resources/chat-room/room"
+import { roomSchema } from "@/resources/chat-room/schema"
 
 export class ChatRoom extends DurableObject<CloudflareBindings> {
   readonly #room: ReturnType<typeof makeRoom>

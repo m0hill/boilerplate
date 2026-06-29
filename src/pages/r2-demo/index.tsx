@@ -1,18 +1,18 @@
 import { event, state } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
-import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "../../lib/datastar.js"
-import { annotate } from "../../lib/observability/request-log.js"
+import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
+import { annotate } from "@/lib/observability/request-log"
 import {
   type InvalidObjectError,
   maxContentBytes,
   parseObject,
   parseObjectKey,
-} from "../../resources/r2-objects/object.js"
-import { R2Objects, type R2ObjectsError } from "../../resources/r2-objects/r2-objects.js"
-import { pageHead } from "../../ui/head.js"
-import { ObjectList } from "./components/object-list.js"
-import { R2Page } from "./components/page.js"
+} from "@/resources/r2-objects/object"
+import { R2Objects, type R2ObjectsError } from "@/resources/r2-objects/r2-objects"
+import { pageHead } from "@/ui/head"
+import { ObjectList } from "@/pages/r2-demo/components/object-list"
+import { R2Page } from "@/pages/r2-demo/components/page"
 
 const r2Form = state({
   key: "notes/hello.txt",

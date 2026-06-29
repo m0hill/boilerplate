@@ -1,6 +1,6 @@
 import { Effect } from "effect"
 import { describe, expect, it } from "vitest"
-import { InvalidRepoNameError, parseRepoName, RepoName } from "../repo-name.js"
+import { InvalidRepoNameError, parseRepoName, RepoName } from "@/services/github-repos/repo-name"
 
 describe("RepoName", () => {
   it("parses and normalizes owner/repo input", async () => {

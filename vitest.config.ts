@@ -29,6 +29,9 @@ export default defineConfig(async () => {
   const migrations = await readDrizzleMigrations(path.join(rootDir, "migrations", "drizzle"))
 
   return {
+    resolve: {
+      tsconfigPaths: true,
+    },
     plugins: [
       cloudflareTest({
         main: "./src/index.tsx",

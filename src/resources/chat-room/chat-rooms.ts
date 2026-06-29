@@ -1,5 +1,5 @@
 import { Context, Effect, Schema } from "effect"
-import type { Message } from "./room.js"
+import type { Message } from "@/resources/chat-room/room"
 
 export class ChatRoomsError extends Schema.TaggedErrorClass<ChatRoomsError>()("ChatRoomsError", {
   reason: Schema.Literals(["read_failed", "write_failed"]),

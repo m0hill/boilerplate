@@ -1,6 +1,6 @@
 import { Context, Effect, Layer, Schema, flow } from "effect"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
-import type { RepoName } from "./repo-name.js"
+import type { RepoName } from "@/services/github-repos/repo-name"
 
 const userAgent = "boilerplate-worker"
 

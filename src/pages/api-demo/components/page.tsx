@@ -1,6 +1,6 @@
-import { Layout } from "../../../ui/layout.js"
-import { LookupForm, type LookupFormState } from "./lookup-form.js"
-import { RepoResult } from "./repo-result.js"
+import { Layout } from "@/ui/layout"
+import { LookupForm, type LookupFormState } from "@/pages/api-demo/components/lookup-form"
+import { RepoResult } from "@/pages/api-demo/components/repo-result"
 
 const sources = [
   {

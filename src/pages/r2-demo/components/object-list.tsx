@@ -1,5 +1,5 @@
 import { post } from "datastar-kit"
-import type { StoredObject } from "../../../resources/r2-objects/r2-objects.js"
+import type { StoredObject } from "@/resources/r2-objects/r2-objects"
 
 const formatBytes = (size: number): string => {
   if (size < 1024) return `${size} B`

@@ -1,7 +1,7 @@
 import { desc } from "drizzle-orm"
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite"
 import { Effect, Schema } from "effect"
-import { messageRowSchema, messages, type roomSchema } from "./schema.js"
+import { messageRowSchema, messages, type roomSchema } from "@/resources/chat-room/schema"
 
 const maxMessages = 50
 

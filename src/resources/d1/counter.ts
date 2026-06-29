@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm"
 import { Context, Effect, Schema } from "effect"
-import type { D1Database } from "./database.js"
-import { d1CounterRowSchema, d1Counters } from "./counter-schema.js"
+import type { D1Database } from "@/resources/d1/database"
+import { d1CounterRowSchema, d1Counters } from "@/resources/d1/counter-schema"
 
 const countKey = "main"
 

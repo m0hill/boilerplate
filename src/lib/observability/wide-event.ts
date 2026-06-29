@@ -1,6 +1,6 @@
 import { Context, Duration, Effect } from "effect"
 import { HttpMiddleware, HttpServerRequest } from "effect/unstable/http"
-import { RequestLog } from "./request-log.js"
+import { RequestLog } from "@/lib/observability/request-log"
 
 const pathOf = (rawUrl: string): string => {
   try {

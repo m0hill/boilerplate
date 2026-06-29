@@ -1,6 +1,6 @@
 import { get, mod, post } from "datastar-kit"
-import { Layout } from "../../../ui/layout.js"
-import { LiveCount } from "./count.js"
+import { Layout } from "@/ui/layout"
+import { LiveCount } from "@/pages/live-counter/components/count"
 
 const sources = [
   {

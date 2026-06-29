@@ -1,4 +1,4 @@
-import { DATASTAR_RUNTIME } from "../lib/constants.js"
+import { DATASTAR_RUNTIME } from "@/lib/constants"
 
 export const pageHead = () => [
   <link rel="stylesheet" href="/app.css" />,

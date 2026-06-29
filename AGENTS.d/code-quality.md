@@ -22,6 +22,7 @@ Follow nearby code first. These rules cover project-specific boundaries that are
   defects or startup misconfiguration.
 - Derive shapes from schemas, services, or existing values where practical instead of duplicating
   interfaces.
+- Use root `@/` imports for internal modules instead of relative paths, and omit `.js` extensions.
 
 ## Module shape
 

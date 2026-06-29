@@ -1,19 +1,19 @@
 import { event, state } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
-import { datastarPage, datastarSignals, decodeSignals } from "../../lib/datastar.js"
-import { annotate } from "../../lib/observability/request-log.js"
-import { liveView } from "../../lib/realtime/live-view.js"
-import { ChatRooms, type ChatRoomsError } from "../../resources/chat-room/chat-rooms.js"
+import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
+import { annotate } from "@/lib/observability/request-log"
+import { liveView } from "@/lib/realtime/live-view"
+import { ChatRooms, type ChatRoomsError } from "@/resources/chat-room/chat-rooms"
 import {
   type InvalidMessageError,
   maxBodyLength,
   parseMessage,
   parseRoom,
-} from "../../resources/chat-room/rooms.js"
-import { pageHead } from "../../ui/head.js"
-import { MessageList } from "./components/message-list.js"
-import { DoPage } from "./components/page.js"
+} from "@/resources/chat-room/rooms"
+import { pageHead } from "@/ui/head"
+import { MessageList } from "@/pages/do-demo/components/message-list"
+import { DoPage } from "@/pages/do-demo/components/page"
 
 const chatForm = state({ room: "", author: "", body: "", errors: { form: "" } })
 

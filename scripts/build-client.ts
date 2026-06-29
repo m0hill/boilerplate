@@ -16,6 +16,7 @@ const options: esbuild.BuildOptions = {
   format: "esm",
   target: "es2022",
   outdir: OUT_DIR,
+  alias: { "@": "./src" },
   minify: !watch,
   logLevel: "info",
 }

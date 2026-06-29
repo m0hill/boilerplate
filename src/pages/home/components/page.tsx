@@ -1,5 +1,5 @@
-import { SITE_TITLE } from "../../../lib/constants.js"
-import { DemoCard, type Demo } from "./demo-card.js"
+import { SITE_TITLE } from "@/lib/constants"
+import { DemoCard, type Demo } from "@/pages/home/components/demo-card"
 
 const demos: readonly Demo[] = [
   {

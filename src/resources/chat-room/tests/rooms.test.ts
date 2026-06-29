@@ -6,7 +6,7 @@ import {
   maxBodyLength,
   parseMessage,
   parseRoom,
-} from "../rooms.js"
+} from "@/resources/chat-room/rooms"
 
 const runError = <E>(effect: Effect.Effect<unknown, E>) =>
   Effect.runPromise(effect.pipe(Effect.flip))

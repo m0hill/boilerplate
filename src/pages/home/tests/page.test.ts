@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { loadApp, request } from "../../../test/utils.js"
+import { loadApp, request } from "@/test/utils"
 
 describe("home index", () => {
   it("renders the demo index as HTML", async () => {

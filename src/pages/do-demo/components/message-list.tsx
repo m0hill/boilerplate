@@ -1,4 +1,4 @@
-import type { Message } from "../../../resources/chat-room/room.js"
+import type { Message } from "@/resources/chat-room/room"
 
 const formatTime = (ms: number): string =>
   new Date(ms).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })

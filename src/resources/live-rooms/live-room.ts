@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers"
 import { Effect } from "effect"
-import { makePulseHub, type PulseHub } from "../../lib/realtime/pulse.js"
+import { makePulseHub, type PulseHub } from "@/lib/realtime/pulse"
 
 export class LiveRoom extends DurableObject<CloudflareBindings> {
   readonly #hub: PulseHub

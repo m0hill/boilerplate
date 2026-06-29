@@ -1,6 +1,6 @@
 import { Cause, Effect, Stream } from "effect"
 import type { HttpServerResponse } from "effect/unstable/http"
-import { datastarStream } from "../datastar.js"
+import { datastarStream } from "@/lib/datastar"
 
 interface LiveViewOptions<E, R = never> {
   readonly pulses: ReadableStream<Uint8Array>

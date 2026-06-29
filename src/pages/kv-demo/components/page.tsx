@@ -1,6 +1,6 @@
 import { mod, post } from "datastar-kit"
-import { Layout } from "../../../ui/layout.js"
-import { KvCount } from "./count.js"
+import { Layout } from "@/ui/layout"
+import { KvCount } from "@/pages/kv-demo/components/count"
 
 const sources = [
   {

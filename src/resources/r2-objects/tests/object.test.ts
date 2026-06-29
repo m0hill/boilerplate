@@ -1,6 +1,11 @@
 import { Effect } from "effect"
 import { describe, expect, it } from "vitest"
-import { InvalidObjectError, maxContentBytes, parseObject, parseObjectKey } from "../object.js"
+import {
+  InvalidObjectError,
+  maxContentBytes,
+  parseObject,
+  parseObjectKey,
+} from "@/resources/r2-objects/object"
 
 const runError = (effect: Effect.Effect<unknown, InvalidObjectError>) =>
   Effect.runPromise(effect.pipe(Effect.flip))

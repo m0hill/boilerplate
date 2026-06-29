@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "../../../test/utils.js"
+import { datastarPost, loadApp, request } from "@/test/utils"
 
 const clearBucket = async () => {
   const listed = await env.APP_BUCKET.list()

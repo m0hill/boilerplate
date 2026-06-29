@@ -1,4 +1,4 @@
-import type { Repo } from "../../../services/github-repos/github-repos.js"
+import type { Repo } from "@/services/github-repos/github-repos"
 
 const formatCount = (value: number): string => value.toLocaleString()
 

@@ -2,28 +2,26 @@
 
 ## Runtime
 
-- Worker modules cannot use Node APIs.
+- Worker modules use Web and Cloudflare runtime APIs.
 - Node APIs are allowed in `scripts/` and tests.
 - `src/client` is browser-only.
-- `src/client` must not import Worker routes, page modules, bindings, persistence adapters, or server services.
+- `src/client` imports browser-safe modules only.
 - Bindings enter through `src/index.tsx`.
 - Adapt bindings into narrow services before page or domain code uses them.
-- Pass raw Worker env only when a feature truly needs it.
 
 ## Types
 
-- Avoid `any`.
-- Avoid non-null assertions.
-- Avoid `as Type`.
+- Use parsed and narrowed types.
+- Use explicit branches for nullable values.
+- Use schema-derived or service-derived types.
 - Use parsing, branching, narrowing, and derived types.
 - `as const` is fine.
 - Parse Datastar signals, params, bodies, external JSON, env, config, and Worker bindings.
 - Keep parsed domain values inside the owner module.
-- Do not pass raw DTOs, `unknown`, or `Partial<T>` through core logic.
+- Pass parsed domain values through core logic.
 - Expected failures are typed values.
 - Throw or reject only for defects and startup misconfiguration.
 - Derive types from schemas, services, or existing values.
-- Do not duplicate interfaces when a source shape exists.
 - Use root `@/` imports for internal modules.
 - Omit `.js` extensions.
 

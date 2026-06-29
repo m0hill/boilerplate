@@ -22,7 +22,6 @@
 - Assert status, content type, HTML, SSE events, signal patches, and user copy.
 - Mock only outside the app boundary.
 - Use `@msw/cloudflare` for external HTTP.
-- Do not module-mock app code.
 - Prefer real seams, in-memory adapters, Worker test bindings, and deterministic inputs.
 - Keep pure domain tests on exported parsers, constructors, and domain functions.
 
@@ -33,10 +32,8 @@
 - Assert subscribe-before-write delivery.
 - Commands that update live regions mutate and publish.
 - Those commands return `datastarDone()` or signal cleanup.
-- Those commands do not patch the live region.
 - Cover at least one convergence case for shared live state.
 - Concurrent commands should eventually render durable current state.
-- Older payloads must not win.
 - Cancel stream readers when testing cleanup-sensitive code.
 
 ## Playwright
@@ -46,4 +43,3 @@
 - Put external-dependent happy paths in MSW-backed Vitest tests.
 - Prove the browser round trip: page load, action, Datastar request, SSE patch, DOM update.
 - Browser tests use port 8787.
-- If port 8787 is occupied, stop the conflict.

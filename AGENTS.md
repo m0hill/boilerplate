@@ -19,12 +19,12 @@ Then read the narrow `docs/` guide for files you touch.
 
 - Use `nub`: `nub install`, `nub add`, `nub run <script>`, `nubx`.
 - App code runs on Cloudflare Workers.
-- No `fs`, `process.env`, or Node HTTP servers in Worker app code.
+- Worker app code uses Web and Cloudflare runtime APIs instead of `fs`, `process.env`, or Node HTTP servers.
 - Node APIs are fine in `scripts/` and tests.
 - Prefer server TSX + Datastar + SSE.
 - Prefer native inputs with `data-bind` before client code.
 - Use `src/client/` web components for canvas, charts, audio, and browser-only logic.
-- Use plain imperative JS only as a last resort.
+- Use plain imperative JS after Datastar and web components are a bad fit.
 - Routes use Effect `HttpRouter`.
 - Handlers return `HttpServerResponse`.
 - Datastar responses use `src/lib/datastar.ts`.
@@ -32,6 +32,6 @@ Then read the narrow `docs/` guide for files you touch.
 - Model expected failures as tagged errors.
 - Return user-fixable errors as signal patches.
 - Keep strict TypeScript clean.
-- Avoid `any`, non-null assertions, and `as Type`.
+- Use parsed and narrowed types instead of `any`, non-null assertions, and `as Type`.
 - Run `nub run check` before handoff.
 - Run `nub run test:e2e` when browser behavior changes.

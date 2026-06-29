@@ -8,6 +8,7 @@ for the area you are changing.
 - `AGENTS.d/project.md` — stack, runtime boundaries, layout, commands, and page flow.
 - `AGENTS.d/code-quality.md` — TypeScript, domain boundaries, and module shape.
 - `AGENTS.d/testing.md` — Vitest Workers tests, Playwright e2e tests, MSW, and test seams.
+- `AGENTS.d/effect.md` — Effect Services/Tags/Layers, Schema, typed errors, resources, and tests.
 - `AGENTS.d/styling.md` — Tailwind v4 and CSS split.
 - `AGENTS.d/vendored-repos.md` — read-only Datastar Kit and Effect reference repos.
 

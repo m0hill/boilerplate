@@ -17,6 +17,11 @@ export class RoomClient extends Context.Service<
       author: string,
       body: string,
     ) => Effect.Effect<readonly Message[], DoRoomError>
+    readonly subscribe: (
+      room: string,
+      initialEvents: string,
+    ) => Effect.Effect<Response, DoRoomError>
+    readonly publish: (room: string, events: string) => Effect.Effect<boolean, DoRoomError>
   }
 >()("boilerplate/pages/do-demo/RoomClient") {}
 
@@ -35,5 +40,17 @@ export function makeRoomClient(namespace: RoomNamespace): RoomClient["Service"] 
       catch: (cause) => new DoRoomError({ reason: "write_failed", cause }),
     }).pipe(Effect.withSpan("RoomClient.post"))
 
-  return RoomClient.of({ list, post })
+  const subscribe = (room: string, initialEvents: string) =>
+    Effect.tryPromise({
+      try: () => stubFor(room).subscribe(initialEvents),
+      catch: (cause) => new DoRoomError({ reason: "read_failed", cause }),
+    }).pipe(Effect.withSpan("RoomClient.subscribe"))
+
+  const publish = (room: string, events: string) =>
+    Effect.tryPromise({
+      try: () => stubFor(room).publish(events),
+      catch: (cause) => new DoRoomError({ reason: "write_failed", cause }),
+    }).pipe(Effect.withSpan("RoomClient.publish"))
+
+  return RoomClient.of({ list, post, subscribe, publish })
 }

@@ -52,6 +52,30 @@ const doDemoPage = Effect.fn("doDemo.page")(
   ),
 )
 
+const liveMessages = Effect.fn("doDemo.live")(
+  function* (request: HttpServerRequest.HttpServerRequest) {
+    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? "lobby"
+    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => "lobby"))
+    const client = yield* RoomClient
+    const messages = yield* client.list(room)
+    yield* Effect.annotateLogsScoped({
+      do: { ok: true, action: "subscribe", room, count: messages.length },
+    })
+
+    const stream = yield* client.subscribe(
+      room,
+      event.patch(<MessageList room={room} messages={messages} />),
+    )
+
+    return HttpServerResponse.raw(stream)
+  },
+  Effect.catchTag("DoRoomError", (error) =>
+    logRoomUnavailable("subscribe", error).pipe(
+      Effect.as(HttpServerResponse.text("Durable Object demo unavailable", { status: 503 })),
+    ),
+  ),
+)
+
 const postMessage = Effect.fn("doDemo.post")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const signals = yield* decodeSignals(request, PostSignals)
@@ -59,13 +83,15 @@ const postMessage = Effect.fn("doDemo.post")(
     const message = yield* parseMessage(signals.author, signals.body)
     const client = yield* RoomClient
     const messages = yield* client.post(room, message.author, message.body)
+    const messageList = event.patch(<MessageList room={room} messages={messages} />)
+    yield* client.publish(room, messageList)
     yield* Effect.annotateLogsScoped({
       do: { ok: true, action: "post", room, count: messages.length },
     })
 
     return datastarStream([
       event.signals(chatForm.patch({ body: "", errors: { form: "" } })),
-      event.patch(<MessageList room={room} messages={messages} />),
+      messageList,
     ])
   },
   Effect.catchTags({
@@ -81,5 +107,6 @@ const postMessage = Effect.fn("doDemo.post")(
 
 export const doDemoRoutes = Layer.mergeAll(
   HttpRouter.add("GET", "/do", doDemoPage),
+  HttpRouter.add("GET", "/do/live", liveMessages),
   HttpRouter.add("POST", "/do/post", postMessage),
 )

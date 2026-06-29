@@ -62,6 +62,37 @@ describe("Durable Object demo page", () => {
     expect(html).not.toContain("secret")
   })
 
+  it("fans out new messages to subscribers open on the same room", async () => {
+    const app = await loadApp()
+    const live = await app.fetch(request("/do/live?room=test-live"))
+
+    expect(live.status).toBe(200)
+    expect(live.headers.get("content-type")).toBe("text/event-stream")
+
+    const reader = live.body!.getReader()
+    const decoder = new TextDecoder()
+
+    const snapshot = decoder.decode((await reader.read()).value)
+    expect(snapshot).toContain("event: datastar-patch-elements")
+
+    await app.fetch(
+      datastarPost("/do/post", { room: "test-live", author: "dana", body: "live ping" }),
+    )
+
+    let received = ""
+    while (!received.includes("live ping")) {
+      const { value, done } = await reader.read()
+      if (done) break
+      received += decoder.decode(value)
+    }
+
+    expect(received).toContain("event: datastar-patch-elements")
+    expect(received).toContain("dana")
+    expect(received).toContain("live ping")
+
+    await reader.cancel()
+  })
+
   it("rejects an empty message with a form error", async () => {
     const app = await loadApp()
     const response = await app.fetch(

@@ -1,4 +1,4 @@
-import { mod, post, state } from "datastar-kit"
+import { get, mod, post, state } from "datastar-kit"
 import { DemoLayout } from "../../ui/demo.js"
 import type { Message } from "./room.js"
 import { presetRooms } from "./rooms.js"
@@ -11,7 +11,7 @@ const sources = [
   { path: "src/pages/do-demo/room.ts", role: "room logic as Effect programs over the DO database" },
   {
     path: "src/pages/do-demo/store.ts",
-    role: "worker-side RoomClient: resolves a room to one DO via RPC",
+    role: "worker-side RoomClient: resolves a room to one DO via RPC, opens/publishes live streams",
   },
   { path: "drizzle-do/", role: "Drizzle migrations generated for the durable-sqlite driver" },
 ] as const
@@ -71,7 +71,8 @@ export const DoDemoMain = ({ room, messages }: { room: string; messages: readonl
     title="Durable Object"
     tagline="Each room is a single Durable Object instance with its own embedded SQLite database
       (migrated by Drizzle). Because one object handles a room's writes single-threaded, the log is
-      strongly consistent — no read-modify-write races like an eventually-consistent store."
+      strongly consistent — no read-modify-write races like an eventually-consistent store. The same
+      object fans every new message out over a Datastar SSE stream, so all open tabs sync live."
     sources={sources}
   >
     <RoomSwitcher room={room} />
@@ -79,6 +80,7 @@ export const DoDemoMain = ({ room, messages }: { room: string; messages: readonl
     <form
       id="do-form"
       data-signals={mod(chatForm.reset({ room }), { ifMissing: true })}
+      data-init={get(`/do/live?room=${room}`)}
       data-on:submit={mod(post("/do/post"), { prevent: true })}
       class="flex flex-col gap-3"
     >

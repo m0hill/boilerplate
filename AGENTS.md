@@ -6,6 +6,7 @@ for the area you are changing.
 ## Guides
 
 - `AGENTS.d/project.md` — stack, runtime boundaries, layout, commands, and page flow.
+- `AGENTS.d/alchemy.md` — Alchemy Stack, stages, state, bindings, assets, deployment, and adoption.
 - `AGENTS.d/code-quality.md` — TypeScript, domain boundaries, and module shape.
 - `AGENTS.d/testing.md` — Vitest Workers tests, Playwright e2e tests, MSW, and test seams.
 - `AGENTS.d/effect.md` — Effect Services/Tags/Layers, Schema, typed errors, resources, and tests.

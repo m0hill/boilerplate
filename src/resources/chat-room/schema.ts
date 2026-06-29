@@ -1,3 +1,4 @@
+import { createSelectSchema } from "drizzle-orm/effect-schema"
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 import { Schema } from "effect"
 
@@ -10,9 +11,9 @@ export const messages = sqliteTable("messages", {
 
 export const roomSchema = { messages }
 
-export const messageRowSchema = Schema.Struct({
-  id: Schema.Int.check(Schema.isGreaterThanOrEqualTo(1)),
-  author: Schema.NonEmptyString,
-  body: Schema.NonEmptyString,
-  createdAt: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
+export const messageRowSchema = createSelectSchema(messages, {
+  id: (schema) => schema.check(Schema.isGreaterThanOrEqualTo(1)),
+  author: (schema) => schema.check(Schema.isMinLength(1)),
+  body: (schema) => schema.check(Schema.isMinLength(1)),
+  createdAt: (schema) => schema.check(Schema.isGreaterThanOrEqualTo(0)),
 })

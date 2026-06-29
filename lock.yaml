@@ -12,8 +12,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       drizzle-orm:
-        specifier: 1.0.0-rc.2
-        version: 1.0.0-rc.2(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76)
+        specifier: 1.0.0-rc.4
+        version: 1.0.0-rc.4(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76)
       effect:
         specifier: '>=4.0.0-beta.84|| >=4.0.0'
         version: 4.0.0-beta.91
@@ -47,13 +47,13 @@ importers:
         version: 26.0.1
       alchemy:
         specifier: 2.0.0-beta.59
-        version: 2.0.0-beta.59(@effect/platform-bun@4.0.0-beta.91(effect@4.0.0-beta.91))(@effect/platform-node@4.0.0-beta.91(effect@4.0.0-beta.91)(ioredis@5.11.1))(drizzle-kit@1.0.0-rc.2)(drizzle-orm@1.0.0-rc.2(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76))(effect@4.0.0-beta.91)(esbuild@0.28.1)(msw@2.14.6)(vite@8.1.0(@types/node@26.0.1))(vitest@4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)))(ws@8.21.0)
+        version: 2.0.0-beta.59(@effect/platform-bun@4.0.0-beta.91(effect@4.0.0-beta.91))(@effect/platform-node@4.0.0-beta.91(effect@4.0.0-beta.91)(ioredis@5.11.1))(drizzle-kit@1.0.0-rc.4)(drizzle-orm@1.0.0-rc.4(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76))(effect@4.0.0-beta.91)(esbuild@0.28.1)(msw@2.14.6)(vite@8.1.0(@types/node@26.0.1))(vitest@4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)))(ws@8.21.0)
       concurrently:
         specifier: ^9.1.0
         version: 9.2.3
       drizzle-kit:
-        specifier: 1.0.0-rc.2
-        version: 1.0.0-rc.2
+        specifier: 1.0.0-rc.4
+        version: 1.0.0-rc.4
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12
@@ -359,8 +359,8 @@ packages:
     peerDependencies:
       effect: '>=4.0.0-beta.66 || >=4.0.0'
 
-  '@drizzle-team/brocli@0.11.0':
-    resolution: {integrity: sha512-hD3pekGiPg0WPCCGAZmusBBJsDqGUR66Y452YgQsZOnkdQ7ViEPKuyP4huUGEZQefp8g34RRodXYmJ2TbCH+tg==}
+  '@drizzle-team/brocli@0.12.0':
+    resolution: {integrity: sha512-mlUE+rZ8CatQekLhnaiN91Iemdd+e2gFKooGlnRB3oPTL3VghLfX24dx7HrzMNeC1JrIB/0kpsfyty3f5HNfxQ==}
 
   '@effect/platform-bun@4.0.0-beta.91':
     resolution: {integrity: sha512-WDdTSSRi7BfDNz8/4EgPMl8rr4gRsXNw8JNzj+D3o95BAdKGRJbYBK7aDL726tnj4prrztKHPWJ4ZJgepUsJRw==}
@@ -2207,16 +2207,24 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  drizzle-kit@1.0.0-rc.2:
-    resolution: {integrity: sha512-TRxUmj1wDA2QCt3GvuhfamvIa66wJ7+MzSxBMKkpRtYScjHTumT9BE+x6daSzuEacSrPEuUH5/cW1uo5RkoPIg==}
+  drizzle-kit@1.0.0-rc.4:
+    resolution: {integrity: sha512-KZCpjRyu+oYHLj/UJogfFlOkWhHVkaEI2EOT1U3NDVXUzLoTyPjqwFxwOrlQxsY6jzRyxcz4EacqboGfhEeYrA==}
     hasBin: true
 
-  drizzle-orm@1.0.0-rc.2:
-    resolution: {integrity: sha512-UXYDkbplF5wX0hwxll+80QhEwUvAJLBu+tAK/d4fna18kLE6VuliAzufF/ieDEIJeSnLRYgtmsXD6x1Xuy1kIg==}
+  drizzle-orm@1.0.0-rc.4:
+    resolution: {integrity: sha512-BT+pf+qoiYHqltoA88Jmf6ilGMXPlpfE0hEJKc2adRtMCAl25Swk/t5gXcWxZNAwdtf3F5gCd2FpeOyP/pT0Hw==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
-      '@effect/sql-pg': '>=4.0.0-beta.58 || >=4.0.0'
+      '@effect/sql-d1': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-libsql': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-mysql2': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-pg': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-pglite': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-sqlite-bun': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-sqlite-do': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-sqlite-node': '>=4.0.0-beta.83 || >=4.0.0'
+      '@effect/sql-sqlite-wasm': '>=4.0.0-beta.83 || >=4.0.0'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -2227,9 +2235,11 @@ packages:
       '@sinclair/typebox': '>=0.34.8'
       '@sqlitecloud/drivers': '>=1.0.653'
       '@tidbcloud/serverless': '*'
-      '@tursodatabase/database': '>=0.2.1'
-      '@tursodatabase/database-common': '>=0.2.1'
-      '@tursodatabase/database-wasm': '>=0.2.1'
+      '@tursodatabase/database': '>=0.6.0-pre.28 || >=0.6.0'
+      '@tursodatabase/database-common': '>=0.6.0-pre.28 || >=0.6.0'
+      '@tursodatabase/database-wasm': '>=0.6.0-pre.28 || >=0.6.0'
+      '@tursodatabase/serverless': '>=1.1.3'
+      '@tursodatabase/sync': '>=0.6.0-pre.28 || >=0.6.0'
       '@types/better-sqlite3': '*'
       '@types/mssql': ^9.1.4
       '@types/pg': '*'
@@ -2240,7 +2250,7 @@ packages:
       arktype: '>=2.0.0'
       better-sqlite3: '>=9.3.0'
       bun-types: '*'
-      effect: '>=4.0.0-beta.58 || >=4.0.0'
+      effect: '>=4.0.0-beta.83 || >=4.0.0'
       expo-sqlite: '>=14.0.0'
       mssql: ^11.0.1
       mysql2: '>=2'
@@ -2256,7 +2266,23 @@ packages:
         optional: true
       '@cloudflare/workers-types':
         optional: true
+      '@effect/sql-d1':
+        optional: true
+      '@effect/sql-libsql':
+        optional: true
+      '@effect/sql-mysql2':
+        optional: true
       '@effect/sql-pg':
+        optional: true
+      '@effect/sql-pglite':
+        optional: true
+      '@effect/sql-sqlite-bun':
+        optional: true
+      '@effect/sql-sqlite-do':
+        optional: true
+      '@effect/sql-sqlite-node':
+        optional: true
+      '@effect/sql-sqlite-wasm':
         optional: true
       '@electric-sql/pglite':
         optional: true
@@ -2283,6 +2309,10 @@ packages:
       '@tursodatabase/database-common':
         optional: true
       '@tursodatabase/database-wasm':
+        optional: true
+      '@tursodatabase/serverless':
+        optional: true
+      '@tursodatabase/sync':
         optional: true
       '@types/better-sqlite3':
         optional: true
@@ -3735,7 +3765,7 @@ snapshots:
       '@distilled.cloud/core': 0.27.0(effect@4.0.0-beta.91)
       effect: 4.0.0-beta.91
 
-  '@drizzle-team/brocli@0.11.0': {}
+  '@drizzle-team/brocli@0.12.0': {}
 
   '@effect/platform-bun@4.0.0-beta.91(effect@4.0.0-beta.91)':
     dependencies:
@@ -4902,7 +4932,7 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  alchemy@2.0.0-beta.59(@effect/platform-bun@4.0.0-beta.91(effect@4.0.0-beta.91))(@effect/platform-node@4.0.0-beta.91(effect@4.0.0-beta.91)(ioredis@5.11.1))(drizzle-kit@1.0.0-rc.2)(drizzle-orm@1.0.0-rc.2(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76))(effect@4.0.0-beta.91)(esbuild@0.28.1)(msw@2.14.6)(vite@8.1.0(@types/node@26.0.1))(vitest@4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)))(ws@8.21.0):
+  alchemy@2.0.0-beta.59(@effect/platform-bun@4.0.0-beta.91(effect@4.0.0-beta.91))(@effect/platform-node@4.0.0-beta.91(effect@4.0.0-beta.91)(ioredis@5.11.1))(drizzle-kit@1.0.0-rc.4)(drizzle-orm@1.0.0-rc.4(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76))(effect@4.0.0-beta.91)(esbuild@0.28.1)(msw@2.14.6)(vite@8.1.0(@types/node@26.0.1))(vitest@4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)))(ws@8.21.0):
     dependencies:
       '@alchemy.run/node-utils': 0.0.5
       '@aws-sdk/credential-providers': 3.1075.0
@@ -4928,8 +4958,8 @@ snapshots:
       '@types/aws-lambda': 8.10.162
       aws4fetch: 1.0.20
       capnweb: 0.6.1
-      drizzle-kit: 1.0.0-rc.2
-      drizzle-orm: 1.0.0-rc.2(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76)
+      drizzle-kit: 1.0.0-rc.4
+      drizzle-orm: 1.0.0-rc.4(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76)
       effect: 4.0.0-beta.91
       fast-glob: 3.3.3
       fast-xml-parser: 5.9.3
@@ -5070,15 +5100,15 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  drizzle-kit@1.0.0-rc.2:
+  drizzle-kit@1.0.0-rc.4:
     dependencies:
-      '@drizzle-team/brocli': 0.11.0
+      '@drizzle-team/brocli': 0.12.0
       '@js-temporal/polyfill': 0.5.1
       esbuild: 0.25.12
       get-tsconfig: 4.14.0
       jiti: 2.7.0
 
-  drizzle-orm@1.0.0-rc.2(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76):
+  drizzle-orm@1.0.0-rc.4(@cloudflare/workers-types@4.20260629.1)(@libsql/client@0.17.4)(effect@4.0.0-beta.91)(mysql2@3.22.5(@types/node@26.0.1))(pg@8.22.0)(zod@3.25.76):
     dependencies:
       '@cloudflare/workers-types': 4.20260629.1
       '@libsql/client': 0.17.4

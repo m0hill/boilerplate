@@ -1,7 +1,6 @@
+import { createSelectSchema } from "drizzle-orm/effect-schema"
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
 import { Schema } from "effect"
-
-const CounterValue = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))
 
 export const d1Counters = sqliteTable(
   "d1_counters",
@@ -12,7 +11,7 @@ export const d1Counters = sqliteTable(
   (table) => [primaryKey({ columns: [table.name] })],
 )
 
-export const d1CounterRowSchema = Schema.Struct({
-  name: Schema.NonEmptyString,
-  value: CounterValue,
+export const d1CounterRowSchema = createSelectSchema(d1Counters, {
+  name: (schema) => schema.check(Schema.isMinLength(1)),
+  value: (schema) => schema.check(Schema.isGreaterThanOrEqualTo(0)),
 })

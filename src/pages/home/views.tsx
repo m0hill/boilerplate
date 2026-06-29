@@ -33,6 +33,13 @@ const demos: readonly Demo[] = [
     blurb: "Per-room chat — each room is one DO with its own SQLite DB, migrated by Drizzle.",
   },
   {
+    href: "/live-counter",
+    title: "Live counter",
+    tag: "D1 · DO fan-out",
+    blurb:
+      "Realtime sync the production way — D1 is the source of truth, a generic DO room fans patches to every tab.",
+  },
+  {
     href: "/api",
     title: "External API",
     tag: "HttpClient · MSW",

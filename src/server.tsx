@@ -11,9 +11,11 @@ import { makeRoomClient, RoomClient } from "./pages/do-demo/store.js"
 import { homeRoutes } from "./pages/home/home.js"
 import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
 import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
+import { liveCounterRoutes } from "./pages/live-counter/live-counter.js"
 import { notFoundRoute } from "./pages/not-found.js"
 import { r2DemoRoutes } from "./pages/r2-demo/r2-demo.js"
 import { makeR2ObjectStore, R2ObjectStore } from "./pages/r2-demo/store.js"
+import { LiveRooms, makeLiveRooms } from "./realtime/live-rooms.js"
 import { webComponentDemoRoutes } from "./pages/web-component-demo/web-component-demo.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
@@ -24,6 +26,7 @@ const AppLayer = Layer.mergeAll(
   d1DemoRoutes,
   r2DemoRoutes,
   doDemoRoutes,
+  liveCounterRoutes,
   apiDemoRoutes,
   webComponentDemoRoutes,
   notFoundRoute,
@@ -43,10 +46,12 @@ const requestContext = (env: CloudflareBindings) => {
     Context.add(D1CounterStore, makeD1CounterStore(database)),
     Context.add(R2ObjectStore, makeR2ObjectStore(env.APP_BUCKET)),
     Context.add(RoomClient, makeRoomClient(env.CHAT_ROOM)),
+    Context.add(LiveRooms, makeLiveRooms(env.LIVE_ROOMS)),
   )
 }
 
 export { ChatRoom } from "./pages/do-demo/chat-room.js"
+export { LiveRoom } from "./realtime/live-room.js"
 
 export default {
   fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>

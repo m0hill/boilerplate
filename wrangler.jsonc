@@ -33,12 +33,20 @@
         "name": "CHAT_ROOM",
         "class_name": "ChatRoom",
       },
+      {
+        "name": "LIVE_ROOMS",
+        "class_name": "LiveRoom",
+      },
     ],
   },
   "migrations": [
     {
       "tag": "v1",
       "new_sqlite_classes": ["ChatRoom"],
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["LiveRoom"],
     },
   ],
   "observability": {

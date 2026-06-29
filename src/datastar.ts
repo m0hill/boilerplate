@@ -37,3 +37,6 @@ export const datastarSignals = (...args: Parameters<typeof reply.signals>) =>
 
 export const datastarStream = (...args: Parameters<typeof reply.stream>) =>
   HttpServerResponse.raw(reply.stream(...args))
+
+export const datastarDone = (...args: Parameters<typeof reply.done>) =>
+  HttpServerResponse.raw(reply.done(...args))

@@ -27,9 +27,25 @@ links to the files that implement it — copy a folder under `src/pages/` to sta
 | `/kv`            | Counter persisted in Workers KV, incremented server-side in Effect.           |
 | `/d1`            | The same counter on D1 (SQLite) via Drizzle, rows parsed by Schema.           |
 | `/r2`            | Save, list, open, and delete text objects in an R2 bucket.                    |
-| `/do`            | Per-room chat — each room is a Durable Object with its own Drizzle SQLite DB. |
+| `/do`            | Per-room chat — one Durable Object owns SQLite, writes, and live pulses.      |
+| `/live-counter`  | D1-backed counter synced through a payload-free Durable Object pulse hub.     |
 | `/api`           | GitHub lookup with Effect `HttpClient` + `Schema`, mocked with MSW.           |
 | `/web-component` | Browser-only logic via a `<qr-code>` custom element fed by a Datastar signal. |
+
+## Realtime pattern
+
+Live views use Datastar's invalidation + re-read shape:
+
+1. Open the pulse subscription before the first read.
+2. Render current backend state as the first SSE patch.
+3. Commands mutate the source of truth and publish a payload-free `changed` pulse.
+4. Each pulse makes the stream re-read current state and render the same view again.
+
+This works whether a Durable Object owns the database (`/do`) or only acts as an invalidation hub for
+another store (`/live-counter`). The event stream never carries the source-of-truth payload, so
+reconnects recover by rendering current state and out-of-order events cannot revert the UI.
+
+Reusable pieces live in `src/realtime/pulse.ts` and `src/realtime/live-view.ts`.
 
 ## Database
 

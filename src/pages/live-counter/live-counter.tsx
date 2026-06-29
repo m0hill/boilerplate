@@ -1,11 +1,12 @@
-import { Effect, Layer, Stream } from "effect"
+import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { event } from "datastar-kit"
-import { datastarPage, datastarPatch, datastarStream } from "../../datastar.js"
+import { datastarDone, datastarPage } from "../../datastar.js"
 import { D1CounterStore, type D1CounterStoreError } from "../d1-demo/store.js"
 import { annotate } from "../../observability/request-log.js"
+import { liveView } from "../../realtime/live-view.js"
 import { pageHead } from "../../ui/head.js"
-import { LiveRooms, LiveRoomError } from "./live-rooms.js"
+import { LiveRooms, type LiveRoomError } from "./live-rooms.js"
 import { LiveCounterMain, LiveCountView } from "./views.js"
 
 const COUNTER_ROOM = "counter"
@@ -38,35 +39,24 @@ const liveCounterStream = Effect.gen(function* () {
   const counter = yield* D1CounterStore
   const rooms = yield* LiveRooms
 
-  const initial = yield* counter.current
-  const invalidations = yield* rooms.subscribe(COUNTER_ROOM)
+  const pulses = yield* rooms.subscribe(COUNTER_ROOM)
+  yield* annotate({ liveCounter: { ok: true, action: "subscribe" } })
 
-  const counts = Stream.succeed(initial).pipe(
-    Stream.concat(
-      Stream.fromReadableStream({
-        evaluate: () => invalidations,
-        onError: (cause) => new LiveRoomError({ reason: "subscribe_failed", cause }),
-      }).pipe(Stream.mapEffect(() => counter.current)),
+  return yield* liveView({
+    pulses,
+    render: counter.current.pipe(
+      Effect.map((count) => event.patch(<LiveCountView count={count} />)),
     ),
-    Stream.changes,
-  )
-
-  const events = counts.pipe(Stream.map((count) => event.patch(<LiveCountView count={count} />)))
-
-  return datastarStream(Stream.toAsyncIterable(events), {
-    heartbeat: { intervalMs: 15_000, comment: "live-counter" },
+    log: { feature: "liveCounter", room: COUNTER_ROOM },
   })
 }).pipe(
-  Effect.catchTags({
-    D1CounterStoreError: (error) => unavailable("subscribe", error),
-    LiveRoomError: (error) => unavailable("subscribe", error),
-  }),
+  Effect.catchTag("LiveRoomError", (error) => unavailable("subscribe", error)),
   Effect.withSpan("liveCounter.stream"),
 )
 
 const increment = Effect.gen(function* () {
   const counter = yield* D1CounterStore
-  const count = yield* counter.increment
+  yield* counter.increment
   const rooms = yield* LiveRooms
 
   yield* rooms.publish(COUNTER_ROOM).pipe(
@@ -78,7 +68,7 @@ const increment = Effect.gen(function* () {
   )
 
   yield* annotate({ liveCounter: { ok: true, action: "increment" } })
-  return datastarPatch(<LiveCountView count={count} />)
+  return datastarDone()
 }).pipe(
   Effect.catchTag("D1CounterStoreError", (error) => unavailable("increment", error)),
   Effect.withSpan("liveCounter.increment"),

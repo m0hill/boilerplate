@@ -40,9 +40,20 @@
   but you still want live updates, keep the DO as a payload-free invalidation hub and have each
   stream reload D1 — `src/pages/live-counter/` is that pattern. Use KV only for cheap,
   eventually-consistent global key/value reads where races are acceptable.
-- For realtime, both DO shapes work and both are reconnect-safe because each stream renders current
-  state: DO-as-database fans out its own rendered patches; D1-as-truth uses a signal-only DO. See
-  the datastar-kit realtime guide under `repos/datastar-kit`.
+- For realtime, use the same invalidation + re-read shape regardless of where the data lives:
+  subscribe to a payload-free pulse stream **before** the first read, render current state as the
+  first event, then re-read and render current state again on each pulse. Commands mutate the source
+  of truth and publish a pulse; they should not also render the same live region. If the command only
+  needs to acknowledge success, return `datastarDone()`; if it needs form cleanup, patch signals only.
+- Durable Objects can still own everything. In the DO-as-database shape, the object owns SQLite,
+  writes, and subscribers; a write method inserts/updates and publishes a payload-free pulse inside
+  the same DO method. In the D1-as-truth shape, the DO is only an invalidation hub and streams reload
+  D1. In both cases, the SSE event is never the source of truth, so reconnects recover by rendering
+  the latest backend state and out-of-order payload patches cannot revert the UI.
+- Use `src/realtime/pulse.ts` for a DO-local sliding pulse hub and `src/realtime/live-view.ts` for
+  the shared Datastar stream shape. Do not publish rendered HTML or domain payloads through the hub;
+  do not use unbounded subscriber queues for latest-state live views. See `/do` for DO-owned state
+  and `/live-counter` for D1 + invalidation DO.
 
 ## Observability
 

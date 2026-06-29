@@ -19,16 +19,15 @@ describe("Live counter demo page", () => {
     expect(html).toContain(">0</output>")
   })
 
-  it("increments the D1 counter and patches the value", async () => {
+  it("increments the D1 counter and lets the live stream render the value", async () => {
     const app = await loadApp()
     const response = await app.fetch(datastarPost("/live-counter/increment"))
-    const body = await response.text()
 
-    expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("text/event-stream")
-    expect(body).toContain("event: datastar-patch-elements")
-    expect(body).toContain('id="live-count"')
-    expect(body).toContain(">1</output>")
+    expect(response.status).toBe(204)
+    await expect(response.text()).resolves.toBe("")
+
+    const page = await app.fetch(request("/live-counter"))
+    expect(await page.text()).toContain(">1</output>")
   })
 
   it("shares the D1 counter row with the D1 demo", async () => {

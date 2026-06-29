@@ -22,6 +22,17 @@
   bindings, or deterministic inputs.
 - Keep pure domain tests focused on exported parsers, constructors, and domain functions.
 
+## Realtime test patterns
+
+- For Datastar live views, test the initial SSE patch, then subscribe-before-write delivery by
+  opening the stream before the command that publishes the pulse.
+- Commands that update a live region should mutate + publish and then return `datastarDone()` or a
+  signal patch for form cleanup; test that they do not also patch the live region.
+- Cover at least one convergence case for shared live state: concurrent commands should eventually
+  render the durable current state without reverting to an older payload.
+- Cancel a stream reader in a Vitest test when checking cleanup-sensitive code so the DO subscriber
+  finalizer runs.
+
 ## Playwright patterns
 
 - Keep e2e tests offline and deterministic. External-dependent happy paths belong in MSW-backed

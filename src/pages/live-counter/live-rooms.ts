@@ -11,7 +11,7 @@ export class LiveRooms extends Context.Service<
   LiveRooms,
   {
     readonly subscribe: (room: string) => Effect.Effect<ReadableStream<Uint8Array>, LiveRoomError>
-    readonly publish: (room: string) => Effect.Effect<boolean, LiveRoomError>
+    readonly publish: (room: string) => Effect.Effect<void, LiveRoomError>
   }
 >()("boilerplate/pages/live-counter/LiveRooms") {}
 

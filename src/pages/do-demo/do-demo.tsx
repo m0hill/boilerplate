@@ -1,8 +1,9 @@
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { event } from "datastar-kit"
-import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "../../datastar.js"
+import { datastarPage, datastarSignals, decodeSignals } from "../../datastar.js"
 import { annotate } from "../../observability/request-log.js"
+import { liveView } from "../../realtime/live-view.js"
 import { pageHead } from "../../ui/head.js"
 import { type InvalidMessageError, maxBodyLength, parseMessage, parseRoom } from "./rooms.js"
 import { RoomClient, type DoRoomError } from "./store.js"
@@ -58,17 +59,19 @@ const liveMessages = Effect.fn("doDemo.live")(
     const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? "lobby"
     const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => "lobby"))
     const client = yield* RoomClient
-    const messages = yield* client.list(room)
-    yield* annotate({
-      do: { ok: true, action: "subscribe", room, count: messages.length },
+
+    const pulses = yield* client.subscribe(room)
+    yield* annotate({ do: { ok: true, action: "subscribe", room } })
+
+    return yield* liveView({
+      pulses,
+      render: client
+        .list(room)
+        .pipe(
+          Effect.map((messages) => event.patch(<MessageList room={room} messages={messages} />)),
+        ),
+      log: { feature: "do", room },
     })
-
-    const stream = yield* client.subscribe(
-      room,
-      event.patch(<MessageList room={room} messages={messages} />),
-    )
-
-    return HttpServerResponse.raw(stream)
   },
   Effect.catchTag("DoRoomError", (error) =>
     logRoomUnavailable("subscribe", error).pipe(
@@ -83,17 +86,10 @@ const postMessage = Effect.fn("doDemo.post")(
     const room = yield* parseRoom(signals.room)
     const message = yield* parseMessage(signals.author, signals.body)
     const client = yield* RoomClient
-    const messages = yield* client.post(room, message.author, message.body)
-    const messageList = event.patch(<MessageList room={room} messages={messages} />)
-    yield* client.publish(room, messageList)
-    yield* annotate({
-      do: { ok: true, action: "post", room, count: messages.length },
-    })
+    yield* client.post(room, message.author, message.body)
+    yield* annotate({ do: { ok: true, action: "post", room } })
 
-    return datastarStream([
-      event.signals(chatForm.patch({ body: "", errors: { form: "" } })),
-      messageList,
-    ])
+    return datastarSignals(chatForm.patch({ body: "", errors: { form: "" } }))
   },
   Effect.catchTags({
     InvalidSignalsError: () => Effect.succeed(formError("Could not read the form. Try again.")),

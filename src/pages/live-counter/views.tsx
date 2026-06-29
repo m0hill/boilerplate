@@ -4,11 +4,11 @@ import { DemoLayout } from "../../ui/demo.js"
 const sources = [
   {
     path: "src/pages/live-counter/live-room.ts",
-    role: "generic invalidation hub DO: one per room name, sliding PubSub, signals “changed” only",
+    role: "generic pulse hub DO: one per room name, no payloads, sliding PubSub",
   },
   {
     path: "src/pages/live-counter/live-rooms.ts",
-    role: "worker-side LiveRooms: subscribe to / publish a room's invalidations by name over RPC",
+    role: "worker-side LiveRooms: subscribe / publish pulses by room name over RPC",
   },
   {
     path: "src/pages/d1-demo/store.ts",
@@ -29,10 +29,9 @@ export const LiveCountView = ({ count }: { count: number }) => (
 export const LiveCounterMain = ({ count }: { count: number }) => (
   <DemoLayout
     title="Live counter"
-    tagline="The realtime shape datastar-kit recommends: the live stream renders the same view again
-      whenever the data changes, re-reading D1 each time. A generic Durable Object only signals
-      “something changed” — it carries no payload, so a reconnecting tab is always correct. Open this
-      page in two tabs; incrementing in one updates both. It shares the D1 counter with the D1 demo."
+    tagline="The stream renders the current D1 count on connect and after every payload-free DO
+      pulse. Commands only write D1 and wake the room, so reconnects and out-of-order pulses converge
+      on the latest count. Open this page in two tabs; incrementing in one updates both."
     sources={sources}
   >
     <div data-init={get("/live-counter/stream")} class="flex flex-col gap-6">

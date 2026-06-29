@@ -22,7 +22,7 @@ describe("Durable Object demo page", () => {
     expect(html).toContain("No messages in this room yet.")
   })
 
-  it("posts a message and patches the log", async () => {
+  it("accepts a post and only resets the form (the live stream renders the list)", async () => {
     const app = await loadApp()
     const response = await app.fetch(
       datastarPost("/do/post", { room: "test-post", author: "alice", body: "hello DO" }),
@@ -31,9 +31,11 @@ describe("Durable Object demo page", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/event-stream")
-    expect(body).toContain("event: datastar-patch-elements")
-    expect(body).toContain("alice")
-    expect(body).toContain("hello DO")
+    expect(body).toContain("event: datastar-patch-signals")
+    expect(body).not.toContain("event: datastar-patch-elements")
+
+    const page = await app.fetch(request("/do?room=test-post"))
+    expect(await page.text()).toContain("hello DO")
   })
 
   it("persists a room's messages across requests", async () => {
@@ -62,7 +64,7 @@ describe("Durable Object demo page", () => {
     expect(html).not.toContain("secret")
   })
 
-  it("fans out new messages to subscribers open on the same room", async () => {
+  it("delivers a post to a subscriber that connected before the write", async () => {
     const app = await loadApp()
     const live = await app.fetch(request("/do/live?room=test-live"))
 
@@ -94,6 +96,58 @@ describe("Durable Object demo page", () => {
     expect(received).toContain("live ping")
 
     await reader.cancel()
+  })
+
+  it("converges concurrent posts without reverting the list", async () => {
+    const app = await loadApp()
+    const live = await app.fetch(request("/do/live?room=test-concurrent"))
+    const body = live.body
+    if (body === null) throw new Error("expected an SSE stream body")
+
+    const reader = body.getReader()
+    const decoder = new TextDecoder()
+    await reader.read()
+
+    await Promise.all([
+      app.fetch(
+        datastarPost("/do/post", { room: "test-concurrent", author: "amy", body: "first" }),
+      ),
+      app.fetch(
+        datastarPost("/do/post", { room: "test-concurrent", author: "ben", body: "second" }),
+      ),
+    ])
+
+    let received = ""
+    while (!(received.includes("first") && received.includes("second"))) {
+      const { value, done } = await reader.read()
+      if (done) break
+      received += decoder.decode(value)
+    }
+
+    expect(received).toContain("first")
+    expect(received).toContain("second")
+    await reader.cancel()
+
+    const page = await app.fetch(request("/do?room=test-concurrent"))
+    const html = await page.text()
+    expect(html).toContain("amy")
+    expect(html).toContain("ben")
+  })
+
+  it("keeps serving a room after a subscriber disconnects", async () => {
+    const app = await loadApp()
+    const live = await app.fetch(request("/do/live?room=test-cleanup"))
+    const body = live.body
+    if (body === null) throw new Error("expected an SSE stream body")
+
+    const reader = body.getReader()
+    await reader.read()
+    await reader.cancel()
+    await app.fetch(
+      datastarPost("/do/post", { room: "test-cleanup", author: "cleo", body: "after disconnect" }),
+    )
+    const page = await app.fetch(request("/do?room=test-cleanup"))
+    expect(await page.text()).toContain("after disconnect")
   })
 
   it("rejects an empty message with a form error", async () => {

@@ -30,14 +30,14 @@ const demos: readonly Demo[] = [
     href: "/do",
     title: "Durable Object",
     tag: "DO · Drizzle",
-    blurb: "Per-room chat — each room is one DO with its own SQLite DB, migrated by Drizzle.",
+    blurb: "Per-room chat — one DO owns SQLite, writes, and payload-free live pulses.",
   },
   {
     href: "/live-counter",
     title: "Live counter",
-    tag: "D1 · DO fan-out",
+    tag: "D1 · DO pulses",
     blurb:
-      "Realtime sync the production way — D1 is the source of truth, a generic DO room fans patches to every tab.",
+      "D1 is the source of truth; a generic Durable Object wakes streams to re-read and patch.",
   },
   {
     href: "/api",

@@ -6,14 +6,17 @@ import { presetRooms } from "./rooms.js"
 const sources = [
   {
     path: "src/pages/do-demo/chat-room.ts",
-    role: "the Durable Object: per-room SQLite + Drizzle migrate",
+    role: "the Durable Object: owns per-room SQLite and its subscribers; post inserts + pulses atomically",
   },
   { path: "src/pages/do-demo/room.ts", role: "room logic as Effect programs over the DO database" },
   {
     path: "src/pages/do-demo/store.ts",
-    role: "worker-side RoomClient: resolves a room to one DO via RPC, opens/publishes live streams",
+    role: "worker-side RoomClient: resolves a room to one DO via RPC (list / post / subscribe)",
   },
-  { path: "drizzle-do/", role: "Drizzle migrations generated for the durable-sqlite driver" },
+  {
+    path: "src/realtime/live-view.ts",
+    role: "shared: each pulse re-reads the DO log and re-renders — no payload on the wire",
+  },
 ] as const
 
 export const chatForm = state({ room: "", author: "", body: "", errors: { form: "" } })
@@ -69,10 +72,9 @@ export const MessageList = ({ room, messages }: { room: string; messages: readon
 export const DoDemoMain = ({ room, messages }: { room: string; messages: readonly Message[] }) => (
   <DemoLayout
     title="Durable Object"
-    tagline="Each room is a single Durable Object instance with its own embedded SQLite database
-      (migrated by Drizzle). Because one object handles a room's writes single-threaded, the log is
-      strongly consistent — no read-modify-write races like an eventually-consistent store. The same
-      object fans every new message out over a Datastar SSE stream, so all open tabs sync live."
+    tagline="Each room is a Durable Object with its own SQLite log and pulse hub. Posting inserts the
+      row and wakes subscribers in one object method; every open tab re-reads current messages and
+      re-renders, so reconnects and concurrent posts converge on the durable state."
     sources={sources}
   >
     <RoomSwitcher room={room} />

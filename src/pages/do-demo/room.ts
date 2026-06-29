@@ -32,18 +32,14 @@ export function makeRoom(db: RoomDatabase) {
     })
 
     const decoded = yield* Effect.forEach(rows, decodeRow)
-    return decoded.reverse() // newest-first query → oldest-first for display
+    return decoded.reverse()
   }).pipe(Effect.withSpan("Room.list"))
 
   const post = (author: string, body: string) =>
-    Effect.gen(function* () {
-      yield* Effect.try({
-        try: () => db.insert(messages).values({ author, body, createdAt: Date.now() }).run(),
-        catch: (cause) => new RoomError({ reason: "write_failed", cause }),
-      })
-
-      return yield* list
-    }).pipe(Effect.withSpan("Room.post"))
+    Effect.try({
+      try: () => db.insert(messages).values({ author, body, createdAt: Date.now() }).run(),
+      catch: (cause) => new RoomError({ reason: "write_failed", cause }),
+    }).pipe(Effect.asVoid, Effect.withSpan("Room.post"))
 
   return { list, post } as const
 }

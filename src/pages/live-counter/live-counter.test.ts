@@ -49,7 +49,10 @@ describe("Live counter demo page", () => {
     expect(live.status).toBe(200)
     expect(live.headers.get("content-type")).toBe("text/event-stream")
 
-    const reader = live.body!.getReader()
+    const body = live.body
+    if (body === null) throw new Error("expected an SSE stream body")
+
+    const reader = body.getReader()
     const decoder = new TextDecoder()
 
     const snapshot = decoder.decode((await reader.read()).value)

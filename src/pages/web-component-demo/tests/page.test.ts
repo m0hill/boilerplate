@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { loadApp, request } from "../../../test-utils.js"
+import { loadApp, request } from "../../../test/utils.js"
 
 describe("web component demo page", () => {
   it("renders the custom element wired to a Datastar signal", async () => {

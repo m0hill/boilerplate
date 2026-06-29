@@ -39,7 +39,7 @@ export default defineConfig(async () => {
       }),
     ],
     test: {
-      setupFiles: ["./src/test-d1-migrations.ts"],
+      setupFiles: ["./src/test/d1-migrations.ts"],
       exclude: ["dist/**", "node_modules/**", "repos/**", "**/*.e2e.ts"],
     },
   }

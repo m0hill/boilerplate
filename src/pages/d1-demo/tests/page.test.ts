@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "../../../test-utils.js"
+import { datastarPost, loadApp, request } from "../../../test/utils.js"
 
 beforeEach(async () => {
   await env.APP_DB.prepare("DELETE FROM d1_counters").run()

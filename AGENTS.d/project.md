@@ -93,7 +93,7 @@
 - `src/lib/observability/` and `src/lib/realtime/` — app glue with specific names.
 - `src/ui/` — shared TSX layout/head helpers such as `layout.tsx` and `head.tsx`.
 - `src/client/` — browser-only web components / modules, built by `scripts/build-client.ts`.
-- `src/test-utils.ts` — `loadApp`, `request`, and `datastarPost` helpers.
+- `src/test/` — shared test helpers, test-only types, and Vitest setup.
 - `public/` — Worker assets. Generated CSS/JS are gitignored; hand-authored assets are committed.
 - `repos/` — vendored reference repos. See `AGENTS.d/vendored-repos.md`.
 

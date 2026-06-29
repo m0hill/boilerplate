@@ -6,12 +6,12 @@ interface __BaseEnv_CloudflareBindings {
   APP_BUCKET: R2Bucket
   APP_DB: D1Database
   NODE_ENV: string
-  CHAT_ROOM: DurableObjectNamespace<import("./src/server").ChatRoom>
-  LIVE_ROOMS: DurableObjectNamespace<import("./src/server").LiveRoom>
+  CHAT_ROOM: DurableObjectNamespace<import("./src/index").ChatRoom>
+  LIVE_ROOMS: DurableObjectNamespace<import("./src/index").LiveRoom>
 }
 declare namespace Cloudflare {
   interface GlobalProps {
-    mainModule: typeof import("./src/server")
+    mainModule: typeof import("./src/index")
     durableNamespaces: "ChatRoom" | "LiveRoom"
   }
   interface Env extends __BaseEnv_CloudflareBindings {}

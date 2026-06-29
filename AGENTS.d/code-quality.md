@@ -7,7 +7,7 @@ Follow nearby code first. These rules cover project-specific boundaries that are
 - App code runs on Cloudflare Workers. Keep Node-only APIs out of Worker modules.
 - `src/client` is browser-only. It must not import Worker routes, page modules, Cloudflare
   bindings, persistence adapters, or server capabilities.
-- Bindings enter through `src/server.tsx`. Adapt them into narrow services before passing them to
+- Bindings enter through `src/index.tsx`. Adapt them into narrow services before passing them to
   page/domain code unless a feature truly needs the raw Worker env.
 
 ## TypeScript and domain rules

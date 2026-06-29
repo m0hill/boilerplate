@@ -6,7 +6,7 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "src/server.tsx",
+  "main": "src/index.tsx",
   "scripts": {
     "dev": "nub run build && concurrently -k -n css,js,cf -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"wrangler dev --live-reload\"",
     "preview": "nub run build && wrangler dev",

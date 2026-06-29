@@ -8,7 +8,7 @@ const sources = [
     role: "KvCounter: reads/writes the KV namespace",
   },
   { path: "src/pages/kv-demo/index.tsx", role: "routes, error handling, SSE patch" },
-  { path: "src/server.tsx", role: "binds COUNTER_KV into the request context" },
+  { path: "src/index.tsx", role: "binds COUNTER_KV into the request context" },
 ] as const
 
 export const KvPage = ({ count }: { readonly count: number }) => (

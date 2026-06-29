@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "boilerplate",
-  "main": "src/server.tsx",
+  "main": "src/index.tsx",
   "compatibility_date": "2026-05-22",
   "assets": {
     "directory": "./public",

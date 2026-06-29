@@ -5,7 +5,7 @@ export const loadApp = async (): Promise<{
   readonly fetch: (request: Request) => Promise<Response>
 }> => {
   vi.resetModules()
-  const app = (await import("../server.js")).default
+  const app = (await import("../index.js")).default
   return { fetch: (request) => app.fetch(request, env) }
 }
 

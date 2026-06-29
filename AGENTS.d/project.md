@@ -2,7 +2,7 @@
 
 ## Stack
 
-- **Runtime:** Cloudflare Workers via `wrangler`. `src/server.tsx` exports the Worker `fetch`
+- **Runtime:** Cloudflare Workers via `wrangler`. `src/index.tsx` exports the Worker `fetch`
   handler built from Effect's `HttpRouter`.
 - **Toolchain:** `nub` for installs, scripts, package execution, and Node version management. Node
   is the build/dev toolchain, not the app runtime.
@@ -74,7 +74,7 @@
 
 ## Layout
 
-- `src/server.tsx` — Worker entry, service wiring, route merge, request context, and DO exports.
+- `src/index.tsx` — Worker entry, service wiring, route merge, request context, and DO exports.
 - `src/lib/datastar.ts` — Datastar/Effect bridge and signal decoding.
 - `src/pages/<name>/index.tsx` — MPA page boundary: route registration, handlers, page-owned
   Datastar state, request parsing, and page-level error-to-response/UI mapping.
@@ -109,7 +109,7 @@ There are three TypeScript projects: root Worker/server code, `src/client` brows
 3. Put server-rendered TSX in `src/pages/<name>/components/`.
 4. Put Cloudflare resource-bound code in focused `src/resources/<resource>/` folders. Put external
    API/service integrations in `src/services/<service>/` folders.
-5. Merge the page route layer in `src/server.tsx` and wire resources/services from raw Cloudflare
+5. Merge the page route layer in `src/index.tsx` and wire resources/services from raw Cloudflare
    bindings in `requestContext`.
 6. Test page behavior through `loadApp()` and `app.fetch(request("/..."))`; keep route tests in the
    page's `tests/` folder and resource/service/domain tests in that module's `tests/` folder.

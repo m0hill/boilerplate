@@ -31,7 +31,7 @@ export default defineConfig(async () => {
   return {
     plugins: [
       cloudflareTest({
-        main: "./src/server.tsx",
+        main: "./src/index.tsx",
         wrangler: { configPath: "./wrangler.jsonc" },
         miniflare: {
           bindings: { TEST_MIGRATIONS: migrations },

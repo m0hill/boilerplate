@@ -1,7 +1,7 @@
 import { defineConfig } from "drizzle-kit"
 
 export default defineConfig({
-  schema: "./src/pages/do-demo/schema.ts",
+  schema: "./src/services/database/chat-room-schema.ts",
   out: "./drizzle-do",
   dialect: "sqlite",
   driver: "durable-sqlite",

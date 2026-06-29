@@ -1,0 +1,28 @@
+import type { Repo } from "../../../services/github-repos/github-repos.js"
+
+const formatCount = (value: number): string => value.toLocaleString()
+
+const Stat = ({ label, value }: { readonly label: string; readonly value: string }) => (
+  <div class="flex flex-col">
+    <dt class="text-sm text-gray-500">{label}</dt>
+    <dd class="text-xl font-semibold tabular-nums">{value}</dd>
+  </div>
+)
+
+export const RepoResult = ({ result }: { readonly result?: Repo }) => (
+  <section id="repo-result" class="rounded border border-gray-200 p-4">
+    {result === undefined ? (
+      <p class="text-gray-500">Look up a repository to see its public stats.</p>
+    ) : (
+      <article class="flex flex-col gap-3">
+        <h2 class="text-lg font-semibold">{result.fullName}</h2>
+        <dl class="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          <Stat label="Stars" value={formatCount(result.stars)} />
+          <Stat label="Forks" value={formatCount(result.forks)} />
+          <Stat label="Open issues" value={formatCount(result.openIssues)} />
+          <Stat label="Language" value={result.language ?? "—"} />
+        </dl>
+      </article>
+    )}
+  </section>
+)

@@ -1,24 +1,24 @@
 import { Context, Layer, Logger } from "effect"
 import { FetchHttpClient, HttpRouter } from "effect/unstable/http"
-import { CloudflareEnv } from "./cloudflare-env.js"
-import { Database, makeDatabase } from "./db/database.js"
-import { apiDemoRoutes } from "./pages/api-demo/api-demo.js"
-import { GitHubRepos } from "./pages/api-demo/github.js"
-import { d1DemoRoutes } from "./pages/d1-demo/d1-demo.js"
-import { D1CounterStore, makeD1CounterStore } from "./pages/d1-demo/store.js"
-import { doDemoRoutes } from "./pages/do-demo/do-demo.js"
-import { makeRoomClient, RoomClient } from "./pages/do-demo/store.js"
-import { homeRoutes } from "./pages/home/home.js"
-import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
-import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
-import { liveCounterRoutes } from "./pages/live-counter/live-counter.js"
-import { LiveRooms, makeLiveRooms } from "./pages/live-counter/live-rooms.js"
+import { CloudflareEnv } from "./lib/cloudflare-env.js"
+import { makeRequestLog, RequestLog } from "./lib/observability/request-log.js"
+import { wideEventLogger } from "./lib/observability/wide-event.js"
+import { apiDemoRoutes } from "./pages/api-demo/index.js"
+import { d1DemoRoutes } from "./pages/d1-demo/index.js"
+import { doDemoRoutes } from "./pages/do-demo/index.js"
+import { homeRoutes } from "./pages/home/index.js"
+import { kvDemoRoutes } from "./pages/kv-demo/index.js"
+import { liveCounterRoutes } from "./pages/live-counter/index.js"
 import { notFoundRoute } from "./pages/not-found.js"
-import { r2DemoRoutes } from "./pages/r2-demo/r2-demo.js"
-import { makeR2ObjectStore, R2ObjectStore } from "./pages/r2-demo/store.js"
-import { webComponentDemoRoutes } from "./pages/web-component-demo/web-component-demo.js"
-import { makeRequestLog, RequestLog } from "./observability/request-log.js"
-import { wideEventLogger } from "./observability/wide-event.js"
+import { r2DemoRoutes } from "./pages/r2-demo/index.js"
+import { webComponentDemoRoutes } from "./pages/web-component-demo/index.js"
+import { D1Counter, makeD1Counter } from "./services/d1-counter/d1-counter.js"
+import { Database, makeDatabase } from "./services/database/database.js"
+import { GitHubRepos } from "./services/github-repos/github-repos.js"
+import { ChatRooms, makeChatRooms } from "./services/chat-room/chat-rooms.js"
+import { KvCounter, makeKvCounter } from "./services/kv-counter/kv-counter.js"
+import { LiveRooms, makeLiveRooms } from "./services/live-rooms/live-rooms.js"
+import { makeR2Objects, R2Objects } from "./services/r2-objects/r2-objects.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
@@ -45,17 +45,17 @@ const requestContext = (env: CloudflareBindings) => {
 
   return Context.make(CloudflareEnv, env).pipe(
     Context.add(Database, database),
-    Context.add(KvCounterStore, makeKvCounterStore(env.COUNTER_KV)),
-    Context.add(D1CounterStore, makeD1CounterStore(database)),
-    Context.add(R2ObjectStore, makeR2ObjectStore(env.APP_BUCKET)),
-    Context.add(RoomClient, makeRoomClient(env.CHAT_ROOM)),
+    Context.add(KvCounter, makeKvCounter(env.COUNTER_KV)),
+    Context.add(D1Counter, makeD1Counter(database)),
+    Context.add(R2Objects, makeR2Objects(env.APP_BUCKET)),
+    Context.add(ChatRooms, makeChatRooms(env.CHAT_ROOM)),
     Context.add(LiveRooms, makeLiveRooms(env.LIVE_ROOMS)),
     Context.add(RequestLog, makeRequestLog()),
   )
 }
 
-export { ChatRoom } from "./pages/do-demo/chat-room.js"
-export { LiveRoom } from "./pages/live-counter/live-room.js"
+export { ChatRoom } from "./services/chat-room/chat-room.js"
+export { LiveRoom } from "./services/live-rooms/live-room.js"
 
 export default {
   fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>

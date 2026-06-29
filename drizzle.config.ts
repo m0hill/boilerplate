@@ -33,14 +33,14 @@ const d1Credentials = readD1HttpCredentials()
 export default defineConfig(
   d1Credentials === undefined
     ? {
-        schema: "./src/db/schema.ts",
+        schema: "./src/services/database/schema.ts",
         out: "./drizzle",
         dialect: "sqlite",
         strict: true,
         verbose: true,
       }
     : {
-        schema: "./src/db/schema.ts",
+        schema: "./src/services/database/schema.ts",
         out: "./drizzle",
         dialect: "sqlite",
         driver: "d1-http",

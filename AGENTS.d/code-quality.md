@@ -16,8 +16,8 @@ Follow nearby code first. These rules cover project-specific boundaries that are
   parsing, narrowing, and derived types. `as const` is fine.
 - Parse untrusted data once at the boundary: Datastar signals, params, request bodies, external
   JSON, env/config, and Worker bindings.
-- Keep parsed domain values inside the feature. Do not pass raw DTOs, `unknown`, or `Partial<T>`
-  through core logic.
+- Keep parsed domain values inside the service or page that owns the behavior. Do not pass raw DTOs,
+  `unknown`, or `Partial<T>` through core logic.
 - Expected failures should be typed values in the Effect error channel. Throw/reject only for
   defects or startup misconfiguration.
 - Derive shapes from schemas, services, or existing values where practical instead of duplicating
@@ -25,8 +25,17 @@ Follow nearby code first. These rules cover project-specific boundaries that are
 
 ## Module shape
 
-- Keep feature code under `src/pages/<name>/`: routes in `<name>.tsx`, TSX in `views.tsx`, external
-  capabilities in focused modules, and pure domain rules in focused modules.
+- Keep MPA page code under `src/pages/<name>/`: routes/handlers and page-owned Datastar state in
+  `index.tsx`, page-local TSX in `components/`, and page tests in `tests/`.
+- Put reusable capabilities, domain parsers, persistence adapters, Durable Objects, and external
+  service integrations under `src/services/<service>/`.
+- Put app glue under specifically named `src/lib/` modules (`datastar.ts`, `observability/`,
+  `realtime/`, `cloudflare-env.ts`). Do not create generic `lib/utils.ts` or `lib/helpers.ts`.
+- Name service files after what they do (`d1-counter.ts`, `r2-objects.ts`, `github-repos.ts`,
+  `chat-rooms.ts`). Keep all Drizzle schema files in `src/services/database/`. Avoid generic
+  `store.ts`, `utils.ts`, `helpers.ts`, and broad service folders that group unrelated capabilities.
+- Page components should use simple names (`page.tsx`, `form.tsx`, `count.tsx`, `message-list.tsx`).
+  Avoid `views.tsx`, `Main`, and `View` suffixes unless the product language truly uses those words.
 - Split a file only when it stops being clear. Avoid catch-all `utils`, `helpers`, and shallow
   wrappers.
 - Export only what other modules need. Avoid barrel files unless they solve a real import problem.

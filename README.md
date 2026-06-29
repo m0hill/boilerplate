@@ -19,8 +19,8 @@ nub run check
 
 ## Demos
 
-The landing page (`/`) is an index of self-contained demos. Each one shows a single capability and
-links to the files that implement it — copy a folder under `src/pages/` to start your own.
+The landing page (`/`) is an index of self-contained demos. Each one shows a single capability.
+Pages live under `src/pages/<page>/`; reusable capabilities live under `src/services/<service>/`.
 
 | Route            | Capability                                                                    |
 | ---------------- | ----------------------------------------------------------------------------- |
@@ -45,13 +45,13 @@ This works whether a Durable Object owns the database (`/do`) or only acts as an
 another store (`/live-counter`). The event stream never carries the source-of-truth payload, so
 reconnects recover by rendering current state and out-of-order events cannot revert the UI.
 
-Reusable pieces live in `src/realtime/pulse.ts` and `src/realtime/live-view.ts`.
+Reusable pieces live in `src/lib/realtime/pulse.ts` and `src/lib/realtime/live-view.ts`.
 
 ## Database
 
-- D1 schema lives in `src/db/schema.ts`; generate with `nub run db:generate`, apply locally with
+- D1 schema lives in `src/services/database/schema.ts`; generate with `nub run db:generate`, apply locally with
   `nub run db:migrate:local`.
-- Durable Object SQLite schema lives in `src/pages/do-demo/schema.ts`; generate with
+- Durable Object SQLite schema lives in `src/services/database/chat-room-schema.ts`; generate with
   `nub run db:generate:do` (output in `drizzle-do/`). DO migrations run automatically inside the
   object on first wake — no apply step.
 - For remote D1 Drizzle Kit commands, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, and `CLOUDFLARE_D1_TOKEN`.

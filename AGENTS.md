@@ -25,7 +25,7 @@ for the area you are changing.
   element via `data-attr` (in) and `data-on` (out); (4) a plain imperative island only as a last
   resort. Custom elements live in `src/client/`. See `/web-component` for the canonical pattern.
 - Routes use Effect's `HttpRouter`; handlers return `HttpServerResponse`. Return Datastar
-  responses through `src/datastar.ts` helpers.
+  responses through `src/lib/datastar.ts` helpers.
 - Validate untrusted input at boundaries with Effect `Schema`. Model expected failures as tagged
   errors and return user-fixable errors as signal patches.
 - Use `*.test.ts` for Workers/domain behavior and `*.e2e.ts` only for browser behavior.

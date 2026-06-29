@@ -17,6 +17,8 @@ import { notFoundRoute } from "./pages/not-found.js"
 import { r2DemoRoutes } from "./pages/r2-demo/r2-demo.js"
 import { makeR2ObjectStore, R2ObjectStore } from "./pages/r2-demo/store.js"
 import { webComponentDemoRoutes } from "./pages/web-component-demo/web-component-demo.js"
+import { makeRequestLog, RequestLog } from "./observability/request-log.js"
+import { wideEventLogger } from "./observability/wide-event.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
@@ -31,11 +33,12 @@ const AppLayer = Layer.mergeAll(
   webComponentDemoRoutes,
   notFoundRoute,
 ).pipe(
+  Layer.provide(HttpRouter.middleware(wideEventLogger).layer),
   HttpRouter.provideRequest(GitHubReposLive),
-  Layer.provide(Logger.layer([Logger.consoleJson])),
+  Layer.provideMerge(Logger.layer([Logger.consoleJson])),
 )
 
-const { handler } = HttpRouter.toWebHandler(AppLayer)
+const { handler } = HttpRouter.toWebHandler(AppLayer, { disableLogger: true })
 
 const requestContext = (env: CloudflareBindings) => {
   const database = makeDatabase(env.APP_DB)
@@ -47,6 +50,7 @@ const requestContext = (env: CloudflareBindings) => {
     Context.add(R2ObjectStore, makeR2ObjectStore(env.APP_BUCKET)),
     Context.add(RoomClient, makeRoomClient(env.CHAT_ROOM)),
     Context.add(LiveRooms, makeLiveRooms(env.LIVE_ROOMS)),
+    Context.add(RequestLog, makeRequestLog()),
   )
 }
 

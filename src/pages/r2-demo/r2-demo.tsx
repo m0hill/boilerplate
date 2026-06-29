@@ -2,6 +2,7 @@ import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { event } from "datastar-kit"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "../../datastar.js"
+import { annotate } from "../../observability/request-log.js"
 import { pageHead } from "../../ui/head.js"
 import { type InvalidObjectError, maxContentBytes, parseObject, parseObjectKey } from "./objects.js"
 import { R2ObjectStore, type R2StoreError } from "./store.js"
@@ -24,12 +25,12 @@ const invalidObjectMessage = (error: InvalidObjectError): string => {
 const formError = (message: string) => datastarSignals(r2Form.patch({ errors: { form: message } }))
 
 const logR2Unavailable = (action: string, error: R2StoreError) =>
-  Effect.annotateLogsScoped({ r2: { ok: false, action, reason: error.reason, cause: error.cause } })
+  annotate({ r2: { ok: false, action, reason: error.reason, cause: error.cause } })
 
 const r2DemoPage = Effect.gen(function* () {
   const store = yield* R2ObjectStore
   const objects = yield* store.list
-  yield* Effect.annotateLogsScoped({ r2: { ok: true, action: "list", count: objects.length } })
+  yield* annotate({ r2: { ok: true, action: "list", count: objects.length } })
 
   return datastarPage(<R2DemoMain objects={objects} />, {
     title: "R2 object store",
@@ -47,7 +48,7 @@ const r2DemoPage = Effect.gen(function* () {
 const refreshList = Effect.fn("r2Demo.refreshList")(function* (action: string) {
   const store = yield* R2ObjectStore
   const objects = yield* store.list
-  yield* Effect.annotateLogsScoped({ r2: { ok: true, action, count: objects.length } })
+  yield* annotate({ r2: { ok: true, action, count: objects.length } })
 
   return datastarStream([
     event.signals(r2Form.patch({ errors: { form: "" } })),

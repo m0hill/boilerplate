@@ -2,6 +2,7 @@ import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { event } from "datastar-kit"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "../../datastar.js"
+import { annotate } from "../../observability/request-log.js"
 import { pageHead } from "../../ui/head.js"
 import { type InvalidMessageError, maxBodyLength, parseMessage, parseRoom } from "./rooms.js"
 import { RoomClient, type DoRoomError } from "./store.js"
@@ -28,7 +29,7 @@ const formError = (message: string) =>
   datastarSignals(chatForm.patch({ errors: { form: message } }))
 
 const logRoomUnavailable = (action: string, error: DoRoomError) =>
-  Effect.annotateLogsScoped({ do: { ok: false, action, reason: error.reason, cause: error.cause } })
+  annotate({ do: { ok: false, action, reason: error.reason, cause: error.cause } })
 
 const doDemoPage = Effect.fn("doDemo.page")(
   function* (request: HttpServerRequest.HttpServerRequest) {
@@ -36,7 +37,7 @@ const doDemoPage = Effect.fn("doDemo.page")(
     const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => "lobby"))
     const client = yield* RoomClient
     const messages = yield* client.list(room)
-    yield* Effect.annotateLogsScoped({
+    yield* annotate({
       do: { ok: true, action: "list", room, count: messages.length },
     })
 
@@ -58,7 +59,7 @@ const liveMessages = Effect.fn("doDemo.live")(
     const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => "lobby"))
     const client = yield* RoomClient
     const messages = yield* client.list(room)
-    yield* Effect.annotateLogsScoped({
+    yield* annotate({
       do: { ok: true, action: "subscribe", room, count: messages.length },
     })
 
@@ -85,7 +86,7 @@ const postMessage = Effect.fn("doDemo.post")(
     const messages = yield* client.post(room, message.author, message.body)
     const messageList = event.patch(<MessageList room={room} messages={messages} />)
     yield* client.publish(room, messageList)
-    yield* Effect.annotateLogsScoped({
+    yield* annotate({
       do: { ok: true, action: "post", room, count: messages.length },
     })
 

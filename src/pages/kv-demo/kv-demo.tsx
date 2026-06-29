@@ -1,6 +1,7 @@
 import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarPatch } from "../../datastar.js"
+import { annotate } from "../../observability/request-log.js"
 import { pageHead } from "../../ui/head.js"
 import { KvCounterStore, type KvCounterStoreError } from "./store.js"
 import { KvCountView, KvDemoMain } from "./views.js"
@@ -11,7 +12,7 @@ const counterUnavailable = Effect.fn("kvDemo.unavailable")(function* (
   action: CounterAction,
   error: KvCounterStoreError,
 ) {
-  yield* Effect.annotateLogsScoped({
+  yield* annotate({
     kvCounter: { ok: false, action, reason: error.reason, cause: error.cause },
   })
   return HttpServerResponse.text("KV demo unavailable", { status: 503 })
@@ -20,7 +21,7 @@ const counterUnavailable = Effect.fn("kvDemo.unavailable")(function* (
 const kvDemoPage = Effect.gen(function* () {
   const counter = yield* KvCounterStore
   const count = yield* counter.current
-  yield* Effect.annotateLogsScoped({ kvCounter: { ok: true, action: "view" } })
+  yield* annotate({ kvCounter: { ok: true, action: "view" } })
 
   return datastarPage(<KvDemoMain count={count} />, {
     title: "KV counter",
@@ -34,7 +35,7 @@ const kvDemoPage = Effect.gen(function* () {
 const increment = Effect.gen(function* () {
   const counter = yield* KvCounterStore
   const count = yield* counter.increment
-  yield* Effect.annotateLogsScoped({ kvCounter: { ok: true, action: "increment" } })
+  yield* annotate({ kvCounter: { ok: true, action: "increment" } })
 
   return datastarPatch(<KvCountView count={count} />)
 }).pipe(

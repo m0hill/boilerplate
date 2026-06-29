@@ -2,6 +2,7 @@ import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
 import { event } from "datastar-kit"
 import { datastarPage, datastarStream, decodeSignals } from "../../datastar.js"
+import { annotate } from "../../observability/request-log.js"
 import { pageHead } from "../../ui/head.js"
 import { GitHubRepos } from "./github.js"
 import type { GitHubUnavailableError } from "./github.js"
@@ -15,7 +16,7 @@ const RepoInput = Schema.Trim.check(Schema.isMinLength(1))
 const LookupSignals = Schema.Struct({ repo: RepoInput })
 
 const logGitHubUnavailable = (error: GitHubUnavailableError) =>
-  Effect.annotateLogsScoped({
+  annotate({
     github: { reason: error.reason, status: error.status, cause: error.cause },
   })
 
@@ -23,7 +24,7 @@ const lookupFailed = Effect.fn("apiDemo.lookupFailed")(function* (
   reason: "invalid_repo" | "fetch_failed",
   message: string,
 ) {
-  yield* Effect.annotateLogsScoped({ lookup: { ok: false, reason } })
+  yield* annotate({ lookup: { ok: false, reason } })
   return datastarStream([
     event.signals(lookupForm.patch({ errors: { repo: message } })),
     event.patch(<RepoResult />),
@@ -31,7 +32,7 @@ const lookupFailed = Effect.fn("apiDemo.lookupFailed")(function* (
 })
 
 const apiDemoPage = Effect.gen(function* () {
-  yield* Effect.annotateLogsScoped({ page: { name: "api" } })
+  yield* annotate({ page: { name: "api" } })
 
   return datastarPage(<ApiDemoMain />, {
     title: "External API",
@@ -46,7 +47,7 @@ const lookup = Effect.fn("apiDemo.lookup")(
     const github = yield* GitHubRepos
     const result = yield* github.fetch(repoName)
 
-    yield* Effect.annotateLogsScoped({
+    yield* annotate({
       lookup: { ok: true, repo: result.fullName, stars: result.stars },
     })
     return datastarStream([

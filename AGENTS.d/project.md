@@ -44,6 +44,23 @@
   state: DO-as-database fans out its own rendered patches; D1-as-truth uses a signal-only DO. See
   the datastar-kit realtime guide under `repos/datastar-kit`.
 
+## Observability
+
+- Each request emits exactly one structured "wide event" (canonical log line), written as JSON by
+  `wideEventLogger` (`src/observability/wide-event.ts`) via `Logger.consoleJson`. Cloudflare's own
+  invocation logs are disabled (`invocation_logs: false` in `wrangler.jsonc`), so this line is the
+  per-request record in Worker logs. The middleware adds `http.method/path/status/durationMs` and
+  sets the level from the status (5xx → error, 4xx → warn, else info).
+- Enrich the event from handlers with `annotate({ ... })` (`src/observability/request-log.ts`) —
+  not `Effect.log` or `Effect.annotateLogsScoped`. Scoped log annotations are restored when a
+  handler's scope closes, so they never reach the end-of-request line; `annotate` writes to a
+  per-request `Ref` (the `RequestLog` service) that the middleware reads once at the end.
+- Keep annotations structured and namespaced by feature (`{ d1Counter: { ok, action } }`); never log
+  secrets, tokens, or raw request bodies.
+- Gotcha: install the logger with `Layer.provideMerge(Logger.layer([Logger.consoleJson]))`.
+  `Layer.provide` is a no-op for it because nothing _requires_ `CurrentLoggers` — the logger only
+  takes effect when merged into the runtime context.
+
 ## Layout
 
 - `src/server.tsx` — Worker entry, live service wiring, route merge, request context.

@@ -3,6 +3,7 @@ import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { event } from "datastar-kit"
 import { datastarPage, datastarPatch, datastarStream } from "../../datastar.js"
 import { D1CounterStore, type D1CounterStoreError } from "../d1-demo/store.js"
+import { annotate } from "../../observability/request-log.js"
 import { pageHead } from "../../ui/head.js"
 import { LiveRooms, LiveRoomError } from "./live-rooms.js"
 import { LiveCounterMain, LiveCountView } from "./views.js"
@@ -13,7 +14,7 @@ const unavailable = Effect.fn("liveCounter.unavailable")(function* (
   action: string,
   error: D1CounterStoreError | LiveRoomError,
 ) {
-  yield* Effect.annotateLogsScoped({
+  yield* annotate({
     liveCounter: { ok: false, action, reason: error.reason, cause: error.cause },
   })
   return HttpServerResponse.text("Live counter demo unavailable", { status: 503 })
@@ -22,7 +23,7 @@ const unavailable = Effect.fn("liveCounter.unavailable")(function* (
 const liveCounterPage = Effect.gen(function* () {
   const counter = yield* D1CounterStore
   const count = yield* counter.current
-  yield* Effect.annotateLogsScoped({ liveCounter: { ok: true, action: "view" } })
+  yield* annotate({ liveCounter: { ok: true, action: "view" } })
 
   return datastarPage(<LiveCounterMain count={count} />, {
     title: "Live counter",
@@ -70,13 +71,13 @@ const increment = Effect.gen(function* () {
 
   yield* rooms.publish(COUNTER_ROOM).pipe(
     Effect.catchTag("LiveRoomError", (error) =>
-      Effect.annotateLogsScoped({
+      annotate({
         liveCounter: { ok: false, action: "publish", reason: error.reason, cause: error.cause },
       }).pipe(Effect.as(false)),
     ),
   )
 
-  yield* Effect.annotateLogsScoped({ liveCounter: { ok: true, action: "increment" } })
+  yield* annotate({ liveCounter: { ok: true, action: "increment" } })
   return datastarPatch(<LiveCountView count={count} />)
 }).pipe(
   Effect.catchTag("D1CounterStoreError", (error) => unavailable("increment", error)),

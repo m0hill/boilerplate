@@ -1,29 +1,8 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "paths": {
-      "@/migrations/*": ["./migrations/*"],
-      "@/*": ["./src/*"]
-    },
-    "target": "esnext",
-    "lib": ["esnext", "dom", "dom.iterable"],
-    "types": [],
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "strict": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "datastar-kit",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-    "allowJs": false,
-    "checkJs": false,
-    "noEmit": true
+    "types": ["@cloudflare/workers-types"]
   },
   "include": ["alchemy.run.ts", "src/**/*.ts", "src/**/*.tsx", "worker-env.d.ts"],
-  "exclude": ["node_modules", "repos", "public", "src/client", "scripts"],
-  "references": [{ "path": "./scripts/tsconfig.json" }]
+  "exclude": ["node_modules", "repos", "public", "src/client", "scripts"]
 }

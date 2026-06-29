@@ -1,16 +1,9 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "lib": ["esnext"],
-    "types": ["node"],
-    "composite": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true,
-    "rootDir": "..",
-    "outDir": "./.tsbuild",
-    "tsBuildInfoFile": "./.tsbuild/tsconfig.tsbuildinfo"
+    "types": ["node"]
   },
   "include": [
     "**/*.ts",
@@ -18,6 +11,5 @@
     "../playwright.config.ts",
     "../drizzle.config.ts",
     "../drizzle.config.do.ts"
-  ],
-  "exclude": []
+  ]
 }

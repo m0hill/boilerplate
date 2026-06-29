@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/migrations/*": ["./migrations/*"],
+      "@/*": ["./src/*"]
+    },
+    "target": "esnext",
+    "lib": ["esnext"],
+    "types": [],
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "datastar-kit",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "allowJs": false,
+    "checkJs": false,
+    "noEmit": true
+  }
+}

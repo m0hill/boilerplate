@@ -129,4 +129,5 @@
 - `nub run check` — typecheck, lint, format check, Vitest.
 - `nub run lint:fix` / `nub run format` — autofix.
 
-Three TS projects exist: Worker, `src/client`, and `scripts`.
+Three TS projects exist: Worker (`tsconfig.json`), `src/client`, and `scripts`.
+Shared compiler options live in `tsconfig.base.json`; the Worker config intentionally uses Cloudflare Worker types without the DOM lib.

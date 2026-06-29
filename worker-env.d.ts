@@ -1,5 +1,3 @@
-/// <reference types="@cloudflare/workers-types" />
-
 import type { WorkerEnv } from "./alchemy.run"
 
 declare global {

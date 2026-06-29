@@ -1,10 +1,10 @@
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Stream } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { event } from "datastar-kit"
-import { datastarPage, datastarPatch } from "../../datastar.js"
+import { datastarPage, datastarPatch, datastarStream } from "../../datastar.js"
 import { D1CounterStore, type D1CounterStoreError } from "../d1-demo/store.js"
-import { LiveRooms, type LiveRoomError } from "../../realtime/live-rooms.js"
 import { pageHead } from "../../ui/head.js"
+import { LiveRooms, LiveRoomError } from "./live-rooms.js"
 import { LiveCounterMain, LiveCountView } from "./views.js"
 
 const COUNTER_ROOM = "counter"
@@ -35,12 +35,26 @@ const liveCounterPage = Effect.gen(function* () {
 
 const liveCounterStream = Effect.gen(function* () {
   const counter = yield* D1CounterStore
-  const count = yield* counter.current
   const rooms = yield* LiveRooms
 
-  const stream = yield* rooms.subscribe(COUNTER_ROOM, event.patch(<LiveCountView count={count} />))
+  const initial = yield* counter.current
+  const invalidations = yield* rooms.subscribe(COUNTER_ROOM)
 
-  return HttpServerResponse.raw(stream)
+  const counts = Stream.succeed(initial).pipe(
+    Stream.concat(
+      Stream.fromReadableStream({
+        evaluate: () => invalidations,
+        onError: (cause) => new LiveRoomError({ reason: "subscribe_failed", cause }),
+      }).pipe(Stream.mapEffect(() => counter.current)),
+    ),
+    Stream.changes,
+  )
+
+  const events = counts.pipe(Stream.map((count) => event.patch(<LiveCountView count={count} />)))
+
+  return datastarStream(Stream.toAsyncIterable(events), {
+    heartbeat: { intervalMs: 15_000, comment: "live-counter" },
+  })
 }).pipe(
   Effect.catchTags({
     D1CounterStoreError: (error) => unavailable("subscribe", error),
@@ -54,7 +68,7 @@ const increment = Effect.gen(function* () {
   const count = yield* counter.increment
   const rooms = yield* LiveRooms
 
-  yield* rooms.publish(COUNTER_ROOM, event.patch(<LiveCountView count={count} />)).pipe(
+  yield* rooms.publish(COUNTER_ROOM).pipe(
     Effect.catchTag("LiveRoomError", (error) =>
       Effect.annotateLogsScoped({
         liveCounter: { ok: false, action: "publish", reason: error.reason, cause: error.cause },

@@ -3,20 +3,20 @@ import { DemoLayout } from "../../ui/demo.js"
 
 const sources = [
   {
-    path: "src/realtime/live-room.ts",
-    role: "generic fan-out Durable Object: one instance per room name, PubSub + Stream, no database",
+    path: "src/pages/live-counter/live-room.ts",
+    role: "generic invalidation hub DO: one per room name, sliding PubSub, signals “changed” only",
   },
   {
-    path: "src/realtime/live-rooms.ts",
-    role: "worker-side LiveRooms: subscribe/publish a room by name over RPC",
+    path: "src/pages/live-counter/live-rooms.ts",
+    role: "worker-side LiveRooms: subscribe to / publish a room's invalidations by name over RPC",
   },
   {
     path: "src/pages/d1-demo/store.ts",
-    role: "D1CounterStore: the same D1 table is the source of truth (no DO storage)",
+    role: "D1CounterStore: the same D1 table is the source of truth (the DO holds no state)",
   },
   {
     path: "src/pages/live-counter/live-counter.tsx",
-    role: "worker writes D1, returns the immediate patch, and publishes the same patch to the room",
+    role: "the live stream re-reads D1 and re-renders on every signal; the command just writes + wakes",
   },
 ] as const
 
@@ -29,9 +29,10 @@ export const LiveCountView = ({ count }: { count: number }) => (
 export const LiveCounterMain = ({ count }: { count: number }) => (
   <DemoLayout
     title="Live counter"
-    tagline="The production realtime shape: D1 stays the source of truth, and a generic Durable Object
-      room only fans out already-rendered Datastar patches to connected tabs. Open this page in two
-      tabs — incrementing in one updates both. It increments the same D1 counter as the D1 demo."
+    tagline="The realtime shape datastar-kit recommends: the live stream renders the same view again
+      whenever the data changes, re-reading D1 each time. A generic Durable Object only signals
+      “something changed” — it carries no payload, so a reconnecting tab is always correct. Open this
+      page in two tabs; incrementing in one updates both. It shares the D1 counter with the D1 demo."
     sources={sources}
   >
     <div data-init={get("/live-counter/stream")} class="flex flex-col gap-6">

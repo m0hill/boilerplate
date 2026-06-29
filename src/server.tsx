@@ -12,10 +12,10 @@ import { homeRoutes } from "./pages/home/home.js"
 import { kvDemoRoutes } from "./pages/kv-demo/kv-demo.js"
 import { KvCounterStore, makeKvCounterStore } from "./pages/kv-demo/store.js"
 import { liveCounterRoutes } from "./pages/live-counter/live-counter.js"
+import { LiveRooms, makeLiveRooms } from "./pages/live-counter/live-rooms.js"
 import { notFoundRoute } from "./pages/not-found.js"
 import { r2DemoRoutes } from "./pages/r2-demo/r2-demo.js"
 import { makeR2ObjectStore, R2ObjectStore } from "./pages/r2-demo/store.js"
-import { LiveRooms, makeLiveRooms } from "./realtime/live-rooms.js"
 import { webComponentDemoRoutes } from "./pages/web-component-demo/web-component-demo.js"
 
 const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
@@ -51,7 +51,7 @@ const requestContext = (env: CloudflareBindings) => {
 }
 
 export { ChatRoom } from "./pages/do-demo/chat-room.js"
-export { LiveRoom } from "./realtime/live-room.js"
+export { LiveRoom } from "./pages/live-counter/live-room.js"
 
 export default {
   fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>

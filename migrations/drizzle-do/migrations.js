@@ -1,4 +1,4 @@
-import m0000 from "./20260625073122_fluffy_payback/migration.sql"
+import m0000 from "./20260625073122_fluffy_payback/migration.sql?raw"
 
 export default {
   migrations: {

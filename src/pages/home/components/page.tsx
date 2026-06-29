@@ -49,7 +49,10 @@ const demos: readonly Demo[] = [
 ]
 
 export const HomePage = () => (
-  <main id="app" class="mx-auto flex max-w-3xl flex-col gap-8 p-8 font-sans">
+  <main
+    id="app"
+    class="mx-auto flex max-w-3xl flex-col gap-8 p-8 font-sans"
+  >
     <header class="flex flex-col gap-3">
       <h1 class="text-3xl font-bold">{SITE_TITLE}</h1>
       <p class="max-w-2xl text-gray-600">

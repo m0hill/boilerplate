@@ -9,7 +9,11 @@ const formatBytes = (size: number): string => {
 const formatDate = (iso: string): string => iso.replace("T", " ").replace(/\..*$/, " UTC")
 
 export const ObjectList = ({ objects = [] }: { readonly objects?: readonly StoredObject[] }) => (
-  <section id="r2-objects" aria-label="Stored objects" class="flex flex-col gap-3">
+  <section
+    id="r2-objects"
+    aria-label="Stored objects"
+    class="flex flex-col gap-3"
+  >
     <h2 class="text-lg font-semibold">Objects in the bucket</h2>
     {objects.length === 0 ? (
       <p class="text-gray-500">The bucket is empty. Save an object above.</p>

@@ -23,7 +23,7 @@
     "checkJs": false,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "worker-configuration.d.ts"],
+  "include": ["alchemy.run.ts", "src/**/*.ts", "src/**/*.tsx", "worker-env.d.ts"],
   "exclude": ["node_modules", "repos", "public", "src/client", "scripts"],
   "references": [{ "path": "./scripts/tsconfig.json" }]
 }

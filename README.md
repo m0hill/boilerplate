@@ -1,6 +1,6 @@
 # boilerplate
 
-Cloudflare Workers + Effect + Datastar + datastar-kit starter for hypermedia-driven TypeScript apps.
+Cloudflare Workers + Alchemy + Effect + Datastar + datastar-kit starter for hypermedia-driven TypeScript apps.
 
 ## Start a new project
 
@@ -12,8 +12,7 @@ curl -fsSL https://raw.githubusercontent.com/m0hill/boilerplate/main/scripts/boi
 
 ```sh
 nub install
-nub run db:migrate:local # first run, and after adding Drizzle migrations
-nub run dev
+nub run dev # first run prompts for Alchemy/Cloudflare auth and state-store bootstrap
 nub run check
 ```
 
@@ -51,19 +50,21 @@ Reusable pieces live in `src/lib/realtime/pulse.ts` and `src/lib/realtime/live-v
 ## Database
 
 - D1 schema lives in `src/resources/d1/schema.ts`; generate with `nub run db:generate` (output in
-  `migrations/drizzle/`), apply locally with `nub run db:migrate:local`.
+  `migrations/drizzle/`). Alchemy applies pending D1 migrations from `alchemy.run.ts` during
+  `alchemy dev` and `alchemy deploy`.
 - Durable Object SQLite schema lives in `src/resources/chat-room/schema.ts`; generate with
   `nub run db:generate:do` (output in `migrations/drizzle-do/`). DO migrations run automatically
   inside the object on first wake — no apply step.
-- For remote D1 Drizzle Kit commands, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, and `CLOUDFLARE_D1_TOKEN`.
+- For Drizzle Kit commands that talk directly to remote D1, set `CLOUDFLARE_ACCOUNT_ID`,
+  `CLOUDFLARE_DATABASE_ID`, and `CLOUDFLARE_D1_TOKEN`.
 
 ## Before deploying
 
-- Run `wrangler kv namespace create COUNTER_KV` and paste the returned KV id into `wrangler.jsonc`.
-- Run `wrangler d1 create boilerplate` and paste the returned D1 `database_id` into `wrangler.jsonc`.
-- Run `nub run db:migrate:remote` after generating migrations.
-- Run `wrangler r2 bucket create boilerplate` to create the R2 bucket.
-- Run `nub run cf-typegen` after changing Worker bindings.
-- Deploy with `nub run deploy`.
+- Run `alchemy login --configure` if you want to choose a Cloudflare profile up front; otherwise the
+  first Alchemy command prompts interactively.
+- Review `alchemy.run.ts` for the Worker, KV, D1, R2, Durable Object, assets, and observability
+  configuration.
+- Deploy with `nub run deploy`. Alchemy creates or adopts the Cloudflare resources and applies D1
+  migrations.
 
 See `AGENTS.md` for project structure, testing rules, styling, and code conventions.

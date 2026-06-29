@@ -44,10 +44,16 @@ const r2DemoPage = Effect.gen(function* () {
   const objects = yield* r2Objects.list
   yield* annotate({ r2: { ok: true, action: "list", count: objects.length } })
 
-  return datastarPage(<R2Page form={r2Form} objects={objects} />, {
-    title: "R2 object store",
-    head: pageHead(),
-  })
+  return datastarPage(
+    <R2Page
+      form={r2Form}
+      objects={objects}
+    />,
+    {
+      title: "R2 object store",
+      head: pageHead(),
+    },
+  )
 }).pipe(
   Effect.catchTag("R2ObjectsError", (error) =>
     logR2Unavailable("list", error).pipe(

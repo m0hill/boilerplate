@@ -19,8 +19,14 @@ export const Layout = ({
 }) => (
   <>
     <DatastarDebugger open={false} />
-    <main id="app" class="mx-auto flex max-w-3xl flex-col gap-8 p-8 font-sans">
-      <a href="/" class="w-fit text-sm text-gray-600 underline">
+    <main
+      id="app"
+      class="mx-auto flex max-w-3xl flex-col gap-8 p-8 font-sans"
+    >
+      <a
+        href="/"
+        class="w-fit text-sm text-gray-600 underline"
+      >
         ← Home
       </a>
       <header class="flex flex-col gap-2">

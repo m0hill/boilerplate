@@ -50,10 +50,17 @@ const doDemoPage = Effect.fn("doDemo.page")(
       do: { ok: true, action: "list", room, count: messages.length },
     })
 
-    return datastarPage(<DoPage form={chatForm} room={room} messages={messages} />, {
-      title: `#${room} — Durable Object`,
-      head: pageHead(),
-    })
+    return datastarPage(
+      <DoPage
+        form={chatForm}
+        room={room}
+        messages={messages}
+      />,
+      {
+        title: `#${room} — Durable Object`,
+        head: pageHead(),
+      },
+    )
   },
   Effect.catchTag("ChatRoomsError", (error) =>
     logRoomUnavailable("list", error).pipe(
@@ -73,11 +80,16 @@ const liveMessages = Effect.fn("doDemo.live")(
 
     return yield* liveView({
       pulses,
-      render: chatRooms
-        .list(room)
-        .pipe(
-          Effect.map((messages) => event.patch(<MessageList room={room} messages={messages} />)),
+      render: chatRooms.list(room).pipe(
+        Effect.map((messages) =>
+          event.patch(
+            <MessageList
+              room={room}
+              messages={messages}
+            />,
+          ),
         ),
+      ),
       log: { feature: "do", room },
     })
   },

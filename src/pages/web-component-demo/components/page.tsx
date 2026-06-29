@@ -23,7 +23,10 @@ export const WebComponentPage = ({ form }: { readonly form: QrFormState }) => (
       element does only the one thing Datastar cannot — encode the text and paint a canvas."
     sources={sources}
   >
-    <div data-signals={mod(form.defaults, { ifMissing: true })} class="flex flex-col gap-6">
+    <div
+      data-signals={mod(form.defaults, { ifMissing: true })}
+      class="flex flex-col gap-6"
+    >
       <label class="flex flex-col gap-2">
         <span class="text-sm font-medium">Text to encode</span>
         <input

@@ -13,7 +13,13 @@ const webComponentDemoPage = Effect.gen(function* () {
 
   return datastarPage(<WebComponentPage form={qrForm} />, {
     title: "Web component",
-    head: [...pageHead(), <script type="module" src="/js/qr.js" />],
+    head: [
+      ...pageHead(),
+      <script
+        type="module"
+        src="/js/qr.js"
+      />,
+    ],
   })
 }).pipe(Effect.withSpan("webComponentDemo.page"))
 

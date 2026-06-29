@@ -29,7 +29,10 @@ export const LiveCounterPage = ({ count }: { readonly count: number }) => (
       on the latest count. Open this page in two tabs; incrementing in one updates both."
     sources={sources}
   >
-    <div data-init={get("/live-counter/stream")} class="flex flex-col gap-6">
+    <div
+      data-init={get("/live-counter/stream")}
+      class="flex flex-col gap-6"
+    >
       <LiveCount count={count} />
       <button
         type="button"

@@ -40,7 +40,13 @@ export const DoPage = ({
     sources={sources}
   >
     <RoomSwitcher room={room} />
-    <MessageList room={room} messages={messages} />
-    <MessageForm form={form} room={room} />
+    <MessageList
+      room={room}
+      messages={messages}
+    />
+    <MessageForm
+      form={form}
+      room={room}
+    />
   </Layout>
 )

@@ -2,23 +2,24 @@
 
 ## Stack
 
-- **Runtime:** Cloudflare Workers via `wrangler`. `src/index.tsx` exports the Worker `fetch`
-  handler built from Effect's `HttpRouter`.
+- **Runtime:** Cloudflare Workers provisioned by Alchemy. `alchemy.run.ts` owns Cloudflare
+  resources and binds them to the Worker; `src/index.tsx` exports the Worker `fetch` handler built
+  from Effect's `HttpRouter`.
 - **Toolchain:** `nub` for installs, scripts, package execution, and Node version management. Node
   is the build/dev toolchain, not the app runtime.
 - **HTTP/UI:** Effect `HttpRouter` + server-rendered TSX through `datastar-kit`. Datastar responses
   pass through helpers in `src/lib/datastar.ts`.
 - **Validation:** Effect `Schema` at input and external JSON boundaries. Expected failures use
   tagged errors.
-- **Assets:** static files are served from the `assets` binding in `wrangler.jsonc`; Tailwind builds
-  `src/styles.css` to `public/app.css`.
+- **Assets:** static files are served from the Worker `assets` setting in `alchemy.run.ts`; Tailwind
+  builds `src/styles.css` to `public/app.css`.
 - **Browser-only logic:** when Datastar attributes are not enough, the main path is a **web
   component** in `src/client/<name>.ts` (bundled to `public/js/<name>.js` by esbuild). Datastar
   keeps ownership of the inputs and state and feeds the element through `data-attr` (in) /
   `data-on` (out); the custom element holds only the irreducible client logic. `/web-component`
   (the `<qr-code>` element) is the canonical example.
 - **Tests:** Vitest uses `@cloudflare/vitest-pool-workers`; Playwright e2e runs against
-  `wrangler dev` and is separate from `nub run check`.
+  `alchemy dev` and is separate from `nub run check`.
 
 ## Persistence and state
 
@@ -59,7 +60,7 @@
 
 - Each request emits exactly one structured "wide event" (canonical log line), written as JSON by
   `wideEventLogger` (`src/lib/observability/wide-event.ts`) via `Logger.consoleJson`. Cloudflare's own
-  invocation logs are disabled (`invocation_logs: false` in `wrangler.jsonc`), so this line is the
+  invocation logs are disabled (`invocationLogs: false` in `alchemy.run.ts`), so this line is the
   per-request record in Worker logs. The middleware adds `http.method/path/status/durationMs` and
   sets the level from the status (5xx → error, 4xx → warn, else info).
 - Enrich the event from handlers with `annotate({ ... })` (`src/lib/observability/request-log.ts`) —
@@ -116,13 +117,13 @@ There are three TypeScript projects: root Worker/server code, `src/client` brows
 
 ## Commands
 
-- `nub run dev` — build assets, watch CSS/client bundles, and run `wrangler dev --live-reload`.
+- `nub run dev` — build assets, watch CSS/client bundles, and run `alchemy dev`.
 - `nub run build` — build `public/app.css` and `public/js/*.js`.
-- `nub run preview` — build, then run `wrangler dev`.
-- `nub run deploy` — build, then `wrangler deploy --minify`.
-- `nub run cf-typegen` — regenerate `worker-configuration.d.ts` after changing `wrangler.jsonc`.
-- `nub run test` / `nub run test:watch` — Vitest in the Workers runtime.
-- `nub run test:e2e` — Playwright against `wrangler dev` on port 8787.
+- `nub run preview` — build, then run `alchemy dev` without asset/client watches.
+- `nub run deploy` — build, then `alchemy deploy`.
+- `nub run destroy` / `nub run logs` / `nub run tail` — Alchemy-managed Cloudflare stack operations.
+- `nub run test` / `nub run test:watch` — Vitest in the Workers runtime with explicit Miniflare bindings.
+- `nub run test:e2e` — Playwright against `alchemy dev` on port 8787.
 - `nub run check` — typecheck, lint, format check, and Vitest.
 - `nub run lint:fix` / `nub run format` — autofix lint/format issues.
 

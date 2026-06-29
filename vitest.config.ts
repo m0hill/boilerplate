@@ -6,8 +6,13 @@ import { defineConfig } from "vitest/config"
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
+const splitSql = (sql: string): string[] =>
+  sql
+    .split(/-->\s*statement-breakpoint|;\s*(?=\n|$)/u)
+    .map((query) => query.trim())
+    .filter((query) => query.length > 0)
+
 const readDrizzleMigrations = async (migrationsPath: string): Promise<D1Migration[]> => {
-  const { unstable_splitSqlQuery } = await import("wrangler")
   const entries = await readdir(migrationsPath, { withFileTypes: true })
   const migrationDirs = entries
     .filter((entry) => entry.isDirectory())
@@ -19,7 +24,7 @@ const readDrizzleMigrations = async (migrationsPath: string): Promise<D1Migratio
       const sql = await readFile(path.join(migrationsPath, name, "migration.sql"), "utf8")
       return {
         name: `${name}/migration.sql`,
-        queries: unstable_splitSqlQuery(sql),
+        queries: splitSql(sql),
       }
     }),
   )
@@ -35,8 +40,16 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         main: "./src/index.tsx",
-        wrangler: { configPath: "./wrangler.jsonc" },
         miniflare: {
+          compatibilityDate: "2026-05-22",
+          assets: { directory: "./public" },
+          kvNamespaces: ["COUNTER_KV"],
+          d1Databases: ["APP_DB"],
+          r2Buckets: ["APP_BUCKET"],
+          durableObjects: {
+            CHAT_ROOM: { className: "ChatRoom", useSQLite: true },
+            LIVE_ROOMS: { className: "LiveRoom", useSQLite: true },
+          },
           bindings: { TEST_MIGRATIONS: migrations },
         },
       }),

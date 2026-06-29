@@ -8,7 +8,7 @@
   "type": "module",
   "main": "src/index.tsx",
   "scripts": {
-    "dev": "nub run build && concurrently -k -n css,js,alchemy -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"alchemy dev\"",
+    "dev": "nub run build && concurrently -k --pad-prefix -n css,js,cf -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"alchemy dev\"",
     "preview": "nub run build && alchemy dev",
     "deploy": "nub run build && alchemy deploy",
     "destroy": "alchemy destroy",

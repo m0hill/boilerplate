@@ -34,7 +34,7 @@ const AppLayer = Layer.mergeAll(
 ).pipe(
   Layer.provide(HttpRouter.middleware(wideEventLogger).layer),
   HttpRouter.provideRequest(GitHubReposLive),
-  Layer.provideMerge(Logger.layer([Logger.consoleJson])),
+  Layer.provideMerge(Logger.layer([Logger.consoleStructured])),
 )
 
 const { handler } = HttpRouter.toWebHandler(AppLayer, { disableLogger: true })

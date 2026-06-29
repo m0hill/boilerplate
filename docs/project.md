@@ -57,14 +57,14 @@
 
 ## Observability
 
-- Each request emits one JSON wide event.
+- Each request emits one structured wide event.
 - `wideEventLogger` writes it.
 - The wide event is the per-request Worker log record.
 - Middleware adds `http.method`, `http.path`, `http.status`, and `http.durationMs`.
 - Add request fields with `annotate`.
 - Use namespaced fields: `{ d1Counter: { action, ok } }`.
 - Keep secrets, tokens, and raw request bodies out of logs.
-- Install JSON logging with `Layer.provideMerge(Logger.layer([Logger.consoleJson]))`.
+- Install structured console logging with `Layer.provideMerge(Logger.layer([Logger.consoleStructured]))`.
 
 ## Layout
 

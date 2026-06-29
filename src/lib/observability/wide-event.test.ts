@@ -17,12 +17,23 @@ const isWideEvent = (value: unknown): value is WideEvent =>
   value !== null &&
   (value as { message?: unknown }).message === "http_request"
 
-const captureWideEvents = async (fn: () => Promise<unknown>): Promise<WideEvent[]> => {
+const captureWideEvents = async (
+  fn: () => Promise<unknown>,
+): Promise<{
+  readonly events: ReadonlyArray<WideEvent>
+  readonly entries: ReadonlyArray<unknown>
+}> => {
   const events: WideEvent[] = []
-  const spy = vi.spyOn(console, "log").mockImplementation((line: unknown) => {
-    if (typeof line !== "string") return
+  const entries: unknown[] = []
+  const spy = vi.spyOn(console, "log").mockImplementation((entry: unknown) => {
+    entries.push(entry)
+    if (isWideEvent(entry)) {
+      events.push(entry)
+      return
+    }
+    if (typeof entry !== "string") return
     try {
-      const parsed: unknown = JSON.parse(line)
+      const parsed: unknown = JSON.parse(entry)
       if (isWideEvent(parsed)) events.push(parsed)
     } catch {}
   })
@@ -33,15 +44,17 @@ const captureWideEvents = async (fn: () => Promise<unknown>): Promise<WideEvent[
     spy.mockRestore()
   }
 
-  return events
+  return { events, entries }
 }
 
 describe("wide-event request logger", () => {
-  it("emits exactly one structured line per request, enriched with handler context", async () => {
+  it("emits exactly one structured console object per request, enriched with handler context", async () => {
     const app = await loadApp()
-    const events = await captureWideEvents(() => app.fetch(request("/d1")))
+    const { events, entries } = await captureWideEvents(() => app.fetch(request("/d1")))
 
     expect(events).toHaveLength(1)
+    expect(entries).toHaveLength(1)
+    expect(isWideEvent(entries[0])).toBe(true)
     const [event] = events
     expect(event?.level).toBe("INFO")
     expect(event?.annotations).toMatchObject({
@@ -54,7 +67,7 @@ describe("wide-event request logger", () => {
 
   it("records the action that mutated the request", async () => {
     const app = await loadApp()
-    const events = await captureWideEvents(() => app.fetch(datastarPost("/d1/increment")))
+    const { events } = await captureWideEvents(() => app.fetch(datastarPost("/d1/increment")))
 
     expect(events).toHaveLength(1)
     expect(events[0]?.annotations).toMatchObject({
@@ -65,7 +78,7 @@ describe("wide-event request logger", () => {
 
   it("logs unmatched routes as a single warn-level event", async () => {
     const app = await loadApp()
-    const events = await captureWideEvents(() => app.fetch(request("/nope")))
+    const { events } = await captureWideEvents(() => app.fetch(request("/nope")))
 
     expect(events).toHaveLength(1)
     expect(events[0]?.level).toBe("WARN")

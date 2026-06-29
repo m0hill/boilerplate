@@ -56,12 +56,6 @@ export { ChatRoom } from "@/resources/chat-room/chat-room"
 export { LiveRoom } from "@/resources/live-rooms/live-room"
 
 export default {
-  fetch: (request: Request, env: CloudflareBindings): Promise<Response> => {
-    const pathname = new URL(request.url).pathname
-    if (pathname === "/app.css" || pathname.startsWith("/js/")) {
-      return env.ASSETS.fetch(request)
-    }
-
-    return handler(request, requestContext(env))
-  },
+  fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>
+    handler(request, requestContext(env)),
 }

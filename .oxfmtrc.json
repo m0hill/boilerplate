@@ -2,5 +2,13 @@
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "semi": false,
   "singleAttributePerLine": true,
-  "ignorePatterns": ["repos/**", "dist/**", "node_modules/**", "public/**", "*lock.yaml"]
+  "ignorePatterns": [
+    "repos/**",
+    "dist/**",
+    "node_modules/**",
+    "public/**",
+    ".alchemy/**",
+    ".pi-cache/**",
+    "*lock.yaml"
+  ]
 }

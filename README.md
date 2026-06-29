@@ -64,7 +64,9 @@ Reusable pieces live in `src/lib/realtime/pulse.ts` and `src/lib/realtime/live-v
   first Alchemy command prompts interactively.
 - Review `alchemy.run.ts` for the Worker, KV, D1, R2, Durable Object, assets, and observability
   configuration.
-- Deploy with `nub run deploy`. Alchemy creates or adopts the Cloudflare resources and applies D1
-  migrations.
+- Deploy with `nub run deploy`. Alchemy creates stage-isolated Cloudflare resources and applies D1
+  migrations. If you must reuse existing Wrangler-created resources, first set matching physical
+  names deliberately in `alchemy.run.ts`, then run a one-time `alchemy deploy --adopt` after
+  reviewing the plan.
 
 See `AGENTS.md` for project structure, testing rules, styling, and code conventions.

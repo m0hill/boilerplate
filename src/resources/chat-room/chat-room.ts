@@ -7,11 +7,11 @@ import { makePulseHub, type PulseHub } from "@/lib/realtime/pulse"
 import { type Message, makeRoom } from "@/resources/chat-room/room"
 import { roomSchema } from "@/resources/chat-room/schema"
 
-export class ChatRoom extends DurableObject<CloudflareBindings> {
+export class ChatRoom extends DurableObject<unknown> {
   readonly #room: ReturnType<typeof makeRoom>
   readonly #hub: PulseHub
 
-  constructor(ctx: DurableObjectState, env: CloudflareBindings) {
+  constructor(ctx: DurableObjectState, env: unknown) {
     super(ctx, env)
     const db = drizzle(ctx.storage, { schema: roomSchema })
     this.#room = makeRoom(db)

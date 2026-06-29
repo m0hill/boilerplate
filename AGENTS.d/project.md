@@ -20,6 +20,30 @@
 - **Tests:** Vitest uses `@cloudflare/vitest-pool-workers`; Playwright e2e runs against
   `wrangler dev` and is separate from `nub run check`.
 
+## Persistence and state
+
+- **Prefer Durable Objects by default.** Reach for a DO first for anything stateful, and prefer the
+  DO-owns-its-database shape: the object embeds its own SQLite (Drizzle on `durable-sqlite`,
+  migrated in the constructor) and holds the logic that reads and writes it. One object serializes
+  its own writes, so state is strongly consistent with no read-modify-write races — correctness
+  without coordinating an external store. `src/pages/do-demo/` (per-room chat) is the canonical
+  example.
+- Scope each DO to a consistency/ownership boundary and address it by name via
+  `NAMESPACE.idFromName(name)` (e.g. `room:<id>`, `user:<id>`, `doc:<id>`): per room, document, user,
+  session, or workspace. Many named instances of one class, never one global object for the whole app.
+- Keep the DO the source of truth for its boundary. Expose narrow RPC methods that return parsed
+  domain values, run Effect programs inside via `Effect.runPromise`/`runSync` at the method seam,
+  and adapt the namespace into a narrow worker-side service before feature code uses it
+  (`src/pages/do-demo/store.ts`).
+- Reach for D1 only when the data is genuinely global/relational and queried across many entities at
+  once (cross-entity reports, admin lists, a single SQL query over everything). When D1 is the truth
+  but you still want live updates, keep the DO as a payload-free invalidation hub and have each
+  stream reload D1 — `src/pages/live-counter/` is that pattern. Use KV only for cheap,
+  eventually-consistent global key/value reads where races are acceptable.
+- For realtime, both DO shapes work and both are reconnect-safe because each stream renders current
+  state: DO-as-database fans out its own rendered patches; D1-as-truth uses a signal-only DO. See
+  the datastar-kit realtime guide under `repos/datastar-kit`.
+
 ## Layout
 
 - `src/server.tsx` — Worker entry, live service wiring, route merge, request context.

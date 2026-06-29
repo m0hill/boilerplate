@@ -1,4 +1,4 @@
-import { SITE_TITLE } from "../../../constants.js"
+import { SITE_TITLE } from "../../../lib/constants.js"
 import { DemoCard, type Demo } from "./demo-card.js"
 
 const demos: readonly Demo[] = [

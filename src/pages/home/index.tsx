@@ -1,6 +1,6 @@
 import { Effect } from "effect"
 import { HttpRouter } from "effect/unstable/http"
-import { SITE_TITLE } from "../../constants.js"
+import { SITE_TITLE } from "../../lib/constants.js"
 import { datastarPage } from "../../lib/datastar.js"
 import { annotate } from "../../lib/observability/request-log.js"
 import { pageHead } from "../../ui/head.js"

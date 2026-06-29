@@ -1,6 +1,6 @@
 import { Context, Effect, Ref } from "effect"
 
-export type LogFields = Record<string, unknown>
+type LogFields = Record<string, unknown>
 
 export class RequestLog extends Context.Service<
   RequestLog,

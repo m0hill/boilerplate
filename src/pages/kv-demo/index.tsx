@@ -2,15 +2,13 @@ import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarPatch } from "../../lib/datastar.js"
 import { annotate } from "../../lib/observability/request-log.js"
-import { KvCounter, type KvCounterError } from "../../services/kv-counter/kv-counter.js"
+import { KvCounter, type KvCounterError } from "../../resources/kv-counter/kv-counter.js"
 import { pageHead } from "../../ui/head.js"
 import { KvCount } from "./components/count.js"
 import { KvPage } from "./components/page.js"
 
-type CounterAction = "view" | "increment"
-
 const counterUnavailable = Effect.fn("kvDemo.unavailable")(function* (
-  action: CounterAction,
+  action: "view" | "increment",
   error: KvCounterError,
 ) {
   yield* annotate({

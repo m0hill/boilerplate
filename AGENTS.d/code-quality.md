@@ -27,13 +27,15 @@ Follow nearby code first. These rules cover project-specific boundaries that are
 
 - Keep MPA page code under `src/pages/<name>/`: routes/handlers and page-owned Datastar state in
   `index.tsx`, page-local TSX in `components/`, and page tests in `tests/`.
-- Put reusable capabilities, domain parsers, persistence adapters, Durable Objects, and external
-  service integrations under `src/services/<service>/`.
+- Put Cloudflare resource-bound capabilities, domain parsers, persistence adapters, Durable Objects,
+  and resource schemas under `src/resources/<resource>/`.
+- Put non-Cloudflare external services and app capabilities under `src/services/<service>/`.
 - Put app glue under specifically named `src/lib/` modules (`datastar.ts`, `observability/`,
-  `realtime/`, `cloudflare-env.ts`). Do not create generic `lib/utils.ts` or `lib/helpers.ts`.
-- Name service files after what they do (`d1-counter.ts`, `r2-objects.ts`, `github-repos.ts`,
-  `chat-rooms.ts`). Keep all Drizzle schema files in `src/services/database/`. Avoid generic
-  `store.ts`, `utils.ts`, `helpers.ts`, and broad service folders that group unrelated capabilities.
+  `realtime/`). Do not create generic `lib/utils.ts` or `lib/helpers.ts`.
+- Name files after what they do (`counter.ts`, `r2-objects.ts`, `github-repos.ts`, `chat-rooms.ts`).
+  Keep D1 schema files in `src/resources/d1/`; keep Durable Object SQLite schema files with the DO
+  resource that owns them, e.g. `src/resources/chat-room/schema.ts`. Avoid generic `store.ts`,
+  `utils.ts`, `helpers.ts`, and broad folders that group unrelated capabilities.
 - Page components should use simple names (`page.tsx`, `form.tsx`, `count.tsx`, `message-list.tsx`).
   Avoid `views.tsx`, `Main`, and `View` suffixes unless the product language truly uses those words.
 - Split a file only when it stops being clear. Avoid catch-all `utils`, `helpers`, and shallow

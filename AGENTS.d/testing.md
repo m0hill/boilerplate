@@ -12,7 +12,7 @@
 
 ## Vitest patterns
 
-- Colocate tests next to the code they cover: page route/browser tests in `src/pages/<page>/tests/`, service/domain tests in `src/services/<service>/tests/`.
+- Colocate tests next to the code they cover: page route/browser tests in `src/pages/<page>/tests/`, resource tests in `src/resources/<resource>/tests/`, and service/domain tests in `src/services/<service>/tests/`.
 - Drive server behavior through the real Worker seam: `loadApp()` then
   `app.fetch(request("/..."))` or `app.fetch(datastarPost("/...", signals))`.
 - Assert observable output: status, content type, rendered HTML, SSE events, signal patches, and

@@ -9,9 +9,7 @@ beforeAll(() => network.enable())
 afterEach(() => network.resetHandlers())
 afterAll(() => network.disable())
 
-type GitHubRepoBody = Record<string, unknown>
-
-const mockRepo = (body: GitHubRepoBody, init?: ResponseInit) =>
+const mockRepo = (body: Record<string, unknown>, init?: ResponseInit) =>
   network.use(
     http.get("https://api.github.com/repos/:owner/:repo", () => HttpResponse.json(body, init)),
   )

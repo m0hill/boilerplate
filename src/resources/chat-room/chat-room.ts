@@ -4,8 +4,8 @@ import { migrate } from "drizzle-orm/durable-sqlite/migrator"
 import { Effect } from "effect"
 import migrations from "../../../drizzle-do/migrations"
 import { makePulseHub, type PulseHub } from "../../lib/realtime/pulse.js"
-import { roomSchema } from "../database/chat-room-schema.js"
 import { type Message, makeRoom } from "./room.js"
+import { roomSchema } from "./schema.js"
 
 export class ChatRoom extends DurableObject<CloudflareBindings> {
   readonly #room: ReturnType<typeof makeRoom>

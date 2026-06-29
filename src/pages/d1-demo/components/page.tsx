@@ -1,21 +1,21 @@
 import { mod, post } from "datastar-kit"
-import { DemoLayout } from "../../../ui/demo.js"
+import { Layout } from "../../../ui/layout.js"
 import { D1Count } from "./count.js"
 
 const sources = [
   {
-    path: "src/services/database/d1-counter-schema.ts",
+    path: "src/resources/d1/counter-schema.ts",
     role: "Drizzle table + Effect Schema for the row",
   },
   {
-    path: "src/services/d1-counter/d1-counter.ts",
+    path: "src/resources/d1/counter.ts",
     role: "D1Counter: Drizzle query, parsed at the boundary",
   },
   { path: "drizzle/", role: "generated migrations applied to D1" },
 ] as const
 
 export const D1Page = ({ count }: { readonly count: number }) => (
-  <DemoLayout
+  <Layout
     title="D1 + Drizzle counter"
     tagline="The same counter, persisted in Cloudflare D1 (SQLite) through Drizzle ORM. Every row is
       parsed with Effect Schema at the database boundary, so the rest of the code trusts its types."
@@ -29,5 +29,5 @@ export const D1Page = ({ count }: { readonly count: number }) => (
     >
       Increment
     </button>
-  </DemoLayout>
+  </Layout>
 )

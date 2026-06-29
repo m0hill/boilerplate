@@ -2,13 +2,12 @@ import { Effect } from "effect"
 import { describe, expect, it } from "vitest"
 import { InvalidObjectError, maxContentBytes, parseObject, parseObjectKey } from "../object.js"
 
-const run = <A>(effect: Effect.Effect<A, InvalidObjectError>) => Effect.runPromise(effect)
 const runError = (effect: Effect.Effect<unknown, InvalidObjectError>) =>
   Effect.runPromise(effect.pipe(Effect.flip))
 
 describe("parseObject", () => {
   it("trims the key and keeps the content", async () => {
-    const object = await run(parseObject("  notes/hello.txt  ", "hi there"))
+    const object = await Effect.runPromise(parseObject("  notes/hello.txt  ", "hi there"))
     expect(object).toEqual({ key: "notes/hello.txt", content: "hi there" })
   })
 
@@ -31,7 +30,9 @@ describe("parseObject", () => {
 
 describe("parseObjectKey", () => {
   it("accepts a valid key", async () => {
-    await expect(run(parseObjectKey("notes/hello.txt"))).resolves.toBe("notes/hello.txt")
+    await expect(Effect.runPromise(parseObjectKey("notes/hello.txt"))).resolves.toBe(
+      "notes/hello.txt",
+    )
   })
 
   it("rejects an empty key", async () => {

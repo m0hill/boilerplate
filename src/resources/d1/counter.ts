@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm"
 import { Context, Effect, Schema } from "effect"
-import type { Database } from "../database/database.js"
-import { d1CounterRowSchema, d1Counters } from "../database/d1-counter-schema.js"
+import type { D1Database } from "./database.js"
+import { d1CounterRowSchema, d1Counters } from "./counter-schema.js"
 
 const countKey = "main"
 
@@ -21,9 +21,9 @@ export class D1Counter extends Context.Service<
     readonly current: Effect.Effect<number, D1CounterError>
     readonly increment: Effect.Effect<number, D1CounterError>
   }
->()("boilerplate/services/d1-counter/D1Counter") {}
+>()("boilerplate/resources/d1/D1Counter") {}
 
-export function makeD1Counter(database: Database["Service"]): D1Counter["Service"] {
+export function makeD1Counter(database: D1Database): D1Counter["Service"] {
   const current = Effect.gen(function* () {
     const rows = yield* Effect.tryPromise({
       try: () => database.select().from(d1Counters).where(eq(d1Counters.name, countKey)).limit(1),

@@ -1,8 +1,6 @@
 import { Context, Effect, Schema } from "effect"
 import type { Message } from "./room.js"
 
-type ChatRoomNamespace = CloudflareBindings["CHAT_ROOM"]
-
 export class ChatRoomsError extends Schema.TaggedErrorClass<ChatRoomsError>()("ChatRoomsError", {
   reason: Schema.Literals(["read_failed", "write_failed"]),
   cause: Schema.optionalKey(Schema.Defect()),
@@ -19,9 +17,9 @@ export class ChatRooms extends Context.Service<
     ) => Effect.Effect<void, ChatRoomsError>
     readonly subscribe: (room: string) => Effect.Effect<ReadableStream<Uint8Array>, ChatRoomsError>
   }
->()("boilerplate/services/chat-room/ChatRooms") {}
+>()("boilerplate/resources/chat-room/ChatRooms") {}
 
-export function makeChatRooms(namespace: ChatRoomNamespace): ChatRooms["Service"] {
+export function makeChatRooms(namespace: CloudflareBindings["CHAT_ROOM"]): ChatRooms["Service"] {
   const stubFor = (room: string) => namespace.get(namespace.idFromName(room))
 
   const list = (room: string) =>

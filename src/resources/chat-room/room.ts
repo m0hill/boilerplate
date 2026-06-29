@@ -1,7 +1,7 @@
 import { desc } from "drizzle-orm"
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite"
 import { Effect, Schema } from "effect"
-import { messageRowSchema, messages, type roomSchema } from "../database/chat-room-schema.js"
+import { messageRowSchema, messages, type roomSchema } from "./schema.js"
 
 const maxMessages = 50
 
@@ -12,7 +12,7 @@ export type Message = {
   readonly createdAt: number
 }
 
-export type RoomDatabase = DrizzleSqliteDODatabase<typeof roomSchema>
+type RoomDatabase = DrizzleSqliteDODatabase<typeof roomSchema>
 
 export class RoomError extends Schema.TaggedErrorClass<RoomError>()("RoomError", {
   reason: Schema.Literals(["read_failed", "write_failed", "invalid_row"]),

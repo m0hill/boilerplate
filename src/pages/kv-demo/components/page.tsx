@@ -1,10 +1,10 @@
 import { mod, post } from "datastar-kit"
-import { DemoLayout } from "../../../ui/demo.js"
+import { Layout } from "../../../ui/layout.js"
 import { KvCount } from "./count.js"
 
 const sources = [
   {
-    path: "src/services/kv-counter/kv-counter.ts",
+    path: "src/resources/kv-counter/kv-counter.ts",
     role: "KvCounter: reads/writes the KV namespace",
   },
   { path: "src/pages/kv-demo/index.tsx", role: "routes, error handling, SSE patch" },
@@ -12,7 +12,7 @@ const sources = [
 ] as const
 
 export const KvPage = ({ count }: { readonly count: number }) => (
-  <DemoLayout
+  <Layout
     title="KV counter"
     tagline="A counter persisted in a Cloudflare KV namespace. The increment runs server-side as an
       Effect and streams the new value back as a Datastar element patch."
@@ -26,5 +26,5 @@ export const KvPage = ({ count }: { readonly count: number }) => (
     >
       Increment
     </button>
-  </DemoLayout>
+  </Layout>
 )

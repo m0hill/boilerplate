@@ -1,18 +1,18 @@
 import { get, mod, post } from "datastar-kit"
-import { DemoLayout } from "../../../ui/demo.js"
+import { Layout } from "../../../ui/layout.js"
 import { LiveCount } from "./count.js"
 
 const sources = [
   {
-    path: "src/services/live-rooms/live-room.ts",
+    path: "src/resources/live-rooms/live-room.ts",
     role: "generic pulse hub DO: one per room name, no payloads, sliding PubSub",
   },
   {
-    path: "src/services/live-rooms/live-rooms.ts",
+    path: "src/resources/live-rooms/live-rooms.ts",
     role: "worker-side LiveRooms: subscribe / publish pulses by room name over RPC",
   },
   {
-    path: "src/services/d1-counter/d1-counter.ts",
+    path: "src/resources/d1/counter.ts",
     role: "D1Counter: the D1 table is the source of truth (the DO holds no state)",
   },
   {
@@ -22,7 +22,7 @@ const sources = [
 ] as const
 
 export const LiveCounterPage = ({ count }: { readonly count: number }) => (
-  <DemoLayout
+  <Layout
     title="Live counter"
     tagline="The stream renders the current D1 count on connect and after every payload-free DO
       pulse. Commands only write D1 and wake the room, so reconnects and out-of-order pulses converge
@@ -39,5 +39,5 @@ export const LiveCounterPage = ({ count }: { readonly count: number }) => (
         Increment
       </button>
     </div>
-  </DemoLayout>
+  </Layout>
 )

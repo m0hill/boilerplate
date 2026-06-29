@@ -13,7 +13,7 @@ This project uses Effect intentionally. Keep new code aligned with the local Eff
 - Dependency-bearing modules use Effect Services/Tags/Layers, not ad hoc dependency bags.
 - Layers or the composition root own construction, config parsing, and resource wiring.
 - Domain operations should not construct live production layers, read raw env, or wire resources as part of ordinary business logic.
-- Keep raw Cloudflare bindings at `src/server.tsx`, `src/lib/cloudflare-env.ts`, or focused external adapter seams; adapt them into narrow services before page/domain code uses them.
+- Keep raw Cloudflare bindings at `src/server.tsx` or focused external adapter seams; adapt them into narrow services before page/domain code uses them.
 
 ## Typed errors
 

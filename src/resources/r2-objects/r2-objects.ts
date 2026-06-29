@@ -1,7 +1,5 @@
 import { Context, Effect, Schema } from "effect"
 
-type Bucket = CloudflareBindings["APP_BUCKET"]
-
 export type StoredObject = {
   readonly key: string
   readonly size: number
@@ -21,9 +19,9 @@ export class R2Objects extends Context.Service<
     readonly read: (key: string) => Effect.Effect<string | null, R2ObjectsError>
     readonly remove: (key: string) => Effect.Effect<void, R2ObjectsError>
   }
->()("boilerplate/services/r2-objects/R2Objects") {}
+>()("boilerplate/resources/r2-objects/R2Objects") {}
 
-export function makeR2Objects(bucket: Bucket): R2Objects["Service"] {
+export function makeR2Objects(bucket: CloudflareBindings["APP_BUCKET"]): R2Objects["Service"] {
   const list = Effect.gen(function* () {
     const listed = yield* Effect.tryPromise({
       try: () => bucket.list(),

@@ -3,7 +3,7 @@ import { Effect } from "effect"
 import { HttpRouter } from "effect/unstable/http"
 import { datastarPage } from "../../lib/datastar.js"
 import { annotate } from "../../lib/observability/request-log.js"
-import { clientScript, pageHead } from "../../ui/head.js"
+import { pageHead } from "../../ui/head.js"
 import { WebComponentPage } from "./components/page.js"
 
 const qrForm = state({ text: "https://github.com/m0hill/boilerplate" })
@@ -13,7 +13,7 @@ const webComponentDemoPage = Effect.gen(function* () {
 
   return datastarPage(<WebComponentPage form={qrForm} />, {
     title: "Web component",
-    head: [...pageHead(), clientScript("qr")],
+    head: [...pageHead(), <script type="module" src="/js/qr.js" />],
   })
 }).pipe(Effect.withSpan("webComponentDemo.page"))
 

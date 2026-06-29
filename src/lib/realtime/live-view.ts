@@ -2,7 +2,7 @@ import { Cause, Effect, Stream } from "effect"
 import type { HttpServerResponse } from "effect/unstable/http"
 import { datastarStream } from "../datastar.js"
 
-export interface LiveViewOptions<E, R = never> {
+interface LiveViewOptions<E, R = never> {
   readonly pulses: ReadableStream<Uint8Array>
   readonly render: Effect.Effect<string, E, R>
   readonly log: Record<string, unknown>

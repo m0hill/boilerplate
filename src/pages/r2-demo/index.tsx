@@ -8,8 +8,8 @@ import {
   maxContentBytes,
   parseObject,
   parseObjectKey,
-} from "../../services/r2-objects/object.js"
-import { R2Objects, type R2ObjectsError } from "../../services/r2-objects/r2-objects.js"
+} from "../../resources/r2-objects/object.js"
+import { R2Objects, type R2ObjectsError } from "../../resources/r2-objects/r2-objects.js"
 import { pageHead } from "../../ui/head.js"
 import { ObjectList } from "./components/object-list.js"
 import { R2Page } from "./components/page.js"

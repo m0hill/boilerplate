@@ -17,7 +17,7 @@ export class InvalidMessageError extends Schema.TaggedErrorClass<InvalidMessageE
   { reason: Schema.Literals(["empty_author", "empty_body", "too_long"]) },
 ) {}
 
-export type ParsedMessage = {
+type ParsedMessage = {
   readonly author: string
   readonly body: string
 }

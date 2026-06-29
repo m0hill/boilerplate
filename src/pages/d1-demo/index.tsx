@@ -2,15 +2,13 @@ import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarPatch } from "../../lib/datastar.js"
 import { annotate } from "../../lib/observability/request-log.js"
-import { D1Counter, type D1CounterError } from "../../services/d1-counter/d1-counter.js"
+import { D1Counter, type D1CounterError } from "../../resources/d1/counter.js"
 import { pageHead } from "../../ui/head.js"
 import { D1Count } from "./components/count.js"
 import { D1Page } from "./components/page.js"
 
-type D1CounterAction = "view" | "increment"
-
 const d1CounterUnavailable = Effect.fn("d1Demo.unavailable")(function* (
-  action: D1CounterAction,
+  action: "view" | "increment",
   error: D1CounterError,
 ) {
   yield* annotate({

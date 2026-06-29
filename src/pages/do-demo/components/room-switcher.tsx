@@ -1,4 +1,4 @@
-import { presetRooms } from "../../../services/chat-room/rooms.js"
+import { presetRooms } from "../../../resources/chat-room/rooms.js"
 
 export const RoomSwitcher = ({ room }: { readonly room: string }) => (
   <nav class="flex flex-wrap items-center gap-2 text-sm">

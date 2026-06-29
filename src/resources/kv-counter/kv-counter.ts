@@ -2,8 +2,6 @@ import { Context, Effect, Schema } from "effect"
 
 const countKey = "count"
 
-type CounterNamespace = CloudflareBindings["COUNTER_KV"]
-
 export class KvCounterError extends Schema.TaggedErrorClass<KvCounterError>()("KvCounterError", {
   reason: Schema.Literals(["read_failed", "write_failed"]),
   cause: Schema.optionalKey(Schema.Defect()),
@@ -21,9 +19,9 @@ export class KvCounter extends Context.Service<
     readonly current: Effect.Effect<number, KvCounterError>
     readonly increment: Effect.Effect<number, KvCounterError>
   }
->()("boilerplate/services/kv-counter/KvCounter") {}
+>()("boilerplate/resources/kv-counter/KvCounter") {}
 
-export function makeKvCounter(counterKv: CounterNamespace): KvCounter["Service"] {
+export function makeKvCounter(counterKv: CloudflareBindings["COUNTER_KV"]): KvCounter["Service"] {
   const current = Effect.gen(function* () {
     const raw = yield* Effect.tryPromise({
       try: () => counterKv.get(countKey),

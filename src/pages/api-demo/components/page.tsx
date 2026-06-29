@@ -1,4 +1,4 @@
-import { DemoLayout } from "../../../ui/demo.js"
+import { Layout } from "../../../ui/layout.js"
 import { LookupForm, type LookupFormState } from "./lookup-form.js"
 import { RepoResult } from "./repo-result.js"
 
@@ -12,7 +12,7 @@ const sources = [
 ] as const
 
 export const ApiPage = ({ form }: { readonly form: LookupFormState }) => (
-  <DemoLayout
+  <Layout
     title="External API"
     tagline="Fetch a public GitHub repository with Effect's HttpClient, parse the JSON with Schema,
       and model every failure (bad input, 404, unexpected body) as a typed error. The outbound call
@@ -21,5 +21,5 @@ export const ApiPage = ({ form }: { readonly form: LookupFormState }) => (
   >
     <LookupForm form={form} />
     <RepoResult />
-  </DemoLayout>
+  </Layout>
 )

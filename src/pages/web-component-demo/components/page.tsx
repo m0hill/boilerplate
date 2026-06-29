@@ -1,5 +1,5 @@
 import { mod, type State } from "datastar-kit"
-import { DemoLayout } from "../../../ui/demo.js"
+import { Layout } from "../../../ui/layout.js"
 
 export type QrFormState = State<{ readonly text: string }>
 
@@ -16,7 +16,7 @@ const sources = [
 ] as const
 
 export const WebComponentPage = ({ form }: { readonly form: QrFormState }) => (
-  <DemoLayout
+  <Layout
     title="Web component"
     tagline="The project's main path for browser-only behavior. Datastar owns the input and the
       signal; it pushes the value into a custom element through an attribute (data-attr:text). The
@@ -42,5 +42,5 @@ export const WebComponentPage = ({ form }: { readonly form: QrFormState }) => (
         the element's attribute, and it redraws.
       </p>
     </div>
-  </DemoLayout>
+  </Layout>
 )

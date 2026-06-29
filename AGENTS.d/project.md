@@ -26,7 +26,7 @@
   DO-owns-its-database shape: the object embeds its own SQLite (Drizzle on `durable-sqlite`,
   migrated in the constructor) and holds the logic that reads and writes it. One object serializes
   its own writes, so state is strongly consistent with no read-modify-write races — correctness
-  without coordinating an external store. `src/services/chat-room/` (per-room chat) is the canonical
+  without coordinating an external store. `src/resources/chat-room/` (per-room chat) is the canonical
   example.
 - Scope each DO to a consistency/ownership boundary and address it by name via
   `NAMESPACE.idFromName(name)` (e.g. `room:<id>`, `user:<id>`, `doc:<id>`): per room, document, user,
@@ -34,11 +34,11 @@
 - Keep the DO the source of truth for its boundary. Expose narrow RPC methods that return parsed
   domain values, run Effect programs inside via `Effect.runPromise`/`runSync` at the method seam,
   and adapt the namespace into a narrow worker-side service before page code uses it
-  (`src/services/chat-room/chat-rooms.ts`).
+  (`src/resources/chat-room/chat-rooms.ts`).
 - Reach for D1 only when the data is genuinely global/relational and queried across many entities at
   once (cross-entity reports, admin lists, a single SQL query over everything). When D1 is the truth
   but you still want live updates, keep the DO as a payload-free invalidation hub and have each
-  stream reload D1 — `src/pages/live-counter/` plus `src/services/live-rooms/` is that pattern. Use
+  stream reload D1 — `src/pages/live-counter/` plus `src/resources/live-rooms/` is that pattern. Use
   KV only for cheap, eventually-consistent global key/value reads where races are acceptable.
 - For realtime, use the same invalidation + re-read shape regardless of where the data lives:
   subscribe to a payload-free pulse stream **before** the first read, render current state as the
@@ -82,15 +82,17 @@
   `form.tsx`, `count.tsx`, and `object-list.tsx`; avoid `views.tsx`, `Main`, and `View` suffixes.
 - `src/pages/<name>/tests/` — page route and browser tests (`page.test.ts`, `page.e2e.ts`).
 - `src/pages/not-found.ts` — catch-all 404 route.
-- `src/services/<name>/` — reusable Effect services, domain parsing, persistence adapters, Durable
-  Object classes, and service-owned tests. Service folders should be named after one capability
-  (`database`, `d1-counter`, `kv-counter`, `r2-objects`, `github-repos`, `chat-room`, `live-rooms`).
-- `src/services/database/` — database service plus Drizzle table schemas, including D1 schema and
-  Durable Object SQLite schemas.
-- `src/lib/cloudflare-env.ts` — raw Worker env service for low-level binding access.
+- `src/resources/<name>/` — Cloudflare resource-bound capabilities, adapters, schemas, Durable
+  Object classes, and resource-owned tests. Examples: `d1`, `kv-counter`, `r2-objects`,
+  `chat-room`, `live-rooms`.
+- `src/resources/d1/` — D1 database factory, D1 Drizzle schema, and D1-backed capabilities such as
+  the counter.
+- `src/resources/chat-room/` — chat Durable Object class, its SQLite schema, and room logic/client.
+- `src/services/<name>/` — non-Cloudflare external services or app capabilities, e.g.
+  `github-repos`.
 - `src/lib/observability/` and `src/lib/realtime/` — app glue with specific names; do not create
   generic `utils.ts` / `helpers.ts` files.
-- `src/ui/` — shared view helpers.
+- `src/ui/` — shared TSX layout/head helpers such as `layout.tsx` and `head.tsx`.
 - `src/client/` — browser-only web components / modules, built by `scripts/build-client.ts`.
 - `src/test-utils.ts` — `loadApp`, `request`, and `datastarPost` helpers.
 - `public/` — Worker assets. Generated CSS/JS are gitignored; hand-authored assets are committed.
@@ -106,12 +108,12 @@ There are three TypeScript projects: root Worker/server code, `src/client` brows
 2. Keep Datastar `state(...)` in `index.tsx` while the page is small. If handlers split later, move
    page-owned state to `src/pages/<name>/state.ts`; do not move page state into services.
 3. Put server-rendered TSX in `src/pages/<name>/components/` with boring component names.
-4. Put reusable capabilities, domain parsers, Durable Objects, and external adapters in focused
-   `src/services/<service>/` folders.
-5. Merge the page route layer in `src/server.tsx` and wire any service from raw Cloudflare bindings
-   in `requestContext`.
+4. Put Cloudflare resource-bound code in focused `src/resources/<resource>/` folders. Put external
+   API/service integrations in `src/services/<service>/` folders.
+5. Merge the page route layer in `src/server.tsx` and wire resources/services from raw Cloudflare
+   bindings in `requestContext`.
 6. Test page behavior through `loadApp()` and `app.fetch(request("/..."))`; keep route tests in the
-   page's `tests/` folder and service/domain tests in the service's `tests/` folder.
+   page's `tests/` folder and resource/service/domain tests in that module's `tests/` folder.
 
 ## Commands
 

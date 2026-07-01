@@ -1,4 +1,4 @@
-import { Cause, Effect, Stream } from "effect"
+import { Cause, Clock, Effect, Stream } from "effect"
 import type { HttpServerResponse } from "effect/unstable/http"
 import { datastarStream } from "@/lib/datastar"
 
@@ -12,7 +12,7 @@ export const liveView = <E, R = never>(
   options: LiveViewOptions<E, R>,
 ): Effect.Effect<HttpServerResponse.HttpServerResponse, never, R> =>
   Effect.gen(function* () {
-    const startedAt = Date.now()
+    const startedAt = yield* Clock.currentTimeMillis
 
     const events = Stream.fromEffect(options.render).pipe(
       Stream.concat(
@@ -33,11 +33,14 @@ export const liveView = <E, R = never>(
         ).pipe(Stream.drain),
       ),
       Stream.ensuring(
-        Effect.logInfo("live_stream_closed").pipe(
-          Effect.annotateLogs({
-            live: { ...options.log, event: "closed", durationMs: Date.now() - startedAt },
-          }),
-        ),
+        Effect.gen(function* () {
+          const endedAt = yield* Clock.currentTimeMillis
+          yield* Effect.logInfo("live_stream_closed").pipe(
+            Effect.annotateLogs({
+              live: { ...options.log, event: "closed", durationMs: endedAt - startedAt },
+            }),
+          )
+        }),
       ),
     )
 

@@ -1,6 +1,6 @@
 import { Context, Effect, Schema } from "effect"
 import type { Message } from "@/resources/chat-room/room"
-import type { RoomName } from "@/resources/chat-room/rooms"
+import type { MessageAuthor, MessageBody, RoomName } from "@/resources/chat-room/rooms"
 
 export class ChatRoomsError extends Schema.TaggedErrorClass<ChatRoomsError>()("ChatRoomsError", {
   reason: Schema.Literals(["read_failed", "write_failed"]),
@@ -13,8 +13,8 @@ export class ChatRooms extends Context.Service<
     readonly list: (room: RoomName) => Effect.Effect<readonly Message[], ChatRoomsError>
     readonly post: (
       room: RoomName,
-      author: string,
-      body: string,
+      author: MessageAuthor,
+      body: MessageBody,
     ) => Effect.Effect<void, ChatRoomsError>
     readonly subscribe: (
       room: RoomName,
@@ -31,7 +31,7 @@ export function makeChatRooms(namespace: CloudflareBindings["CHAT_ROOM"]): ChatR
       catch: (cause) => new ChatRoomsError({ reason: "read_failed", cause }),
     }).pipe(Effect.withSpan("ChatRooms.list"))
 
-  const post = (room: RoomName, author: string, body: string) =>
+  const post = (room: RoomName, author: MessageAuthor, body: MessageBody) =>
     Effect.tryPromise({
       try: () => stubFor(room).post(author, body),
       catch: (cause) => new ChatRoomsError({ reason: "write_failed", cause }),

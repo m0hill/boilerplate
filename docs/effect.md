@@ -57,6 +57,9 @@
 
 - Use Effect `Schema` at boundaries.
 - Parse refined and branded domain values with Schema.
+- Use `Schema.brand` when Schema owns validation.
+- Use `Brand.nominal` only for nominal values without runtime validation.
+- Do not export raw aliases like `type UserId = string`.
 - Parse Datastar signals, params, bodies, external JSON, env, config, and runtime-hop payloads.
 - Let parsed refined values flow inward.
 - Use codecs when Effect owns both sides of a projection.

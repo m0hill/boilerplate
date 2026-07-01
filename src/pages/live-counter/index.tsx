@@ -5,12 +5,12 @@ import { datastarDone, datastarPage } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
 import { D1Counter, type D1CounterError } from "@/resources/d1/counter"
-import { LiveRooms, type LiveRoomError } from "@/resources/live-rooms/live-rooms"
+import { LiveRooms, liveRoomName, type LiveRoomError } from "@/resources/live-rooms/live-rooms"
 import { pageHead } from "@/ui/head"
 import { LiveCount } from "@/pages/live-counter/components/count"
 import { LiveCounterPage } from "@/pages/live-counter/components/page"
 
-const COUNTER_ROOM = "counter"
+const COUNTER_ROOM = liveRoomName("counter")
 
 const unavailable = Effect.fn("liveCounter.unavailable")(function* (
   action: string,

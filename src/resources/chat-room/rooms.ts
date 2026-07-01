@@ -11,6 +11,20 @@ export type RoomName = Schema.Schema.Type<typeof RoomNameSchema>
 export const maxAuthorLength = 40
 export const maxBodyLength = 280
 
+export const MessageAuthorSchema = Schema.String.check(
+  Schema.isMinLength(1),
+  Schema.isMaxLength(maxAuthorLength),
+).pipe(Schema.brand("MessageAuthor"))
+
+export type MessageAuthor = Schema.Schema.Type<typeof MessageAuthorSchema>
+
+export const MessageBodySchema = Schema.String.check(
+  Schema.isMinLength(1),
+  Schema.isMaxLength(maxBodyLength),
+).pipe(Schema.brand("MessageBody"))
+
+export type MessageBody = Schema.Schema.Type<typeof MessageBodySchema>
+
 export const defaultRoom = Schema.decodeUnknownSync(RoomNameSchema)("lobby")
 
 export const presetRooms = [
@@ -30,8 +44,8 @@ export class InvalidMessageError extends Schema.TaggedErrorClass<InvalidMessageE
 ) {}
 
 type ParsedMessage = {
-  readonly author: string
-  readonly body: string
+  readonly author: MessageAuthor
+  readonly body: MessageBody
 }
 
 export const parseRoom = Effect.fn("parseRoom")(function* (
@@ -47,14 +61,25 @@ export const parseMessage = Effect.fn("parseMessage")(function* (
   rawAuthor: string,
   rawBody: string,
 ): Effect.fn.Return<ParsedMessage, InvalidMessageError> {
-  const author = rawAuthor.trim()
-  const body = rawBody.trim()
+  const rawMessageAuthor = rawAuthor.trim()
+  const rawMessageBody = rawBody.trim()
 
-  if (author.length === 0) return yield* new InvalidMessageError({ reason: "empty_author" })
-  if (body.length === 0) return yield* new InvalidMessageError({ reason: "empty_body" })
-  if (author.length > maxAuthorLength || body.length > maxBodyLength) {
-    return yield* new InvalidMessageError({ reason: "too_long" })
-  }
+  const author = yield* Schema.decodeUnknownEffect(MessageAuthorSchema)(rawMessageAuthor).pipe(
+    Effect.mapError(
+      () =>
+        new InvalidMessageError({
+          reason: rawMessageAuthor.length === 0 ? "empty_author" : "too_long",
+        }),
+    ),
+  )
+  const body = yield* Schema.decodeUnknownEffect(MessageBodySchema)(rawMessageBody).pipe(
+    Effect.mapError(
+      () =>
+        new InvalidMessageError({
+          reason: rawMessageBody.length === 0 ? "empty_body" : "too_long",
+        }),
+    ),
+  )
 
   return { author, body }
 })

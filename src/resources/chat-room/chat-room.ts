@@ -5,6 +5,7 @@ import { Effect } from "effect"
 import migrations from "@/migrations/drizzle-do/migrations"
 import { makePulseHub, type PulseHub } from "@/lib/realtime/pulse"
 import { type Message, makeRoom } from "@/resources/chat-room/room"
+import type { MessageAuthor, MessageBody } from "@/resources/chat-room/rooms"
 
 export class ChatRoom extends DurableObject<unknown> {
   readonly #room: ReturnType<typeof makeRoom>
@@ -25,7 +26,7 @@ export class ChatRoom extends DurableObject<unknown> {
     return Effect.runPromise(this.#room.list)
   }
 
-  post(author: string, body: string): Promise<void> {
+  post(author: MessageAuthor, body: MessageBody): Promise<void> {
     return Effect.runPromise(this.#room.post(author, body).pipe(Effect.andThen(this.#hub.publish)))
   }
 

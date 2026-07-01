@@ -2,6 +2,7 @@ import { desc } from "drizzle-orm"
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite"
 import { Clock, Effect, Schema } from "effect"
 import { messageRowSchema, messages } from "@/resources/chat-room/schema"
+import type { MessageAuthor, MessageBody } from "@/resources/chat-room/rooms"
 
 const maxMessages = 50
 
@@ -30,7 +31,7 @@ export function makeRoom(db: RoomDatabase) {
     return decoded.reverse()
   }).pipe(Effect.withSpan("Room.list"))
 
-  const post = (author: string, body: string) =>
+  const post = (author: MessageAuthor, body: MessageBody) =>
     Effect.gen(function* () {
       const createdAt = yield* Clock.currentTimeMillis
       yield* Effect.try({

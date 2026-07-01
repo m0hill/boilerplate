@@ -1,5 +1,5 @@
 import { Context, Effect, Schema } from "effect"
-import { parseObjectKey, type ObjectKey } from "@/resources/r2-objects/object"
+import { parseObjectKey, type ObjectContent, type ObjectKey } from "@/resources/r2-objects/object"
 
 export type StoredObject = {
   readonly key: ObjectKey
@@ -16,7 +16,7 @@ export class R2Objects extends Context.Service<
   R2Objects,
   {
     readonly list: Effect.Effect<readonly StoredObject[], R2ObjectsError>
-    readonly put: (key: ObjectKey, content: string) => Effect.Effect<void, R2ObjectsError>
+    readonly put: (key: ObjectKey, content: ObjectContent) => Effect.Effect<void, R2ObjectsError>
     readonly read: (key: ObjectKey) => Effect.Effect<string | null, R2ObjectsError>
     readonly remove: (key: ObjectKey) => Effect.Effect<void, R2ObjectsError>
   }
@@ -43,7 +43,7 @@ export function makeR2Objects(bucket: CloudflareBindings["APP_BUCKET"]): R2Objec
     return objects.sort((a, b) => a.key.localeCompare(b.key))
   }).pipe(Effect.withSpan("R2Objects.list"))
 
-  const put = (key: ObjectKey, content: string) =>
+  const put = (key: ObjectKey, content: ObjectContent) =>
     Effect.tryPromise({
       try: () =>
         bucket.put(key, content, {

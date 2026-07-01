@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Result } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { datastarDone, datastarPage } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -57,14 +57,13 @@ const increment = Effect.gen(function* () {
   const counter = yield* D1Counter
   yield* counter.increment
   const rooms = yield* LiveRooms
-  const publish = yield* rooms.publish(COUNTER_ROOM).pipe(
-    Effect.as({ ok: true as const }),
-    Effect.catchTag("LiveRoomError", (error) =>
-      Effect.succeed({ ok: false as const, reason: error.reason, cause: error.cause }),
-    ),
-  )
+  const publish = yield* Effect.result(rooms.publish(COUNTER_ROOM))
+  const publishLog = Result.match(publish, {
+    onFailure: (error) => ({ ok: false as const, reason: error.reason, cause: error.cause }),
+    onSuccess: () => ({ ok: true as const }),
+  })
 
-  yield* annotate({ liveCounter: { ok: publish.ok, action: "increment", publish } })
+  yield* annotate({ liveCounter: { ok: publishLog.ok, action: "increment", publish: publishLog } })
   return datastarDone()
 }).pipe(
   Effect.catchTag("D1CounterError", (error) => unavailable("increment", error)),

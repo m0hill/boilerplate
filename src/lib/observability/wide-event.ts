@@ -1,4 +1,4 @@
-import { Context, Duration, Effect, Option } from "effect"
+import { Context, Duration, Effect, Exit, Option } from "effect"
 import { HttpMiddleware, HttpServerRequest } from "effect/unstable/http"
 import { RequestLog } from "@/lib/observability/request-log"
 
@@ -24,7 +24,10 @@ export const wideEventLogger = HttpMiddleware.make((httpApp) =>
 
     return Effect.gen(function* () {
       const [duration, exit] = yield* Effect.timed(Effect.exit(httpApp))
-      const status = exit._tag === "Success" ? exit.value.status : 500
+      const status = Exit.match(exit, {
+        onFailure: () => 500,
+        onSuccess: (response) => response.status,
+      })
 
       yield* Effect.logWithLevel(levelFor(status))("http_request").pipe(
         Effect.annotateLogs({

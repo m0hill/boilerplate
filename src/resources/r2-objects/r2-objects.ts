@@ -1,4 +1,4 @@
-import { Context, Effect, Schema } from "effect"
+import { Array, Context, Effect, Order, Schema } from "effect"
 import { parseObjectKey, type ObjectContent, type ObjectKey } from "@/resources/r2-objects/object"
 
 export type StoredObject = {
@@ -40,7 +40,10 @@ export function makeR2Objects(bucket: CloudflareBindings["APP_BUCKET"]): R2Objec
       ),
     )
 
-    return objects.sort((a, b) => a.key.localeCompare(b.key))
+    return Array.sort(
+      objects,
+      Order.mapInput(Order.String, (object: StoredObject) => object.key),
+    )
   }).pipe(Effect.withSpan("R2Objects.list"))
 
   const put = (key: ObjectKey, content: ObjectContent) =>

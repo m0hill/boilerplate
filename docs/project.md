@@ -65,6 +65,7 @@
 - `wideEventLogger` writes it.
 - The wide event is the per-request Worker log record.
 - Middleware adds `http.method`, `http.path`, `http.status`, and `http.durationMs`.
+- `http.durationMs` is based on Worker timers; in production it advances after I/O, not during CPU-only work.
 - Add request fields with `annotate`.
 - Use namespaced fields: `{ d1Counter: { action, ok } }`.
 - Keep secrets, tokens, and raw request bodies out of logs.

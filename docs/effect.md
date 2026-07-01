@@ -101,7 +101,10 @@
 - Recovered outcomes use `Effect.result(...)` and `Result.match`.
 - Use `Duration` for intervals, timeouts, TTLs, and elapsed time.
 - Convert `Duration` only at numeric API seams.
-- Use `DateTime.now` and `DateTime.distance` for wall-clock spans.
+- In deployed Workers, timers advance only after I/O.
+- Do not use Worker timers for CPU profiling.
+- CPU-only `durationMs` can be `0` in production.
+- Use `DateTime.now` or `Clock.currentTimeMillis` for persisted timestamps.
 - Use `BigDecimal` only for exact decimal math.
 - Use `HashSet` only for set algebra.
 - Use `Chunk` only for collection-heavy immutable Effect code.

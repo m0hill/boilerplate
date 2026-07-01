@@ -96,6 +96,15 @@
 - Server TSX uses `Option`, not optional props, for real empty states.
 - Format Effect-owned timestamps with `DateTime.format*`.
 - Plain `Date` stays at platform edges.
+- Match Effect data types through module matchers.
+- Use `Exit.match`, not `_tag`.
+- Recovered outcomes use `Effect.result(...)` and `Result.match`.
+- Use `Duration` for intervals, timeouts, TTLs, and elapsed time.
+- Convert `Duration` only at numeric API seams.
+- Use `DateTime.now` and `DateTime.distance` for wall-clock spans.
+- Use `BigDecimal` only for exact decimal math.
+- Use `HashSet` only for set algebra.
+- Use `Chunk` only for collection-heavy immutable Effect code.
 
 ## Lifecycle
 

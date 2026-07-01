@@ -6,6 +6,7 @@ import { annotate } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
 import { ChatRooms, type ChatRoomsError } from "@/resources/chat-room/chat-rooms"
 import {
+  defaultRoom,
   type InvalidMessageError,
   maxBodyLength,
   parseMessage,
@@ -35,8 +36,8 @@ const logRoomUnavailable = (action: string, error: ChatRoomsError) =>
 
 const doDemoPage = Effect.fn("doDemo.page")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? "lobby"
-    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => "lobby"))
+    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? defaultRoom
+    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => defaultRoom))
     const chatRooms = yield* ChatRooms
     const messages = yield* chatRooms.list(room)
     yield* annotate({
@@ -64,8 +65,8 @@ const doDemoPage = Effect.fn("doDemo.page")(
 
 const liveMessages = Effect.fn("doDemo.live")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? "lobby"
-    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => "lobby"))
+    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? defaultRoom
+    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => defaultRoom))
     const chatRooms = yield* ChatRooms
 
     const pulses = yield* chatRooms.subscribe(room)

@@ -5,6 +5,14 @@ const keyPattern = /^[A-Za-z0-9][\w.\-/]*$/
 export const maxKeyLength = 200
 export const maxContentBytes = 4096
 
+const ObjectKeySchema = Schema.String.check(
+  Schema.isMinLength(1),
+  Schema.isMaxLength(maxKeyLength),
+  Schema.isPattern(keyPattern),
+).pipe(Schema.brand("ObjectKey"))
+
+export type ObjectKey = Schema.Schema.Type<typeof ObjectKeySchema>
+
 export class InvalidObjectError extends Schema.TaggedErrorClass<InvalidObjectError>()(
   "InvalidObjectError",
   {
@@ -13,7 +21,7 @@ export class InvalidObjectError extends Schema.TaggedErrorClass<InvalidObjectErr
 ) {}
 
 type ParsedObject = {
-  readonly key: string
+  readonly key: ObjectKey
   readonly content: string
 }
 
@@ -35,10 +43,9 @@ export const parseObject = Effect.fn("parseObject")(function* (
 
 export const parseObjectKey = Effect.fn("parseObjectKey")(function* (
   rawKey: string,
-): Effect.fn.Return<string, InvalidObjectError> {
+): Effect.fn.Return<ObjectKey, InvalidObjectError> {
   const key = rawKey.trim()
-  if (key.length === 0 || key.length > maxKeyLength || !keyPattern.test(key)) {
-    return yield* new InvalidObjectError({ reason: "invalid_key" })
-  }
-  return key
+  return yield* Schema.decodeUnknownEffect(ObjectKeySchema)(key).pipe(
+    Effect.mapError(() => new InvalidObjectError({ reason: "invalid_key" })),
+  )
 })

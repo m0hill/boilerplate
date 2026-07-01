@@ -2,10 +2,22 @@ import { Effect, Schema } from "effect"
 
 const roomPattern = /^[a-z0-9][a-z0-9-]{0,31}$/
 
+const RoomNameSchema = Schema.String.check(Schema.isPattern(roomPattern)).pipe(
+  Schema.brand("RoomName"),
+)
+
+export type RoomName = Schema.Schema.Type<typeof RoomNameSchema>
+
 export const maxAuthorLength = 40
 export const maxBodyLength = 280
 
-export const presetRooms = ["lobby", "general", "random"] as const
+export const defaultRoom = Schema.decodeUnknownSync(RoomNameSchema)("lobby")
+
+export const presetRooms = [
+  defaultRoom,
+  Schema.decodeUnknownSync(RoomNameSchema)("general"),
+  Schema.decodeUnknownSync(RoomNameSchema)("random"),
+] as const
 
 export class InvalidRoomError extends Schema.TaggedErrorClass<InvalidRoomError>()(
   "InvalidRoomError",
@@ -24,12 +36,11 @@ type ParsedMessage = {
 
 export const parseRoom = Effect.fn("parseRoom")(function* (
   input: string,
-): Effect.fn.Return<string, InvalidRoomError> {
+): Effect.fn.Return<RoomName, InvalidRoomError> {
   const room = input.trim().toLowerCase()
-  if (!roomPattern.test(room)) {
-    return yield* new InvalidRoomError({ input })
-  }
-  return room
+  return yield* Schema.decodeUnknownEffect(RoomNameSchema)(room).pipe(
+    Effect.mapError(() => new InvalidRoomError({ input })),
+  )
 })
 
 export const parseMessage = Effect.fn("parseMessage")(function* (

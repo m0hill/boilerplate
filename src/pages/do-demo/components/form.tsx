@@ -1,4 +1,5 @@
 import { get, mod, post } from "datastar-kit"
+import type { RoomName } from "@/resources/chat-room/rooms"
 import type { ChatFormState } from "@/pages/do-demo/state"
 
 export const MessageForm = ({
@@ -6,7 +7,7 @@ export const MessageForm = ({
   room,
 }: {
   readonly form: ChatFormState
-  readonly room: string
+  readonly room: RoomName
 }) => (
   <form
     id="do-form"

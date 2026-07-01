@@ -1,4 +1,5 @@
 import type { Message } from "@/resources/chat-room/room"
+import type { RoomName } from "@/resources/chat-room/rooms"
 
 const formatTime = (ms: number): string =>
   new Date(ms).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
@@ -7,7 +8,7 @@ export const MessageList = ({
   room,
   messages,
 }: {
-  readonly room: string
+  readonly room: RoomName
   readonly messages: readonly Message[]
 }) => (
   <section

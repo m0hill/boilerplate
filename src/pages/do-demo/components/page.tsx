@@ -1,4 +1,5 @@
 import type { Message } from "@/resources/chat-room/room"
+import type { RoomName } from "@/resources/chat-room/rooms"
 import { Layout } from "@/ui/layout"
 import { MessageForm } from "@/pages/do-demo/components/form"
 import { MessageList } from "@/pages/do-demo/components/message-list"
@@ -30,7 +31,7 @@ export const DoPage = ({
   messages,
 }: {
   readonly form: ChatFormState
-  readonly room: string
+  readonly room: RoomName
   readonly messages: readonly Message[]
 }) => (
   <Layout

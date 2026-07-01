@@ -1,6 +1,6 @@
-import { presetRooms } from "@/resources/chat-room/rooms"
+import { presetRooms, type RoomName } from "@/resources/chat-room/rooms"
 
-export const RoomSwitcher = ({ room }: { readonly room: string }) => (
+export const RoomSwitcher = ({ room }: { readonly room: RoomName }) => (
   <nav class="flex flex-wrap items-center gap-2 text-sm">
     <span class="text-gray-500">Room:</span>
     {presetRooms.map((name) => (

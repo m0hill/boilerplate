@@ -9,6 +9,7 @@
     "target": "esnext",
     "lib": ["esnext"],
     "types": [],
+    "plugins": [{ "name": "@effect/language-service" }],
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "strict": true,

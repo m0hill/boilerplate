@@ -42,6 +42,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.16.18",
     "@cloudflare/workers-types": "^4.20260629.1",
+    "@effect/language-service": "^0.86.2",
     "@effect/platform-bun": "4.0.0-beta.91",
     "@effect/platform-node": "4.0.0-beta.91",
     "@msw/cloudflare": "https://pkg.pr.new/mswjs/cloudflare/@msw/cloudflare@beta",

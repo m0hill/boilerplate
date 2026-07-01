@@ -27,6 +27,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20260629.1
         version: 4.20260629.1
+      '@effect/language-service':
+        specifier: ^0.86.2
+        version: 0.86.2
       '@effect/platform-bun':
         specifier: 4.0.0-beta.91
         version: 4.0.0-beta.91(effect@4.0.0-beta.91)
@@ -361,6 +364,10 @@ packages:
 
   '@drizzle-team/brocli@0.12.0':
     resolution: {integrity: sha512-mlUE+rZ8CatQekLhnaiN91Iemdd+e2gFKooGlnRB3oPTL3VghLfX24dx7HrzMNeC1JrIB/0kpsfyty3f5HNfxQ==}
+
+  '@effect/language-service@0.86.2':
+    resolution: {integrity: sha512-SaPln+8srOqDJDUwNTDmP5e+IYpEDr9+1epGznnsLqu8xvo6VnxyWARdeLpqvZJlb0Pgy9ca7ppqvvdWbHPXAg==}
+    hasBin: true
 
   '@effect/platform-bun@4.0.0-beta.91':
     resolution: {integrity: sha512-WDdTSSRi7BfDNz8/4EgPMl8rr4gRsXNw8JNzj+D3o95BAdKGRJbYBK7aDL726tnj4prrztKHPWJ4ZJgepUsJRw==}
@@ -3766,6 +3773,8 @@ snapshots:
       effect: 4.0.0-beta.91
 
   '@drizzle-team/brocli@0.12.0': {}
+
+  '@effect/language-service@0.86.2': {}
 
   '@effect/platform-bun@4.0.0-beta.91(effect@4.0.0-beta.91)':
     dependencies:

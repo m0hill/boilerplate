@@ -7,6 +7,7 @@ Then read the narrow `docs/` guide for files you touch.
 ## Guides
 
 - `project.md` — stack, layout, pages, state, realtime, commands.
+- `datastar.md` — Datastar Kit, signals, patches, streams, and footguns.
 - `alchemy.md` — `alchemy.run.ts`, resources, bindings, assets, deploy.
 - `drizzle-effect.md` — Drizzle, D1, DO SQLite, Effect Schema.
 - `effect.md` — Services, Layers, Schema, typed errors.

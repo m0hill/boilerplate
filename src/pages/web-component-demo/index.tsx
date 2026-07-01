@@ -1,12 +1,10 @@
-import { state } from "datastar-kit"
 import { Effect } from "effect"
 import { HttpRouter } from "effect/unstable/http"
 import { datastarPage } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
 import { pageHead } from "@/ui/head"
 import { WebComponentPage } from "@/pages/web-component-demo/components/page"
-
-const qrForm = state({ text: "https://github.com/m0hill/boilerplate" })
+import { qrForm } from "@/pages/web-component-demo/state"
 
 const webComponentDemoPage = Effect.gen(function* () {
   yield* annotate({ page: { name: "web-component" } })

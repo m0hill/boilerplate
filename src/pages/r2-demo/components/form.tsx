@@ -1,10 +1,5 @@
-import { mod, post, type State } from "datastar-kit"
-
-export type R2FormState = State<{
-  readonly key: string
-  readonly content: string
-  readonly errors: { readonly form: string }
-}>
+import { mod, post } from "datastar-kit"
+import type { R2FormState } from "@/pages/r2-demo/state"
 
 export const ObjectForm = ({ form }: { readonly form: R2FormState }) => (
   <form

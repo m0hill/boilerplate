@@ -1,4 +1,4 @@
-import { event, state } from "datastar-kit"
+import { event } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
@@ -14,8 +14,7 @@ import {
 import { pageHead } from "@/ui/head"
 import { MessageList } from "@/pages/do-demo/components/message-list"
 import { DoPage } from "@/pages/do-demo/components/page"
-
-const chatForm = state({ room: "", author: "", body: "", errors: { form: "" } })
+import { chatForm } from "@/pages/do-demo/state"
 
 const PostSignals = Schema.Struct({
   room: Schema.String,

@@ -1,7 +1,6 @@
-import { mod, type State } from "datastar-kit"
+import { mod } from "datastar-kit"
 import { Layout } from "@/ui/layout"
-
-export type QrFormState = State<{ readonly text: string }>
+import type { QrFormState } from "@/pages/web-component-demo/state"
 
 const sources = [
   {

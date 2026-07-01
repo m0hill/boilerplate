@@ -1,8 +1,9 @@
 import type { Message } from "@/resources/chat-room/room"
 import { Layout } from "@/ui/layout"
-import { MessageForm, type ChatFormState } from "@/pages/do-demo/components/form"
+import { MessageForm } from "@/pages/do-demo/components/form"
 import { MessageList } from "@/pages/do-demo/components/message-list"
 import { RoomSwitcher } from "@/pages/do-demo/components/room-switcher"
+import type { ChatFormState } from "@/pages/do-demo/state"
 
 const sources = [
   {

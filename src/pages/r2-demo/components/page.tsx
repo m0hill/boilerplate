@@ -1,7 +1,8 @@
 import { Layout } from "@/ui/layout"
 import type { StoredObject } from "@/resources/r2-objects/r2-objects"
-import { ObjectForm, type R2FormState } from "@/pages/r2-demo/components/form"
+import { ObjectForm } from "@/pages/r2-demo/components/form"
 import { ObjectList } from "@/pages/r2-demo/components/object-list"
+import type { R2FormState } from "@/pages/r2-demo/state"
 
 const sources = [
   {

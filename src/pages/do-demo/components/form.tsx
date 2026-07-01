@@ -1,11 +1,5 @@
-import { get, mod, post, type State } from "datastar-kit"
-
-export type ChatFormState = State<{
-  readonly room: string
-  readonly author: string
-  readonly body: string
-  readonly errors: { readonly form: string }
-}>
+import { get, mod, post } from "datastar-kit"
+import type { ChatFormState } from "@/pages/do-demo/state"
 
 export const MessageForm = ({
   form,

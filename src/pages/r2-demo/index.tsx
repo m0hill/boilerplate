@@ -1,4 +1,4 @@
-import { event, state } from "datastar-kit"
+import { event } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
@@ -13,12 +13,7 @@ import { R2Objects, type R2ObjectsError } from "@/resources/r2-objects/r2-object
 import { pageHead } from "@/ui/head"
 import { ObjectList } from "@/pages/r2-demo/components/object-list"
 import { R2Page } from "@/pages/r2-demo/components/page"
-
-const r2Form = state({
-  key: "notes/hello.txt",
-  content: "Stored as an object in R2.",
-  errors: { form: "" },
-})
+import { r2Form } from "@/pages/r2-demo/state"
 
 const PutSignals = Schema.Struct({ key: Schema.String, content: Schema.String })
 const KeySignals = Schema.Struct({ key: Schema.String })

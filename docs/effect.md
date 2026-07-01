@@ -14,7 +14,10 @@
 - Prefer `Effect.gen` for multi-step workflows.
 - Avoid `Effect.Do` unless matching nearby code.
 - Avoid nested `flatMap` or `andThen`; use `Effect.gen`.
-- Use `pipe` for short linear transforms and error mapping.
+- Use data-last dual APIs inside `.pipe(...)` chains.
+- Use data-first dual APIs for one-off transforms when it is shorter.
+- Keep the source effect visually first.
+- Do not mix data-first and data-last in one chain.
 - Use `.andThen` only for one-step sequencing when the previous value is not needed.
 
 ## Services

@@ -92,6 +92,7 @@
 - Use `it.effect` for effects under test services.
 - Use `it.live` for live runtime behavior.
 - Use `layer(...)` or nested `it.layer(...)` for service tests.
-- Override `Clock.Clock` for deterministic time tests.
+- Use `TestClock.adjust(...)` for Effect time tests.
+- Fork sleeping or recurring effects before adjusting `TestClock`.
 - Prefer schema-derived generated values.
 - Property callbacks assert or return a failing Effect.

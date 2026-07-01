@@ -26,7 +26,9 @@
 - Mock only outside the app boundary.
 - Use `@msw/cloudflare` for external HTTP.
 - Prefer real seams, in-memory adapters, Worker test bindings, and deterministic inputs.
-- Override Effect `Clock.Clock` for deterministic time tests.
+- Use `TestClock` from `effect/testing` for Effect time.
+- Fork sleeping or recurring effects before `TestClock.adjust(...)`.
+- Do not wait real time for `Effect.sleep`, `Effect.delay`, retries, schedules, or timeouts.
 - Keep pure domain tests on exported parsers, constructors, and domain functions.
 
 ## Realtime

@@ -4,6 +4,7 @@
 
 - `alchemy.run.ts` owns Cloudflare resources, bindings, assets, and stages.
 - `src/index.tsx` exports the Worker `fetch` handler and DO classes.
+- `src/app.tsx` owns route composition, middleware, and request-context service wiring.
 - HTTP uses Effect `HttpRouter`.
 - Keep hypermedia and SSE routes on `HttpRouter`.
 - Use small `HttpApi` contract slices when JSON APIs need schema-first routing.
@@ -73,7 +74,8 @@
 
 ## Layout
 
-- `src/index.tsx` — Worker entry, route merge, service wiring, DO exports.
+- `src/index.tsx` — Worker entry and DO exports.
+- `src/app.tsx` — route merge, middleware, and request-context service wiring.
 - `src/lib/datastar.ts` — Datastar/Effect bridge and signal decoding.
 - `src/pages/<name>/index.tsx` — routes, handlers, Datastar state, parse errors.
 - `src/pages/<name>/components/` — page-local TSX.
@@ -98,9 +100,10 @@
 - Put page TSX in `components/`.
 - Put resource code in `src/resources/<resource>/`.
 - Put external API code in `src/services/<service>/`.
-- Merge the route in `src/index.tsx`.
-- Wire services from raw bindings in `requestContext`.
+- Merge the route in `src/app.tsx`.
+- Wire services from raw bindings in `makeRequestContext`.
 - Test with `loadApp()` and `app.fetch(request("/..."))`.
+- Use `loadAppWithContext(() => makeRequestContext(...))` when a route test needs explicit service adapters.
 
 ## Commands
 

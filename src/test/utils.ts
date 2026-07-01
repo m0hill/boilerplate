@@ -1,10 +1,20 @@
 import { env } from "cloudflare:workers"
+import type { AppContext } from "@/app"
 
 export const loadApp = async (): Promise<{
   readonly fetch: (request: Request) => Promise<Response>
 }> => {
-  const app = (await import("@/index")).default
-  return { fetch: (request) => app.fetch(request, env) }
+  const app = await import("@/app")
+  return { fetch: (request) => app.handleWithEnv(request, env) }
+}
+
+export const loadAppWithContext = async (
+  makeContext: () => AppContext,
+): Promise<{
+  readonly fetch: (request: Request) => Promise<Response>
+}> => {
+  const app = await import("@/app")
+  return { fetch: (request) => app.handle(request, makeContext()) }
 }
 
 export const request = (path: string, init: RequestInit = {}): Request =>

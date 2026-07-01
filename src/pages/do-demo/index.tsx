@@ -74,11 +74,10 @@ const liveMessages = Effect.fn("doDemo.live")(
     const room = yield* roomFromSearchParams
     const chatRooms = yield* ChatRooms
 
-    const pulses = yield* chatRooms.subscribe(room)
-    yield* annotate({ do: { ok: true, action: "subscribe", room } })
-
     return yield* liveView({
-      pulses,
+      subscribe: chatRooms
+        .subscribe(room)
+        .pipe(Effect.tap(() => annotate({ do: { ok: true, action: "subscribe", room } }))),
       render: chatRooms.list(room).pipe(
         Effect.map((messages) =>
           event.patch(

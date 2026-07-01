@@ -2,22 +2,23 @@ import { Cause, Clock, Effect, Stream } from "effect"
 import type { HttpServerResponse } from "effect/unstable/http"
 import { datastarStream } from "@/lib/datastar"
 
-interface LiveViewOptions<E, R = never> {
-  readonly pulses: ReadableStream<Uint8Array>
-  readonly render: Effect.Effect<string, E, R>
+interface LiveViewOptions<SubscribeError, RenderError, SubscribeR = never, RenderR = never> {
+  readonly subscribe: Effect.Effect<ReadableStream<Uint8Array>, SubscribeError, SubscribeR>
+  readonly render: Effect.Effect<string, RenderError, RenderR>
   readonly log: Record<string, unknown>
 }
 
-export const liveView = <E, R = never>(
-  options: LiveViewOptions<E, R>,
-): Effect.Effect<HttpServerResponse.HttpServerResponse, never, R> =>
+export const liveView = <SubscribeError, RenderError, SubscribeR = never, RenderR = never>(
+  options: LiveViewOptions<SubscribeError, RenderError, SubscribeR, RenderR>,
+): Effect.Effect<HttpServerResponse.HttpServerResponse, SubscribeError, SubscribeR | RenderR> =>
   Effect.gen(function* () {
     const startedAt = yield* Clock.currentTimeMillis
+    const pulses = yield* options.subscribe
 
     const events = Stream.fromEffect(options.render).pipe(
       Stream.concat(
         Stream.fromReadableStream({
-          evaluate: () => options.pulses,
+          evaluate: () => pulses,
           onError: (cause) => cause,
         }).pipe(Stream.mapEffect(() => options.render)),
       ),

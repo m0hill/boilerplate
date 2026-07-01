@@ -38,11 +38,10 @@ const liveCounterPage = Effect.gen(function* () {
 )
 
 const liveCounterStream = Effect.gen(function* () {
-  const pulses = yield* liveCounterSubscribe
-  yield* annotate({ liveCounter: { ok: true, action: "subscribe" } })
-
   return yield* liveView({
-    pulses,
+    subscribe: liveCounterSubscribe.pipe(
+      Effect.tap(() => annotate({ liveCounter: { ok: true, action: "subscribe" } })),
+    ),
     render: liveCounterCurrent.pipe(
       Effect.map((count) => event.patch(<LiveCount count={count} />)),
     ),

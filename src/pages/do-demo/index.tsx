@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Match } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -17,16 +17,13 @@ import { MessageList } from "@/pages/do-demo/components/message-list"
 import { DoPage } from "@/pages/do-demo/components/page"
 import { PostMessageSignals, chatForm } from "@/pages/do-demo/state"
 
-const messageError = (error: InvalidMessageError): string => {
-  switch (error.reason) {
-    case "empty_author":
-      return "Add a name before posting."
-    case "empty_body":
-      return "Write a message before posting."
-    case "too_long":
-      return `Keep messages under ${maxBodyLength} characters.`
-  }
-}
+const messageError = (error: InvalidMessageError): string =>
+  Match.value(error.reason).pipe(
+    Match.when("empty_author", () => "Add a name before posting."),
+    Match.when("empty_body", () => "Write a message before posting."),
+    Match.when("too_long", () => `Keep messages under ${maxBodyLength} characters.`),
+    Match.exhaustive,
+  )
 
 const formError = (message: string) =>
   datastarSignals(chatForm.patch({ errors: { form: message } }))

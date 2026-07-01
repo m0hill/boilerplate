@@ -33,6 +33,18 @@
 - Do not widen precise module errors to `unknown` at module boundaries.
 - Handle broad app failures near orchestration, rendering, logging, or entrypoints.
 
+## Matching
+
+- Use `Effect.catchTag` or `Effect.catchTags` for tagged error recovery.
+- Use `Effect.match` only when folding success and failure into a pure value.
+- Use `Effect.matchEffect` when either fold branch returns an Effect.
+- Use `Effect.matchCause*` only when Cause, defects, or interruption matter.
+- Use `Option.match` for `Option`.
+- Use `Match.value` or `Match.type` for value unions.
+- Prefer `Match.tag` or `Match.typeTags` for `_tag` unions.
+- Prefer `Match.exhaustive` over fallback defaults for closed unions.
+- Plain `if` is fine for one branch.
+
 ## Schema
 
 - Use Effect `Schema` at boundaries.

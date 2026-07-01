@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Match } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -15,16 +15,16 @@ import { ObjectList } from "@/pages/r2-demo/components/object-list"
 import { R2Page } from "@/pages/r2-demo/components/page"
 import { DeleteObjectSignals, PutObjectSignals, r2Form } from "@/pages/r2-demo/state"
 
-const invalidObjectMessage = (error: InvalidObjectError): string => {
-  switch (error.reason) {
-    case "invalid_key":
-      return "Use a key like notes/hello.txt (letters, numbers, . _ - /)."
-    case "empty_content":
-      return "Add some content to store."
-    case "content_too_large":
-      return `Keep content under ${maxContentBytes / 1024} KB for this demo.`
-  }
-}
+const invalidObjectMessage = (error: InvalidObjectError): string =>
+  Match.value(error.reason).pipe(
+    Match.when("invalid_key", () => "Use a key like notes/hello.txt (letters, numbers, . _ - /)."),
+    Match.when("empty_content", () => "Add some content to store."),
+    Match.when(
+      "content_too_large",
+      () => `Keep content under ${maxContentBytes / 1024} KB for this demo.`,
+    ),
+    Match.exhaustive,
+  )
 
 const formError = (message: string) => datastarSignals(r2Form.patch({ errors: { form: message } }))
 

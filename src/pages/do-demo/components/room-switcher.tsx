@@ -6,6 +6,7 @@ export const RoomSwitcher = ({ room }: { readonly room: string }) => (
     {presetRooms.map((name) => (
       <a
         href={`/do?room=${name}`}
+        data-nav-prefetch
         class={
           name === room
             ? "rounded bg-black px-2 py-1 font-medium text-white"

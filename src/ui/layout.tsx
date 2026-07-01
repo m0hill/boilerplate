@@ -25,6 +25,7 @@ export const Layout = ({
     >
       <a
         href="/"
+        data-nav-prefetch
         class="w-fit text-sm text-gray-600 underline"
       >
         ← Home

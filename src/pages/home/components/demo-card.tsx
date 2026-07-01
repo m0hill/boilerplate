@@ -9,6 +9,7 @@ export const DemoCard = ({ demo }: { readonly demo: Demo }) => (
   <li>
     <a
       href={demo.href}
+      data-nav-prefetch
       class="flex h-full flex-col gap-2 rounded-lg border border-gray-200 p-5 transition hover:border-gray-400 hover:bg-gray-50"
     >
       <div class="flex items-center justify-between gap-2">

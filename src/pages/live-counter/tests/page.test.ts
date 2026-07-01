@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "@/test/utils"
+import { datastarPost, loadApp, openSse, readUntil, request } from "@/test/utils"
 
 beforeEach(async () => {
   await env.APP_DB.prepare("DELETE FROM d1_counters").run()
@@ -48,25 +48,15 @@ describe("Live counter demo page", () => {
     expect(live.status).toBe(200)
     expect(live.headers.get("content-type")).toBe("text/event-stream")
 
-    const body = live.body
-    if (body === null) throw new Error("expected an SSE stream body")
+    const reader = openSse(live)
 
-    const reader = body.getReader()
-    const decoder = new TextDecoder()
-
-    const snapshot = decoder.decode((await reader.read()).value)
+    const snapshot = await readUntil(reader, ">0</output>")
     expect(snapshot).toContain("event: datastar-patch-elements")
     expect(snapshot).toContain(">0</output>")
 
     await app.fetch(datastarPost("/live-counter/increment"))
 
-    let received = ""
-    while (!received.includes(">1</output>")) {
-      const { value, done } = await reader.read()
-      if (done) break
-      received += decoder.decode(value)
-    }
-
+    const received = await readUntil(reader, ">1</output>")
     expect(received).toContain("event: datastar-patch-elements")
     expect(received).toContain('id="live-count"')
     expect(received).toContain(">1</output>")

@@ -1,4 +1,4 @@
-import { event, state } from "datastar-kit"
+import { event } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
 import { datastarPage, datastarStream, decodeSignals } from "@/lib/datastar"
@@ -8,13 +8,9 @@ import { parseRepoName } from "@/services/github-repos/repo-name"
 import { pageHead } from "@/ui/head"
 import { ApiPage } from "@/pages/api-demo/components/page"
 import { RepoResult } from "@/pages/api-demo/components/repo-result"
+import { lookupForm } from "@/pages/api-demo/state"
 
 const invalidRepoMessage = "Use the owner/repo format, e.g. honojs/hono"
-
-const lookupForm = state({
-  repo: "honojs/hono",
-  errors: { repo: "" },
-})
 
 const RepoInput = Schema.Trim.check(Schema.isMinLength(1))
 

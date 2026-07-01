@@ -1,6 +1,7 @@
 import { Layout } from "@/ui/layout"
-import { LookupForm, type LookupFormState } from "@/pages/api-demo/components/lookup-form"
+import { LookupForm } from "@/pages/api-demo/components/lookup-form"
 import { RepoResult } from "@/pages/api-demo/components/repo-result"
+import type { LookupFormState } from "@/pages/api-demo/state"
 
 const sources = [
   {

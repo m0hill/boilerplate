@@ -1,9 +1,5 @@
-import { mod, post, type State } from "datastar-kit"
-
-export type LookupFormState = State<{
-  readonly repo: string
-  readonly errors: { readonly repo: string }
-}>
+import { mod, post } from "datastar-kit"
+import type { LookupFormState } from "@/pages/api-demo/state"
 
 export const LookupForm = ({ form }: { readonly form: LookupFormState }) => (
   <form

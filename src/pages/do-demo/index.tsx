@@ -1,7 +1,6 @@
 import { event, state } from "datastar-kit"
 import { Effect, Layer, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
-import { waitUntil } from "@/lib/cloudflare"
 import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
@@ -108,7 +107,6 @@ const postMessage = Effect.fn("doDemo.post")(
     const message = yield* parseMessage(signals.author, signals.body)
     const chatRooms = yield* ChatRooms
     yield* chatRooms.post(room, message.author, message.body)
-    yield* waitUntil(chatRooms.publish(room))
     yield* annotate({ do: { ok: true, action: "post", room } })
 
     return datastarSignals(chatForm.patch({ body: "", errors: { form: "" } }))

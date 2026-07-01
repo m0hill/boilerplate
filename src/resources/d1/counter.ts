@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm"
-import { Context, Effect, Schema } from "effect"
+import { Context, Effect, Option, Schema } from "effect"
 import type { D1DrizzleDatabase } from "@/resources/d1/database"
 import { d1CounterRowSchema, d1Counters } from "@/resources/d1/schema"
 
@@ -30,11 +30,11 @@ export function makeD1Counter(database: D1DrizzleDatabase): D1Counter["Service"]
       catch: (cause) => new D1CounterError({ reason: "read_failed", cause }),
     })
 
-    const row = rows[0]
-    if (row === undefined) return 0
-
-    const decoded = yield* decodeCounterRow(row)
-    return decoded.value
+    const row = Option.fromUndefinedOr(rows[0])
+    return yield* Option.match(row, {
+      onNone: () => Effect.succeed(0),
+      onSome: (row) => decodeCounterRow(row).pipe(Effect.map((decoded) => decoded.value)),
+    })
   }).pipe(Effect.withSpan("D1Counter.current"))
 
   const increment = Effect.gen(function* () {
@@ -51,17 +51,17 @@ export function makeD1Counter(database: D1DrizzleDatabase): D1Counter["Service"]
       catch: (cause) => new D1CounterError({ reason: "write_failed", cause }),
     })
 
-    const row = rows[0]
-    if (row === undefined) {
-      return yield* Effect.fail(
-        new D1CounterError({
-          reason: "write_failed",
-          cause: "D1 did not return a counter row",
-        }),
-      )
-    }
-
-    const decoded = yield* decodeCounterRow(row)
+    const row = Option.fromUndefinedOr(rows[0])
+    const decoded = yield* Option.match(row, {
+      onNone: () =>
+        Effect.fail(
+          new D1CounterError({
+            reason: "write_failed",
+            cause: "D1 did not return a counter row",
+          }),
+        ),
+      onSome: decodeCounterRow,
+    })
     return decoded.value
   }).pipe(Effect.withSpan("D1Counter.increment"))
 

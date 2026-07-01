@@ -26,7 +26,11 @@ export class ChatRoom extends DurableObject<unknown> {
   }
 
   post(author: string, body: string): Promise<void> {
-    return Effect.runPromise(this.#room.post(author, body).pipe(Effect.andThen(this.#hub.publish)))
+    return Effect.runPromise(this.#room.post(author, body))
+  }
+
+  publish(): Promise<void> {
+    return Effect.runPromise(this.#hub.publish)
   }
 
   subscribe(): ReadableStream<Uint8Array> {

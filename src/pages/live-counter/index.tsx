@@ -1,6 +1,7 @@
 import { event } from "datastar-kit"
 import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
+import { waitUntil } from "@/lib/cloudflare"
 import { datastarDone, datastarPage } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
@@ -58,13 +59,7 @@ const increment = Effect.gen(function* () {
   yield* counter.increment
   const rooms = yield* LiveRooms
 
-  yield* rooms.publish(COUNTER_ROOM).pipe(
-    Effect.catchTag("LiveRoomError", (error) =>
-      annotate({
-        liveCounter: { ok: false, action: "publish", reason: error.reason, cause: error.cause },
-      }).pipe(Effect.as(false)),
-    ),
-  )
+  yield* waitUntil(rooms.publish(COUNTER_ROOM))
 
   yield* annotate({ liveCounter: { ok: true, action: "increment" } })
   return datastarDone()

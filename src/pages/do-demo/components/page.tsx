@@ -7,7 +7,7 @@ import { RoomSwitcher } from "@/pages/do-demo/components/room-switcher"
 const sources = [
   {
     path: "src/resources/chat-room/chat-room.ts",
-    role: "the Durable Object: owns per-room SQLite and its subscribers; post inserts + pulses atomically",
+    role: "the Durable Object: owns per-room SQLite and its subscribers; posts insert, publish wakes live streams",
   },
   {
     path: "src/resources/chat-room/room.ts",
@@ -35,7 +35,7 @@ export const DoPage = ({
   <Layout
     title="Durable Object"
     tagline="Each room is a Durable Object with its own SQLite log and pulse hub. Posting inserts the
-      row and wakes subscribers in one object method; every open tab re-reads current messages and
+      row, resets the form, and wakes subscribers; every open tab re-reads current messages and
       re-renders, so reconnects and concurrent posts converge on the durable state."
     sources={sources}
   >

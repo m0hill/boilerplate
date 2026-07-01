@@ -15,6 +15,7 @@ export class ChatRooms extends Context.Service<
       author: string,
       body: string,
     ) => Effect.Effect<void, ChatRoomsError>
+    readonly publish: (room: string) => Effect.Effect<void, ChatRoomsError>
     readonly subscribe: (room: string) => Effect.Effect<ReadableStream<Uint8Array>, ChatRoomsError>
   }
 >()("boilerplate/resources/chat-room/ChatRooms") {}
@@ -34,11 +35,17 @@ export function makeChatRooms(namespace: CloudflareBindings["CHAT_ROOM"]): ChatR
       catch: (cause) => new ChatRoomsError({ reason: "write_failed", cause }),
     }).pipe(Effect.withSpan("ChatRooms.post"))
 
+  const publish = (room: string) =>
+    Effect.tryPromise({
+      try: () => stubFor(room).publish(),
+      catch: (cause) => new ChatRoomsError({ reason: "write_failed", cause }),
+    }).pipe(Effect.withSpan("ChatRooms.publish"))
+
   const subscribe = (room: string) =>
     Effect.tryPromise({
       try: () => stubFor(room).subscribe(),
       catch: (cause) => new ChatRoomsError({ reason: "read_failed", cause }),
     }).pipe(Effect.withSpan("ChatRooms.subscribe"))
 
-  return ChatRooms.of({ list, post, subscribe })
+  return ChatRooms.of({ list, post, publish, subscribe })
 }

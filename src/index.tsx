@@ -1,5 +1,6 @@
 import { Context, Layer, Logger } from "effect"
 import { FetchHttpClient, HttpRouter } from "effect/unstable/http"
+import { CloudflareContext, makeCloudflareContext } from "@/lib/cloudflare"
 import { makeRequestLog, RequestLog } from "@/lib/observability/request-log"
 import { wideEventLogger } from "@/lib/observability/wide-event"
 import { apiDemoRoutes } from "@/pages/api-demo/index"
@@ -39,7 +40,7 @@ const AppLayer = Layer.mergeAll(
 
 const { handler } = HttpRouter.toWebHandler(AppLayer, { disableLogger: true })
 
-const requestContext = (env: CloudflareBindings) => {
+const requestContext = (env: CloudflareBindings, ctx?: ExecutionContext) => {
   const database = makeD1Database(env.APP_DB)
 
   return Context.empty().pipe(
@@ -49,6 +50,7 @@ const requestContext = (env: CloudflareBindings) => {
     Context.add(ChatRooms, makeChatRooms(env.CHAT_ROOM)),
     Context.add(LiveRooms, makeLiveRooms(env.LIVE_ROOMS)),
     Context.add(RequestLog, makeRequestLog()),
+    Context.add(CloudflareContext, makeCloudflareContext(ctx)),
   )
 }
 
@@ -56,6 +58,6 @@ export { ChatRoom } from "@/resources/chat-room/chat-room"
 export { LiveRoom } from "@/resources/live-rooms/live-room"
 
 export default {
-  fetch: (request: Request, env: CloudflareBindings): Promise<Response> =>
-    handler(request, requestContext(env)),
+  fetch: (request: Request, env: CloudflareBindings, ctx?: ExecutionContext): Promise<Response> =>
+    handler(request, requestContext(env, ctx)),
 }

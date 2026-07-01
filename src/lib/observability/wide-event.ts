@@ -1,22 +1,26 @@
-import { Context, Duration, Effect } from "effect"
+import { Context, Duration, Effect, Option } from "effect"
 import { HttpMiddleware, HttpServerRequest } from "effect/unstable/http"
 import { RequestLog } from "@/lib/observability/request-log"
 
-const pathOf = (rawUrl: string): string => {
-  try {
-    return new URL(rawUrl).pathname
-  } catch {
-    return rawUrl
-  }
-}
+const pathOf = (request: HttpServerRequest.HttpServerRequest): string =>
+  Option.match(HttpServerRequest.toURL(request), {
+    onNone: () => request.url,
+    onSome: (url) => url.pathname,
+  })
 
 const levelFor = (status: number): "Error" | "Warn" | "Info" =>
   status >= 500 ? "Error" : status >= 400 ? "Warn" : "Info"
 
 export const wideEventLogger = HttpMiddleware.make((httpApp) =>
   Effect.withFiber((fiber) => {
-    const request = Context.getUnsafe(fiber.context, HttpServerRequest.HttpServerRequest)
-    const log = Context.getUnsafe(fiber.context, RequestLog)
+    const request = Option.getOrThrowWith(
+      Context.getOption(fiber.context, HttpServerRequest.HttpServerRequest),
+      () => new Error("missing HttpServerRequest in request logger context"),
+    )
+    const log = Option.getOrThrowWith(
+      Context.getOption(fiber.context, RequestLog),
+      () => new Error("missing RequestLog in request logger context"),
+    )
 
     return Effect.gen(function* () {
       const [duration, exit] = yield* Effect.timed(Effect.exit(httpApp))
@@ -26,7 +30,7 @@ export const wideEventLogger = HttpMiddleware.make((httpApp) =>
         Effect.annotateLogs({
           http: {
             method: request.method,
-            path: pathOf(request.url),
+            path: pathOf(request),
             status,
             durationMs: Math.round(Duration.toMillis(duration)),
           },

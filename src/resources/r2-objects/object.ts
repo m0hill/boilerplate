@@ -39,7 +39,7 @@ export const parseObject = Effect.fn("parseObject")(function* (
     Effect.mapError(() => new InvalidObjectError({ reason: "empty_content" })),
   )
   if (new TextEncoder().encode(content).byteLength > maxContentBytes) {
-    return yield* new InvalidObjectError({ reason: "content_too_large" })
+    return yield* Effect.fail(new InvalidObjectError({ reason: "content_too_large" }))
   }
 
   return { key, content }

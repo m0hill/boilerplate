@@ -1,5 +1,5 @@
 import { Context, Layer, Logger } from "effect"
-import { FetchHttpClient, HttpRouter } from "effect/unstable/http"
+import { HttpRouter } from "effect/unstable/http"
 import { makeRequestLog, RequestLog } from "@/lib/observability/request-log"
 import { wideEventLogger } from "@/lib/observability/wide-event"
 import { apiDemoRoutes } from "@/pages/api-demo/index"
@@ -13,13 +13,11 @@ import { r2DemoRoutes } from "@/pages/r2-demo/index"
 import { webComponentDemoRoutes } from "@/pages/web-component-demo/index"
 import { D1Counter, makeD1Counter } from "@/resources/d1/counter"
 import { makeD1Database } from "@/resources/d1/database"
-import { GitHubRepos } from "@/services/github-repos/github-repos"
+import { GitHubRepos, makeGitHubRepos } from "@/services/github-repos/github-repos"
 import { ChatRooms, makeChatRooms } from "@/resources/chat-room/chat-rooms"
 import { KvCounter, makeKvCounter } from "@/resources/kv-counter/kv-counter"
 import { LiveRooms, makeLiveRooms } from "@/resources/live-rooms/live-rooms"
 import { makeR2Objects, R2Objects } from "@/resources/r2-objects/r2-objects"
-
-const GitHubReposLive = GitHubRepos.layer.pipe(Layer.provide(FetchHttpClient.layer))
 
 const AppLayer = Layer.mergeAll(
   homeRoutes,
@@ -33,7 +31,6 @@ const AppLayer = Layer.mergeAll(
   notFoundRoute,
 ).pipe(
   Layer.provide(HttpRouter.middleware(wideEventLogger).layer),
-  HttpRouter.provideRequest(GitHubReposLive),
   Layer.provideMerge(Logger.layer([Logger.consoleStructured])),
 )
 
@@ -49,6 +46,10 @@ const requestContext = (env: CloudflareBindings) => {
     Context.add(ChatRooms, makeChatRooms(env.CHAT_ROOM)),
     Context.add(LiveRooms, makeLiveRooms(env.LIVE_ROOMS)),
     Context.add(RequestLog, makeRequestLog()),
+    Context.add(
+      GitHubRepos,
+      makeGitHubRepos((input, init) => globalThis.fetch(input, init)),
+    ),
   )
 }
 

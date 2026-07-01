@@ -31,7 +31,7 @@ The landing page links to these routes:
 | `/r2`            | R2 text object save, list, open, delete.                               |
 | `/do`            | Per-room chat with Durable Object SQLite and live pulses.              |
 | `/live-counter`  | D1 counter synced through a Durable Object invalidation hub.           |
-| `/api`           | GitHub lookup with Effect `HttpClient`, Schema, and MSW-backed tests.  |
+| `/api`           | GitHub lookup with an Effect service, Schema, and MSW-backed tests.    |
 | `/web-component` | Browser-only `<qr-code>` custom element fed by Datastar-bound signals. |
 
 ## More

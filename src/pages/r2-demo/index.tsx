@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer, Match } from "effect"
+import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -13,7 +13,12 @@ import { R2Objects, type R2ObjectsError } from "@/resources/r2-objects/r2-object
 import { pageHead } from "@/ui/head"
 import { ObjectList } from "@/pages/r2-demo/components/object-list"
 import { R2Page } from "@/pages/r2-demo/components/page"
-import { DeleteObjectSignals, PutObjectSignals, r2Form } from "@/pages/r2-demo/state"
+import {
+  DeleteObjectSignals,
+  PutObjectSignals,
+  ReadObjectParams,
+  r2Form,
+} from "@/pages/r2-demo/state"
 
 const invalidObjectMessage = (error: InvalidObjectError): string =>
   Match.value(error.reason).pipe(
@@ -103,18 +108,19 @@ const remove = Effect.fn("r2Demo.remove")(
 )
 
 const serveObject = Effect.fn("r2Demo.serveObject")(
-  function* (request: HttpServerRequest.HttpServerRequest) {
-    const rawKey = new URL(request.url, "http://r2.local").searchParams.get("key") ?? ""
-    const key = yield* parseObjectKey(rawKey)
+  function* () {
+    const params = yield* HttpRouter.schemaParams(ReadObjectParams)
+    const key = yield* parseObjectKey(params.key)
     const r2Objects = yield* R2Objects
     const content = yield* r2Objects.read(key)
 
-    if (content === null) {
-      return HttpServerResponse.text("Object not found", { status: 404 })
-    }
-    return HttpServerResponse.text(content)
+    return Option.match(content, {
+      onNone: () => HttpServerResponse.text("Object not found", { status: 404 }),
+      onSome: (value) => HttpServerResponse.text(value),
+    })
   },
   Effect.catchTags({
+    SchemaError: () => Effect.succeed(HttpServerResponse.text("Invalid key", { status: 400 })),
     InvalidObjectError: () =>
       Effect.succeed(HttpServerResponse.text("Invalid key", { status: 400 })),
     R2ObjectsError: (error) =>

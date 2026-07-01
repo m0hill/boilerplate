@@ -17,9 +17,9 @@ export class ChatRoom extends DurableObject<unknown> {
     this.#room = makeRoom(db)
     this.#hub = makePulseHub()
 
-    void ctx.blockConcurrencyWhile(async () => {
-      migrate(db, migrations)
-    })
+    void ctx.blockConcurrencyWhile(() =>
+      Effect.runPromise(Effect.sync(() => migrate(db, migrations)).pipe(Effect.asVoid)),
+    )
   }
 
   list(): Promise<readonly Message[]> {

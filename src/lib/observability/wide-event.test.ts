@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers"
+import { Option, Schema } from "effect"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { datastarPost, loadApp, request } from "@/test/utils"
 
@@ -6,16 +7,26 @@ beforeEach(async () => {
   await env.APP_DB.prepare("DELETE FROM d1_counters").run()
 })
 
-type WideEvent = {
-  message: string
-  level: string
-  annotations: Record<string, unknown>
-}
+const WideEventSchema = Schema.Struct({
+  message: Schema.Literals(["http_request"]),
+  level: Schema.String,
+  annotations: Schema.Record(Schema.String, Schema.Unknown),
+})
 
-const isWideEvent = (value: unknown): value is WideEvent =>
-  typeof value === "object" &&
-  value !== null &&
-  (value as { message?: unknown }).message === "http_request"
+type WideEvent = Schema.Schema.Type<typeof WideEventSchema>
+
+const HttpAnnotationSchema = Schema.Struct({
+  durationMs: Schema.Number,
+})
+
+const decodeWideEvent = (entry: unknown): Option.Option<WideEvent> =>
+  Schema.decodeUnknownOption(WideEventSchema)(entry).pipe(
+    Option.orElse(() =>
+      typeof entry === "string"
+        ? Schema.decodeUnknownOption(Schema.fromJsonString(WideEventSchema))(entry)
+        : Option.none(),
+    ),
+  )
 
 const captureWideEvents = async (
   fn: () => Promise<unknown>,
@@ -27,15 +38,8 @@ const captureWideEvents = async (
   const entries: unknown[] = []
   const spy = vi.spyOn(console, "log").mockImplementation((entry: unknown) => {
     entries.push(entry)
-    if (isWideEvent(entry)) {
-      events.push(entry)
-      return
-    }
-    if (typeof entry !== "string") return
-    try {
-      const parsed: unknown = JSON.parse(entry)
-      if (isWideEvent(parsed)) events.push(parsed)
-    } catch {}
+    const event = decodeWideEvent(entry)
+    if (Option.isSome(event)) events.push(event.value)
   })
 
   try {
@@ -54,14 +58,17 @@ describe("wide-event request logger", () => {
 
     expect(events).toHaveLength(1)
     expect(entries).toHaveLength(1)
-    expect(isWideEvent(entries[0])).toBe(true)
+    expect(Option.isSome(decodeWideEvent(entries[0]))).toBe(true)
     const [event] = events
     expect(event?.level).toBe("INFO")
     expect(event?.annotations).toMatchObject({
       http: { method: "GET", path: "/d1", status: 200 },
       d1Counter: { ok: true, action: "view" },
     })
-    const http = event?.annotations.http as { durationMs: unknown }
+    const http = Option.getOrThrowWith(
+      Schema.decodeUnknownOption(HttpAnnotationSchema)(event?.annotations.http),
+      () => new Error("expected http duration annotation"),
+    )
     expect(typeof http.durationMs).toBe("number")
   })
 

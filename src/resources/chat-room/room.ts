@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm"
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite"
-import { Clock, Effect, Schema } from "effect"
+import { Array, Clock, Effect, Schema } from "effect"
 import { messageRowSchema, messages } from "@/resources/chat-room/schema"
 import type { MessageAuthor, MessageBody } from "@/resources/chat-room/rooms"
 
@@ -28,7 +28,7 @@ export function makeRoom(db: RoomDatabase) {
     })
 
     const decoded = yield* Effect.forEach(rows, decodeRow)
-    return decoded.reverse()
+    return Array.reverse(decoded)
   }).pipe(Effect.withSpan("Room.list"))
 
   const post = (author: MessageAuthor, body: MessageBody) =>

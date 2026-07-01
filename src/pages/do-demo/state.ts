@@ -15,3 +15,7 @@ export const PostMessageSignals = Schema.Struct({
   author: Schema.String,
   body: Schema.String,
 })
+
+export const RoomSearchParams = Schema.Struct({
+  room: Schema.OptionFromOptionalKey(Schema.String),
+})

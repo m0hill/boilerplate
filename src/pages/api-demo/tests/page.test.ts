@@ -51,6 +51,24 @@ describe("external API demo page", () => {
     expect(body).toContain("TypeScript")
   })
 
+  it("renders an em dash when GitHub returns no language", async () => {
+    mockRepo({
+      full_name: "honojs/hono",
+      stargazers_count: 26000,
+      forks_count: 800,
+      open_issues_count: 42,
+      language: null,
+    })
+
+    const app = await loadApp()
+    const response = await app.fetch(datastarPost("/api/lookup", { repo: "honojs/hono" }))
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(body).toContain("Language")
+    expect(body).toContain("—")
+  })
+
   it("rejects a malformed repo without touching the network", async () => {
     const app = await loadApp()
     const response = await app.fetch(datastarPost("/api/lookup", { repo: "not-a-repo" }))

@@ -44,4 +44,15 @@ describe("KV demo page", () => {
       '<output id="kv-count" class="text-5xl font-bold tabular-nums">2</output>',
     )
   })
+
+  it("treats invalid KV data as a typed storage failure", async () => {
+    await env.COUNTER_KV.put("count", "not-a-number")
+
+    const app = await loadApp()
+    const response = await app.fetch(request("/kv"))
+    const body = await response.text()
+
+    expect(response.status).toBe(503)
+    expect(body).toBe("KV demo unavailable")
+  })
 })

@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Option } from "effect"
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
 import { datastarPage, datastarStream, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -24,7 +24,7 @@ const lookupFailed = Effect.fn("apiDemo.lookupFailed")(function* (
   yield* annotate({ lookup: { ok: false, reason } })
   return datastarStream([
     event.signals(lookupForm.patch({ errors: { repo: message } })),
-    event.patch(<RepoResult />),
+    event.patch(<RepoResult result={Option.none()} />),
   ])
 })
 
@@ -49,7 +49,7 @@ const lookup = Effect.fn("apiDemo.lookup")(
     })
     return datastarStream([
       event.signals(lookupForm.patch({ errors: { repo: "" } })),
-      event.patch(<RepoResult result={result} />),
+      event.patch(<RepoResult result={Option.some(result)} />),
     ])
   },
   Effect.tapErrorTag("GitHubUnavailableError", logGitHubUnavailable),

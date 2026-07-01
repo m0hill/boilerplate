@@ -1,8 +1,20 @@
+import { DateTime, Option } from "effect"
 import type { Message } from "@/resources/chat-room/room"
 import type { RoomName } from "@/resources/chat-room/rooms"
 
+const formatUtcTime = DateTime.formatUtc({
+  hour: "2-digit",
+  locale: "en-US",
+  minute: "2-digit",
+})
+
 const formatTime = (ms: number): string =>
-  new Date(ms).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+  DateTime.make(ms).pipe(
+    Option.match({
+      onNone: () => "",
+      onSome: formatUtcTime,
+    }),
+  )
 
 export const MessageList = ({
   room,

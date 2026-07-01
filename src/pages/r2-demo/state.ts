@@ -12,3 +12,5 @@ export type R2FormState = typeof r2Form
 export const PutObjectSignals = Schema.Struct({ key: Schema.String, content: Schema.String })
 
 export const DeleteObjectSignals = Schema.Struct({ key: Schema.String })
+
+export const ReadObjectParams = Schema.Struct({ key: Schema.String })

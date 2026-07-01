@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer, Match } from "effect"
+import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -15,7 +15,7 @@ import {
 import { pageHead } from "@/ui/head"
 import { MessageList } from "@/pages/do-demo/components/message-list"
 import { DoPage } from "@/pages/do-demo/components/page"
-import { PostMessageSignals, chatForm } from "@/pages/do-demo/state"
+import { PostMessageSignals, RoomSearchParams, chatForm } from "@/pages/do-demo/state"
 
 const messageError = (error: InvalidMessageError): string =>
   Match.value(error.reason).pipe(
@@ -31,10 +31,19 @@ const formError = (message: string) =>
 const logRoomUnavailable = (action: string, error: ChatRoomsError) =>
   annotate({ do: { ok: false, action, reason: error.reason, cause: error.cause } })
 
+const roomFromSearchParams = HttpRouter.schemaParams(RoomSearchParams).pipe(
+  Effect.flatMap(({ room }) =>
+    Option.match(room, {
+      onNone: () => Effect.succeed(defaultRoom),
+      onSome: (rawRoom) => parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => defaultRoom)),
+    }),
+  ),
+  Effect.catchTag("SchemaError", () => Effect.succeed(defaultRoom)),
+)
+
 const doDemoPage = Effect.fn("doDemo.page")(
-  function* (request: HttpServerRequest.HttpServerRequest) {
-    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? defaultRoom
-    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => defaultRoom))
+  function* () {
+    const room = yield* roomFromSearchParams
     const chatRooms = yield* ChatRooms
     const messages = yield* chatRooms.list(room)
     yield* annotate({
@@ -61,9 +70,8 @@ const doDemoPage = Effect.fn("doDemo.page")(
 )
 
 const liveMessages = Effect.fn("doDemo.live")(
-  function* (request: HttpServerRequest.HttpServerRequest) {
-    const rawRoom = new URL(request.url, "http://do.local").searchParams.get("room") ?? defaultRoom
-    const room = yield* parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => defaultRoom))
+  function* () {
+    const room = yield* roomFromSearchParams
     const chatRooms = yield* ChatRooms
 
     const pulses = yield* chatRooms.subscribe(room)

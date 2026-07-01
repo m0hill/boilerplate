@@ -1,3 +1,4 @@
+import { DateTime } from "effect"
 import { post } from "datastar-kit"
 import type { StoredObject } from "@/resources/r2-objects/r2-objects"
 
@@ -6,9 +7,10 @@ const formatBytes = (size: number): string => {
   return `${(size / 1024).toFixed(1)} KB`
 }
 
-const formatDate = (iso: string): string => iso.replace("T", " ").replace(/\..*$/, " UTC")
+const formatDate = (uploaded: DateTime.Utc): string =>
+  DateTime.formatIso(uploaded).replace("T", " ").replace(/\..*$/, " UTC")
 
-export const ObjectList = ({ objects = [] }: { readonly objects?: readonly StoredObject[] }) => (
+export const ObjectList = ({ objects }: { readonly objects: readonly StoredObject[] }) => (
   <section
     id="r2-objects"
     aria-label="Stored objects"

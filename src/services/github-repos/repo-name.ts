@@ -24,7 +24,7 @@ export const parseRepoName = Effect.fn("parseRepoName")(function* (
   const [owner = "", repo = "", extra] = fullName.split("/")
 
   if (extra !== undefined) {
-    return yield* new InvalidRepoNameError({ input })
+    return yield* Effect.fail(new InvalidRepoNameError({ input }))
   }
 
   return yield* Schema.decodeUnknownEffect(RepoName)({

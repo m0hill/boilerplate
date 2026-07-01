@@ -36,8 +36,8 @@ const demos: readonly Demo[] = [
   {
     href: "/api",
     title: "External API",
-    tag: "HttpClient · MSW",
-    blurb: "Look up a GitHub repo with Effect's HttpClient, parsed with Schema, mocked with MSW.",
+    tag: "Fetch · MSW",
+    blurb: "Look up a GitHub repo through an Effect service, parsed with Schema, mocked with MSW.",
   },
   {
     href: "/web-component",

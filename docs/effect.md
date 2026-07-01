@@ -8,6 +8,9 @@
 - Pure helpers stay plain TypeScript.
 - Avoid `async`/`await` and `try`/`catch` inside Effect workflows; convert promises and exceptions at external seams.
 - Keep protocol rendering at HTTP boundaries; services should not construct raw `Response` objects.
+- Promise APIs use `Effect.runPromise` at the seam.
+- Durable Object RPC methods and `blockConcurrencyWhile` callbacks are seams.
+- Keep Durable Object RPC values structured-clone-safe.
 
 ## Composition
 
@@ -24,6 +27,9 @@
 
 - Dependency-bearing modules use Services, Tags, and Layers.
 - Prefer `yield* Service` from `Context.Service` inside Effect code.
+- Avoid `Context.getUnsafe`.
+- Middleware fiber-context reads use `Context.getOption`.
+- Missing framework services are defects.
 - Do not thread dependency bags through long call chains.
 - Layers own construction.
 - Layers own config parsing.
@@ -43,6 +49,9 @@
 - Keep feature error unions precise.
 - Do not widen precise module errors to `unknown` at module boundaries.
 - Handle broad app failures near orchestration, rendering, logging, or entrypoints.
+- Stored or external decode failures map to `invalid_row` or `invalid_value`.
+- Defaults mean absence, not corruption.
+- In `Effect.gen`, expected failures use `yield* Effect.fail(...)`.
 
 ## Matching
 
@@ -66,6 +75,12 @@
 - Parse Datastar signals, params, bodies, external JSON, env, config, and runtime-hop payloads.
 - Let parsed refined values flow inward.
 - Use codecs when Effect owns both sides of a projection.
+- Stored or external timestamps entering domain use `Schema.DateTimeUtcFrom*`.
+- Convert `DateTime` and Effect runtime objects at Durable Object RPC seams.
+- Nullable boundary fields become `Option` with `Schema.OptionFrom*`.
+- Services expose `Option`, not `Schema.NullOr`, unless `null` is domain.
+- Use `Schema.decodeUnknownEffect` when parse errors matter.
+- Use `Schema.decodeUnknownOption` only when invalid means absent.
 
 ## Secrets
 
@@ -78,6 +93,9 @@
 - Use `Option` for internal absence in Effect code.
 - Convert `null` and `undefined` at external seams.
 - Use Effect `Clock` and DateTime APIs for time inside Effect workflows.
+- Server TSX uses `Option`, not optional props, for real empty states.
+- Format Effect-owned timestamps with `DateTime.format*`.
+- Plain `Date` stays at platform edges.
 
 ## Lifecycle
 
@@ -85,6 +103,11 @@
 - Layers own cleanup.
 - Shared test layers preserve teardown.
 - Shared test layers isolate mutable fixture state.
+- Throwable initialization uses `Effect.sync` or `Effect.try`.
+- Synchronous host seams use `Effect.runSync`.
+- Promise or async host seams use `Effect.runPromise`.
+- Never wrap sync init in `Effect.runPromise(Effect.sync(...))`.
+- Never hide init failures in `async` callbacks.
 
 ## Tests
 
@@ -96,3 +119,4 @@
 - Fork sleeping or recurring effects before adjusting `TestClock`.
 - Prefer schema-derived generated values.
 - Property callbacks assert or return a failing Effect.
+- Parse unknown test payloads with Schema, not ad hoc guards or `JSON.parse` blocks.

@@ -22,8 +22,6 @@
 - Expected failures are typed values.
 - Throw or reject only for defects and startup misconfiguration.
 - Derive types from schemas, services, or existing values.
-- Use root `@/` imports for internal modules.
-- Omit `.js` extensions.
 
 ## Modules
 

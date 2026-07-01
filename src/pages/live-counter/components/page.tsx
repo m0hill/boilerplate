@@ -4,12 +4,12 @@ import { LiveCount } from "@/pages/live-counter/components/count"
 
 const sources = [
   {
-    path: "src/resources/live-rooms/live-room.ts",
-    role: "generic pulse hub DO: one per room name, no payloads, sliding PubSub",
+    path: "src/resources/live-counter/live-counter.ts",
+    role: "LiveCounter: owns the D1 counter + pulse-room workflow",
   },
   {
-    path: "src/resources/live-rooms/live-rooms.ts",
-    role: "worker-side LiveRooms: subscribe / publish pulses by room name over RPC",
+    path: "src/resources/live-rooms/live-room.ts",
+    role: "generic pulse hub DO: one per room name, no payloads, sliding PubSub",
   },
   {
     path: "src/resources/d1/counter.ts",
@@ -17,7 +17,7 @@ const sources = [
   },
   {
     path: "src/pages/live-counter/index.tsx",
-    role: "the live stream re-reads D1 and re-renders on every signal; the command just writes + wakes",
+    role: "routes render the page and turn LiveCounter results into Datastar responses",
   },
 ] as const
 

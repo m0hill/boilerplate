@@ -9,6 +9,14 @@
 - Avoid `async`/`await` and `try`/`catch` inside Effect workflows; convert promises and exceptions at external seams.
 - Keep protocol rendering at HTTP boundaries; services should not construct raw `Response` objects.
 
+## Composition
+
+- Prefer `Effect.gen` for multi-step workflows.
+- Avoid `Effect.Do` unless matching nearby code.
+- Avoid nested `flatMap` or `andThen`; use `Effect.gen`.
+- Use `pipe` for short linear transforms and error mapping.
+- Use `.andThen` only for one-step sequencing when the previous value is not needed.
+
 ## Services
 
 - Dependency-bearing modules use Services, Tags, and Layers.
@@ -64,7 +72,6 @@
 - Use `Option` for internal absence in Effect code.
 - Convert `null` and `undefined` at external seams.
 - Use Effect `Clock` and DateTime APIs for time inside Effect workflows.
-- Prefer `.andThen` for sequencing when the previous value is not needed.
 
 ## Lifecycle
 

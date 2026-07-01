@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer, Schema } from "effect"
+import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -13,10 +13,7 @@ import { R2Objects, type R2ObjectsError } from "@/resources/r2-objects/r2-object
 import { pageHead } from "@/ui/head"
 import { ObjectList } from "@/pages/r2-demo/components/object-list"
 import { R2Page } from "@/pages/r2-demo/components/page"
-import { r2Form } from "@/pages/r2-demo/state"
-
-const PutSignals = Schema.Struct({ key: Schema.String, content: Schema.String })
-const KeySignals = Schema.Struct({ key: Schema.String })
+import { DeleteObjectSignals, PutObjectSignals, r2Form } from "@/pages/r2-demo/state"
 
 const invalidObjectMessage = (error: InvalidObjectError): string => {
   switch (error.reason) {
@@ -71,7 +68,7 @@ const refreshList = Effect.fn("r2Demo.refreshList")(function* (action: string) {
 
 const put = Effect.fn("r2Demo.put")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const signals = yield* decodeSignals(request, PutSignals)
+    const signals = yield* decodeSignals(request, PutObjectSignals)
     const object = yield* parseObject(signals.key, signals.content)
     const r2Objects = yield* R2Objects
     yield* r2Objects.put(object.key, object.content)
@@ -88,7 +85,7 @@ const put = Effect.fn("r2Demo.put")(
 
 const remove = Effect.fn("r2Demo.remove")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const signals = yield* decodeSignals(request, KeySignals)
+    const signals = yield* decodeSignals(request, DeleteObjectSignals)
     const key = yield* parseObjectKey(signals.key)
     const r2Objects = yield* R2Objects
     yield* r2Objects.remove(key)

@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer, Schema } from "effect"
+import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -14,13 +14,7 @@ import {
 import { pageHead } from "@/ui/head"
 import { MessageList } from "@/pages/do-demo/components/message-list"
 import { DoPage } from "@/pages/do-demo/components/page"
-import { chatForm } from "@/pages/do-demo/state"
-
-const PostSignals = Schema.Struct({
-  room: Schema.String,
-  author: Schema.String,
-  body: Schema.String,
-})
+import { PostMessageSignals, chatForm } from "@/pages/do-demo/state"
 
 const messageError = (error: InvalidMessageError): string => {
   switch (error.reason) {
@@ -101,7 +95,7 @@ const liveMessages = Effect.fn("doDemo.live")(
 
 const postMessage = Effect.fn("doDemo.post")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const signals = yield* decodeSignals(request, PostSignals)
+    const signals = yield* decodeSignals(request, PostMessageSignals)
     const room = yield* parseRoom(signals.room)
     const message = yield* parseMessage(signals.author, signals.body)
     const chatRooms = yield* ChatRooms

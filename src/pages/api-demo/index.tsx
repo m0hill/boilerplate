@@ -1,5 +1,5 @@
 import { event } from "datastar-kit"
-import { Effect, Layer, Schema } from "effect"
+import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http"
 import { datastarPage, datastarStream, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
@@ -8,13 +8,9 @@ import { parseRepoName } from "@/services/github-repos/repo-name"
 import { pageHead } from "@/ui/head"
 import { ApiPage } from "@/pages/api-demo/components/page"
 import { RepoResult } from "@/pages/api-demo/components/repo-result"
-import { lookupForm } from "@/pages/api-demo/state"
+import { LookupRepoSignals, lookupForm } from "@/pages/api-demo/state"
 
 const invalidRepoMessage = "Use the owner/repo format, e.g. honojs/hono"
-
-const RepoInput = Schema.Trim.check(Schema.isMinLength(1))
-
-const LookupSignals = Schema.Struct({ repo: RepoInput })
 
 const logGitHubUnavailable = (error: GitHubUnavailableError) =>
   annotate({
@@ -43,7 +39,7 @@ const apiDemoPage = Effect.gen(function* () {
 
 const lookup = Effect.fn("apiDemo.lookup")(
   function* (request: HttpServerRequest.HttpServerRequest) {
-    const signals = yield* decodeSignals(request, LookupSignals)
+    const signals = yield* decodeSignals(request, LookupRepoSignals)
     const repoName = yield* parseRepoName(signals.repo)
     const github = yield* GitHubRepos
     const result = yield* github.fetch(repoName)

@@ -15,6 +15,11 @@ Read for server TSX, Datastar attributes, signals, patches, streams.
 
 - Signals are browser input.
 - Signals are never authority.
+- Page signal state and schemas live in `src/pages/<page>/state.ts`.
+- Name state `<thing>Form`.
+- Name state type `<Thing>FormState = typeof <thing>Form`.
+- Name action schemas `<Action><Thing>Signals`.
+- Avoid generic `PostSignals` and `KeySignals`.
 - Decode with `decodeSignals(request, schema)`.
 - Use platform readers for forms, uploads, query params, JSON APIs.
 - Init grouped state with `data-signals={mod(form.defaults, { ifMissing: true })}`.

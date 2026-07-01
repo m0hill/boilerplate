@@ -5,20 +5,21 @@ import type { RepoName } from "@/services/github-repos/repo-name"
 const userAgent = "boilerplate-worker"
 
 export class Repo extends Schema.Class<Repo>("Repo")({
-  fullName: Schema.String.check(Schema.isMinLength(1)),
+  fullName: Schema.NonEmptyString,
   stars: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
   forks: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
   openIssues: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
-  language: Schema.NullOr(Schema.String.check(Schema.isMinLength(1))),
+  language: Schema.NullOr(Schema.NonEmptyString),
 }) {}
 
-const RepoResponse = Schema.Struct({
-  full_name: Schema.String.check(Schema.isMinLength(1)),
-  stargazers_count: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
-  forks_count: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
-  open_issues_count: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
-  language: Schema.NullOr(Schema.String.check(Schema.isMinLength(1))),
-})
+const RepoResponse = Repo.pipe(
+  Schema.encodeKeys({
+    fullName: "full_name",
+    stars: "stargazers_count",
+    forks: "forks_count",
+    openIssues: "open_issues_count",
+  }),
+)
 
 export class RepoNotFoundError extends Schema.TaggedErrorClass<RepoNotFoundError>()(
   "RepoNotFoundError",
@@ -81,17 +82,9 @@ export class GitHubRepos extends Context.Service<
           })
         }
 
-        const data = yield* HttpClientResponse.schemaBodyJson(RepoResponse)(response).pipe(
+        return yield* HttpClientResponse.schemaBodyJson(RepoResponse)(response).pipe(
           Effect.mapError((cause) => new GitHubUnavailableError({ reason: "invalid_body", cause })),
         )
-
-        return new Repo({
-          fullName: data.full_name,
-          stars: data.stargazers_count,
-          forks: data.forks_count,
-          openIssues: data.open_issues_count,
-          language: data.language,
-        })
       })
 
       return GitHubRepos.of({ fetch })

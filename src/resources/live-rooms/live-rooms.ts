@@ -1,8 +1,6 @@
 import { Context, Effect, Schema } from "effect"
 
-const LiveRoomNameSchema = Schema.String.check(Schema.isMinLength(1)).pipe(
-  Schema.brand("LiveRoomName"),
-)
+const LiveRoomNameSchema = Schema.NonEmptyString.pipe(Schema.brand("LiveRoomName"))
 
 export type LiveRoomName = Schema.Schema.Type<typeof LiveRoomNameSchema>
 

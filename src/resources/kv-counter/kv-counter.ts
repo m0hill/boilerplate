@@ -1,17 +1,14 @@
-import { Context, Effect, Schema } from "effect"
+import { Context, Effect, Option, Schema } from "effect"
 
 const countKey = "count"
+
+const KvCountValue = Schema.NumberFromString.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(0))
+const decodeKvCount = Schema.decodeUnknownOption(KvCountValue)
 
 export class KvCounterError extends Schema.TaggedErrorClass<KvCounterError>()("KvCounterError", {
   reason: Schema.Literals(["read_failed", "write_failed"]),
   cause: Schema.optionalKey(Schema.Defect()),
 }) {}
-
-const parseCount = (raw: string | null): number => {
-  if (raw === null) return 0
-  const value = Number.parseInt(raw, 10)
-  return Number.isSafeInteger(value) && value >= 0 ? value : 0
-}
 
 export class KvCounter extends Context.Service<
   KvCounter,
@@ -27,7 +24,8 @@ export function makeKvCounter(counterKv: CloudflareBindings["COUNTER_KV"]): KvCo
       try: () => counterKv.get(countKey),
       catch: (cause) => new KvCounterError({ reason: "read_failed", cause }),
     })
-    return parseCount(raw)
+    if (raw === null) return 0
+    return Option.getOrElse(decodeKvCount(raw), () => 0)
   }).pipe(Effect.withSpan("KvCounter.current"))
 
   const increment = Effect.gen(function* () {

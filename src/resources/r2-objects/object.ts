@@ -13,9 +13,7 @@ const ObjectKeySchema = Schema.String.check(
 
 export type ObjectKey = Schema.Schema.Type<typeof ObjectKeySchema>
 
-const ObjectContentSchema = Schema.String.check(Schema.isMinLength(1)).pipe(
-  Schema.brand("ObjectContent"),
-)
+const ObjectContentSchema = Schema.NonEmptyString.pipe(Schema.brand("ObjectContent"))
 
 export type ObjectContent = Schema.Schema.Type<typeof ObjectContentSchema>
 

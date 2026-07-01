@@ -23,9 +23,13 @@ export const parseRepoName = Effect.fn("parseRepoName")(function* (
   const fullName = input.trim()
   const [owner = "", repo = "", extra] = fullName.split("/")
 
-  if (extra !== undefined || !repoPartPattern.test(owner) || !repoPartPattern.test(repo)) {
+  if (extra !== undefined) {
     return yield* new InvalidRepoNameError({ input })
   }
 
-  return new RepoName({ owner, repo, fullName: `${owner}/${repo}` })
+  return yield* Schema.decodeUnknownEffect(RepoName)({
+    owner,
+    repo,
+    fullName: `${owner}/${repo}`,
+  }).pipe(Effect.mapError(() => new InvalidRepoNameError({ input })))
 })

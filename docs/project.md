@@ -5,6 +5,8 @@
 - `alchemy.run.ts` owns Cloudflare resources, bindings, assets, and stages.
 - `src/index.tsx` exports the Worker `fetch` handler and DO classes.
 - HTTP uses Effect `HttpRouter`.
+- Keep hypermedia and SSE routes on `HttpRouter`.
+- Use small `HttpApi` contract slices when JSON APIs need schema-first routing.
 - UI is server-rendered TSX through `datastar-kit`.
 - Datastar helpers live in `src/lib/datastar.ts`.
 - Tailwind builds `src/styles.css` to `public/app.css`.
@@ -36,6 +38,7 @@
 - Run Effect at the DO seam with `Effect.runPromise` or `Effect.runSync`.
 - Use D1 for global relational queries across owners.
 - Use KV for cheap eventually-consistent reads.
+- Do not turn public KV misses into Durable Object fallback reads.
 - For D1 + live UI, use a DO as an invalidation hub.
 - `/do` shows DO-owned state.
 - `/live-counter` shows D1 + invalidation DO.
@@ -50,6 +53,7 @@
 - Streams re-read truth after each pulse.
 - Reconnects render current backend state.
 - Streams patch live regions.
+- Commands do not patch shared live regions with durable markup.
 - Commands return `datastarDone()` for success-only updates.
 - Commands patch signals for form cleanup or user-fixable errors.
 - Use `src/lib/realtime/pulse.ts` for DO-local sliding pulses.

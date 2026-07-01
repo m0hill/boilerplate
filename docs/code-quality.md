@@ -38,5 +38,10 @@
 - Use simple component names: `page.tsx`, `form.tsx`, `count.tsx`, `message-list.tsx`.
 - Split files when separate concepts need names.
 - Export only the API other modules need.
+- Deep modules hide ordering, rollback, serialization, and persistence behind a small API.
+- Use the deletion test: if deleting a module spreads complexity across callers, it is earning its keep.
+- Avoid pass-through modules that only rename another API.
+- Treat a seam as real once two adapters exist; one adapter is hypothetical.
+- Prefer boring domain operations over generic mutation/outcome wrappers.
 - Keep I/O, parsing, time, randomness, telemetry, and framework glue at boundaries.
 - Keep domain rules pure when practical.

@@ -18,6 +18,8 @@ export type Row = Schema.Schema.Type<typeof rowSchema>
 
 - Use `drizzle(env.APP_DB)` for D1.
 - Use `drizzle(ctx.storage)` for DO SQLite.
+- D1 is not DO SQLite; do not assume arbitrary `sql.withTransaction(...)` support.
+- Use D1 `batch` for explicit transactional batches.
 - Import tables directly in query modules.
 - Wrap D1 execution with `Effect.tryPromise`.
 - Wrap DO SQLite `.all()` and `.run()` with `Effect.try`.
@@ -32,5 +34,6 @@ export type Row = Schema.Schema.Type<typeof rowSchema>
 - Drizzle table definitions are migration source of truth.
 - Effect Schema validates data.
 - Alchemy applies D1 migrations.
+- Do not use Effect's shared SQL migrator for D1; it expects transaction support D1 does not provide generally.
 - DO SQLite migrations run inside the DO.
 - Drizzle Kit schema entries export actual tables at top level.

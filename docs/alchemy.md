@@ -75,7 +75,10 @@ assets: {
 - Use `DurableObject<unknown>` when the DO does not read env.
 - Use a narrow local env type when the DO reads env.
 - Export DO classes from `src/index.tsx`.
+- Alchemy handles Durable Object class and storage migrations at Worker deploy time.
+- Per-object DO SQLite schema migrations stay application-owned and run on construction or first use.
 - Run DO SQLite migrations with `blockConcurrencyWhile`.
+- If using Alchemy Effect-native DO storage, prefer `storage.sql.exec(...)` and `storage.transaction(...)` directly over app-local transaction bridges.
 
 ```ts
 export class ChatRoom extends DurableObject<unknown> {}

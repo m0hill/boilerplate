@@ -39,6 +39,8 @@
 - Split files when separate concepts need names.
 - Export only the API other modules need.
 - Deep modules hide ordering, rollback, serialization, and persistence behind a small API.
+- Deep feature services hide workflows behind one API.
+- Pages depend on workflow APIs, not service bags.
 - Use the deletion test: if deleting a module spreads complexity across callers, it is earning its keep.
 - Avoid pass-through modules that only rename another API.
 - Treat a seam as real once two adapters exist; one adapter is hypothetical.

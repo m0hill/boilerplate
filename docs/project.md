@@ -44,6 +44,17 @@
 - `/do` shows DO-owned state.
 - `/live-counter` shows D1 + invalidation DO.
 
+## Feature Workflows
+
+- Multi-resource features get one workflow `Context.Service`.
+- Cloudflare workflows: `src/resources/<feature>/`.
+- External workflows: `src/services/<feature>/`.
+- Workflow services own cross-resource order and errors.
+- `makeRequestContext` builds workflows from narrow adapters.
+- Pages depend on workflow services.
+- Pages translate HTTP, Datastar, rendering, and user errors.
+- Keep lower-level adapters only when reused directly.
+
 ## Realtime
 
 - Truth lives in D1, KV, or a DO.

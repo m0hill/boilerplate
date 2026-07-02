@@ -36,6 +36,9 @@
 - Layers own resource wiring.
 - Domain operations receive dependencies through services.
 - Adapt Cloudflare bindings into narrow services.
+- Multi-resource operations use feature services.
+- Feature services hide resource names, order, fanout, retries, and error mapping.
+- Build feature services at composition root.
 - Name layers by role: `Service.layer`, `Service.layerFromEnv`, `Service.layerMemory`. Avoid `Live`.
 
 ## Errors

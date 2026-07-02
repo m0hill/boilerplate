@@ -19,6 +19,8 @@
 - Prefer vertical tracer bullets: one public behavior test, one implementation, then repeat.
 - Do not write large batches of imagined tests before implementation; they lock design too early.
 - Test public seams and real code paths, not private helpers or internal shapes.
+- Test workflows through their service tag.
+- Build workflow services from lower-level adapters.
 - Drive server behavior through `loadApp()`.
 - Use `app.fetch(request("/..."))`.
 - Use `app.fetch(datastarPost("/...", signals))`.

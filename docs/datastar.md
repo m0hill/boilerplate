@@ -11,6 +11,26 @@ Read for server TSX, Datastar attributes, signals, patches, streams.
 - Load data before render.
 - Check auth before render.
 
+## Tao
+
+- Backend state is truth.
+- Start with Datastar defaults.
+- Change defaults only for a known problem.
+- Backend patches elements and signals.
+- SSE responses stay `text/event-stream`.
+- Prefer server-rendered HTML over client state.
+- Use backend TSX components for repeated markup.
+- Prefer fat morphs over fine-grained DOM control.
+- Use `data-ignore-morph` only for browser-owned islands.
+- Links navigate pages.
+- Redirects navigate from backend actions.
+- Do not manage browser history manually.
+- Use loading indicators for pending backend requests.
+- Confirm success from backend state.
+- Avoid optimistic success UI.
+- Use semantic HTML first.
+- Patch ARIA with `data-attr` when UI state changes.
+
 ## Signals
 
 - Signals are browser input.

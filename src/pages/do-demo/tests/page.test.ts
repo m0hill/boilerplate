@@ -1,5 +1,15 @@
+import { Context, Effect } from "effect"
 import { describe, expect, it } from "vitest"
-import { datastarPost, loadApp, openSse, readUntil, request } from "@/test/utils"
+import { ChatRooms, ChatRoomsError } from "@/resources/chat-room/chat-rooms"
+import { defaultRoom } from "@/resources/chat-room/rooms"
+import {
+  datastarPost,
+  loadApp,
+  loadAppWithServiceOverrides,
+  openSse,
+  readUntil,
+  request,
+} from "@/test/utils"
 
 describe("Durable Object demo page", () => {
   it("defaults to the lobby room", async () => {
@@ -138,5 +148,30 @@ describe("Durable Object demo page", () => {
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(body).toContain("event: datastar-patch-signals")
     expect(body).toContain("Write a message before posting.")
+  })
+
+  it("renders post service failures as form errors", async () => {
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
+        Context.add(
+          ChatRooms,
+          ChatRooms.of({
+            selectRoom: () => Effect.succeed(defaultRoom),
+            list: () => Effect.succeed([]),
+            post: () => Effect.fail(new ChatRoomsError({ reason: "write_failed" })),
+            subscribe: () => Effect.succeed(new ReadableStream<Uint8Array>()),
+          }),
+        ),
+      ),
+    )
+    const response = await app.fetch(
+      datastarPost("/do/post", { room: "test-fail", author: "alice", body: "hello" }),
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(body).toContain("event: datastar-patch-signals")
+    expect(body).toContain("Could not reach the room. Try again.")
   })
 })

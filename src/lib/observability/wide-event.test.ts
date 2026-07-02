@@ -1,11 +1,8 @@
-import { env } from "cloudflare:workers"
 import { Option, Schema } from "effect"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { datastarPost, loadApp, request } from "@/test/utils"
+import { datastarPost, loadApp, request, resetD1Counters } from "@/test/utils"
 
-beforeEach(async () => {
-  await env.APP_DB.prepare("DELETE FROM d1_counters").run()
-})
+beforeEach(resetD1Counters)
 
 const WideEventSchema = Schema.Struct({
   message: Schema.Literals(["http_request"]),

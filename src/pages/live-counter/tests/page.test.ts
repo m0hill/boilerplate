@@ -1,10 +1,17 @@
-import { env } from "cloudflare:workers"
+import { Context, Effect } from "effect"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, openSse, readUntil, request } from "@/test/utils"
+import { LiveCounter, LiveCounterError } from "@/resources/live-counter/live-counter"
+import {
+  datastarPost,
+  loadApp,
+  loadAppWithServiceOverrides,
+  openSse,
+  readUntil,
+  request,
+  resetD1Counters,
+} from "@/test/utils"
 
-beforeEach(async () => {
-  await env.APP_DB.prepare("DELETE FROM d1_counters").run()
-})
+beforeEach(resetD1Counters)
 
 describe("Live counter demo page", () => {
   it("renders the live counter starting at zero", async () => {
@@ -62,5 +69,26 @@ describe("Live counter demo page", () => {
     expect(received).toContain(">1</output>")
 
     await reader.cancel()
+  })
+
+  it("renders service failures as unavailable", async () => {
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
+        Context.add(
+          LiveCounter,
+          LiveCounter.of({
+            current: Effect.fail(new LiveCounterError({ reason: "read_failed" })),
+            subscribe: Effect.succeed(new ReadableStream<Uint8Array>()),
+            increment: Effect.succeed({ count: 0, publish: { ok: true } }),
+          }),
+        ),
+      ),
+    )
+
+    const response = await app.fetch(request("/live-counter"))
+    const body = await response.text()
+
+    expect(response.status).toBe(503)
+    expect(body).toBe("Live counter demo unavailable")
   })
 })

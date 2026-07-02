@@ -1,8 +1,15 @@
-import { env } from "cloudflare:workers"
+import { Context, Effect } from "effect"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "@/test/utils"
+import { KvCounter, KvCounterError } from "@/resources/kv-counter/kv-counter"
+import {
+  datastarPost,
+  loadApp,
+  loadAppWithServiceOverrides,
+  request,
+  resetKvCounter,
+} from "@/test/utils"
 
-beforeEach(() => env.COUNTER_KV.delete("count"))
+beforeEach(resetKvCounter)
 
 describe("KV demo page", () => {
   it("renders the KV counter starting at zero", async () => {
@@ -45,10 +52,18 @@ describe("KV demo page", () => {
     )
   })
 
-  it("treats invalid KV data as a typed storage failure", async () => {
-    await env.COUNTER_KV.put("count", "not-a-number")
-
-    const app = await loadApp()
+  it("renders service failures as unavailable", async () => {
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
+        Context.add(
+          KvCounter,
+          KvCounter.of({
+            current: Effect.fail(new KvCounterError({ reason: "invalid_value" })),
+            increment: Effect.succeed(0),
+          }),
+        ),
+      ),
+    )
     const response = await app.fetch(request("/kv"))
     const body = await response.text()
 

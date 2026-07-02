@@ -1,13 +1,10 @@
-import { env } from "cloudflare:workers"
+import { Context, Effect, Option } from "effect"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "@/test/utils"
+import { R2Objects, R2ObjectsError } from "@/resources/r2-objects/r2-objects"
+import { clearR2Objects, countR2Objects, datastarPost, loadApp, request } from "@/test/utils"
+import { loadAppWithServiceOverrides } from "@/test/utils"
 
-const clearBucket = async () => {
-  const listed = await env.APP_BUCKET.list()
-  await Promise.all(listed.objects.map((object) => env.APP_BUCKET.delete(object.key)))
-}
-
-beforeEach(clearBucket)
+beforeEach(clearR2Objects)
 
 describe("R2 demo page", () => {
   it("renders an empty bucket", async () => {
@@ -84,7 +81,54 @@ describe("R2 demo page", () => {
     expect(body).toContain("event: datastar-patch-signals")
     expect(body).toContain("Use a key like notes/hello.txt")
 
-    const listed = await env.APP_BUCKET.list()
-    expect(listed.objects).toHaveLength(0)
+    await expect(countR2Objects()).resolves.toBe(0)
+  })
+
+  it("renders list service failures as unavailable", async () => {
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
+        Context.add(
+          R2Objects,
+          R2Objects.of({
+            list: Effect.fail(new R2ObjectsError({ reason: "list_failed" })),
+            put: () => Effect.succeed(undefined),
+            read: () => Effect.succeed(Option.none()),
+            remove: () => Effect.succeed(undefined),
+          }),
+        ),
+      ),
+    )
+
+    const response = await app.fetch(request("/r2"))
+    const body = await response.text()
+
+    expect(response.status).toBe(503)
+    expect(body).toBe("R2 demo unavailable")
+  })
+
+  it("renders write service failures as form errors", async () => {
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
+        Context.add(
+          R2Objects,
+          R2Objects.of({
+            list: Effect.succeed([]),
+            put: () => Effect.fail(new R2ObjectsError({ reason: "put_failed" })),
+            read: () => Effect.succeed(Option.none()),
+            remove: () => Effect.succeed(undefined),
+          }),
+        ),
+      ),
+    )
+
+    const response = await app.fetch(
+      datastarPost("/r2/put", { key: "notes/a.txt", content: "hello" }),
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(body).toContain("event: datastar-patch-signals")
+    expect(body).toContain("Could not reach R2. Try again.")
   })
 })

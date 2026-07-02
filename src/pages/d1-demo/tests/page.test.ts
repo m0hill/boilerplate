@@ -1,10 +1,15 @@
-import { env } from "cloudflare:workers"
+import { Context, Effect } from "effect"
 import { beforeEach, describe, expect, it } from "vitest"
-import { datastarPost, loadApp, request } from "@/test/utils"
+import { D1Counter, D1CounterError } from "@/resources/d1/counter"
+import {
+  datastarPost,
+  loadApp,
+  loadAppWithServiceOverrides,
+  request,
+  resetD1Counters,
+} from "@/test/utils"
 
-beforeEach(async () => {
-  await env.APP_DB.prepare("DELETE FROM d1_counters").run()
-})
+beforeEach(resetD1Counters)
 
 describe("D1 demo page", () => {
   it("renders the D1 counter starting at zero", async () => {
@@ -45,5 +50,25 @@ describe("D1 demo page", () => {
     expect(html).toContain(
       '<output id="d1-count" class="text-5xl font-bold tabular-nums">2</output>',
     )
+  })
+
+  it("renders service failures as unavailable", async () => {
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
+        Context.add(
+          D1Counter,
+          D1Counter.of({
+            current: Effect.fail(new D1CounterError({ reason: "read_failed" })),
+            increment: Effect.succeed(0),
+          }),
+        ),
+      ),
+    )
+
+    const response = await app.fetch(request("/d1"))
+    const body = await response.text()
+
+    expect(response.status).toBe(503)
+    expect(body).toBe("D1 demo unavailable")
   })
 })

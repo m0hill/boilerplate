@@ -1,14 +1,12 @@
-import { env } from "cloudflare:workers"
 import { Context, Effect } from "effect"
 import { describe, expect, it } from "vitest"
-import { makeRequestContext } from "@/app"
 import { KvCounter } from "@/resources/kv-counter/kv-counter"
-import { loadAppWithContext, request } from "@/test/utils"
+import { loadAppWithServiceOverrides, request } from "@/test/utils"
 
 describe("app seam", () => {
   it("can run routes with an explicit service context", async () => {
-    const makeContext = () =>
-      makeRequestContext(env).pipe(
+    const app = await loadAppWithServiceOverrides((context) =>
+      context.pipe(
         Context.add(
           KvCounter,
           KvCounter.of({
@@ -16,8 +14,8 @@ describe("app seam", () => {
             increment: Effect.succeed(42),
           }),
         ),
-      )
-    const app = await loadAppWithContext(makeContext)
+      ),
+    )
 
     const response = await app.fetch(request("/kv"))
     const html = await response.text()

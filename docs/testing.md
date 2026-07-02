@@ -22,6 +22,9 @@
 - Test workflows through their service tag.
 - Build workflow services from lower-level adapters.
 - Drive server behavior through `loadApp()`.
+- Use `src/test/utils.ts` for app loading, service overrides, and shared fixture cleanup.
+- Use service overrides for page-level service failures.
+- Test storage corruption and adapter failures at the resource seam.
 - Use `app.fetch(request("/..."))`.
 - Use `app.fetch(datastarPost("/...", signals))`.
 - Assert status, content type, HTML, SSE events, signal patches, and user copy.

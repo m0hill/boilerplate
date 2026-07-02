@@ -5,10 +5,9 @@ import { makeD1Counter } from "@/resources/d1/counter"
 import { makeD1Database } from "@/resources/d1/database"
 import { LiveCounter, makeLiveCounter } from "@/resources/live-counter/live-counter"
 import { makeLiveRooms } from "@/resources/live-rooms/live-rooms"
+import { resetD1Counters } from "@/test/utils"
 
-beforeEach(async () => {
-  await env.APP_DB.prepare("DELETE FROM d1_counters").run()
-})
+beforeEach(resetD1Counters)
 
 const liveCounterContext = () => {
   const database = makeD1Database(env.APP_DB)

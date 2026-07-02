@@ -4,12 +4,7 @@ import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { datastarDone, datastarPage } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
-import {
-  liveCounterCurrent,
-  type LiveCounterError,
-  liveCounterIncrement,
-  liveCounterSubscribe,
-} from "@/resources/live-counter/live-counter"
+import { LiveCounter, type LiveCounterError } from "@/resources/live-counter/live-counter"
 import { pageHead } from "@/ui/head"
 import { LiveCount } from "@/pages/live-counter/components/count"
 import { LiveCounterPage } from "@/pages/live-counter/components/page"
@@ -25,7 +20,8 @@ const unavailable = Effect.fn("liveCounter.unavailable")(function* (
 })
 
 const liveCounterPage = Effect.gen(function* () {
-  const count = yield* liveCounterCurrent
+  const liveCounter = yield* LiveCounter
+  const count = yield* liveCounter.current
   yield* annotate({ liveCounter: { ok: true, action: "view" } })
 
   return datastarPage(<LiveCounterPage count={count} />, {
@@ -38,11 +34,13 @@ const liveCounterPage = Effect.gen(function* () {
 )
 
 const liveCounterStream = Effect.gen(function* () {
+  const liveCounter = yield* LiveCounter
+
   return yield* liveView({
-    subscribe: liveCounterSubscribe.pipe(
+    subscribe: liveCounter.subscribe.pipe(
       Effect.tap(() => annotate({ liveCounter: { ok: true, action: "subscribe" } })),
     ),
-    render: liveCounterCurrent.pipe(
+    render: liveCounter.current.pipe(
       Effect.map((count) => event.patch(<LiveCount count={count} />)),
     ),
     log: { feature: "liveCounter" },
@@ -53,7 +51,8 @@ const liveCounterStream = Effect.gen(function* () {
 )
 
 const increment = Effect.gen(function* () {
-  const result = yield* liveCounterIncrement
+  const liveCounter = yield* LiveCounter
+  const result = yield* liveCounter.increment
 
   yield* annotate({
     liveCounter: { ok: result.publish.ok, action: "increment", publish: result.publish },

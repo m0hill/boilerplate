@@ -22,7 +22,7 @@ export const MessageForm = ({
         autocomplete="off"
         placeholder="Your name"
         data-bind={form.refs.author}
-        class="w-40 rounded border border-gray-300 px-3 py-2 text-sm"
+        class="w-full rounded border border-gray-300 px-3 py-2 text-sm sm:w-40"
       />
       <input
         name="body"

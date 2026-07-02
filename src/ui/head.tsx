@@ -16,6 +16,11 @@ const navigationPrefetchRules = JSON.stringify({
 })
 
 export const pageHead = () => [
+  <meta charset="utf-8" />,
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />,
   <link
     rel="stylesheet"
     href="/app.css"

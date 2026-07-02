@@ -8,14 +8,14 @@ export const LookupForm = ({ form }: { readonly form: LookupFormState }) => (
     data-on:submit={mod(post("/api/lookup"), { prevent: true })}
     class="flex flex-wrap items-end gap-3"
   >
-    <label class="flex flex-col gap-1">
+    <label class="flex w-full flex-col gap-1 sm:w-auto">
       <span class="text-sm font-medium">Repository</span>
       <input
         name="repo"
         autocomplete="off"
         placeholder="owner/repo"
         data-bind={form.refs.repo}
-        class="w-64 rounded border border-gray-300 px-3 py-2"
+        class="w-full rounded border border-gray-300 px-3 py-2 sm:w-64"
       />
     </label>
     <button

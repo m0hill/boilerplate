@@ -34,7 +34,7 @@
 - Name DO instances by owner: `room:<id>`, `user:<id>`, `doc:<id>`.
 - Keep DO SQLite schema and logic with the DO resource.
 - Expose narrow DO RPC methods.
-- Return parsed domain values from DO RPC methods.
+- Return parsed structured-clone-safe DTOs from DO RPC methods.
 - Adapt DO namespaces into worker-side services before page code uses them.
 - Run Effect at the DO seam with `Effect.runPromise` or `Effect.runSync`.
 - Use D1 for global relational queries across owners.
@@ -111,8 +111,9 @@
 - Put page TSX in `components/`.
 - Put resource code in `src/resources/<resource>/`.
 - Put external API code in `src/services/<service>/`.
+- Add a workflow service when a page coordinates multiple resources.
 - Merge the route in `src/app.tsx`.
-- Wire services from raw bindings in `makeRequestContext`.
+- Wire bindings, adapters, and workflow services in `makeRequestContext`.
 - Test with `loadApp()` and `app.fetch(request("/..."))`.
 - Use `loadAppWithContext(() => makeRequestContext(...))` when a route test needs explicit service adapters.
 

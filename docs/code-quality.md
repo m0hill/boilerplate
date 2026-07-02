@@ -9,6 +9,16 @@
 - Bindings enter through `src/index.tsx`.
 - Adapt bindings into narrow services before page or domain code uses them.
 
+## Effect-owned Code
+
+- Routes, handlers, services, schemas, failures, and resource wiring use Effect.
+- Pure sync helpers with no dependencies or expected failures stay plain TypeScript.
+- Browser-only `src/client` stays plain browser TypeScript.
+- Effect code uses services, layers, `Option`, Schema, and tagged errors.
+- Expected failures stay in the Effect error channel.
+- Do not replace Effect workflows with `async`/`await`, `try`/`catch`, thrown expected errors, or service bags.
+- Read `effect.md` before touching Effect-owned files.
+
 ## Types
 
 - Use parsed and narrowed types.
@@ -19,7 +29,7 @@
 - Parse Datastar signals, params, bodies, external JSON, env, config, and Worker bindings.
 - Keep parsed domain values inside the owner module.
 - Pass parsed domain values through core logic.
-- Expected failures are typed values.
+- Expected failures are typed values, not thrown exceptions.
 - Throw or reject only for defects and startup misconfiguration.
 - Derive types from schemas, services, or existing values.
 

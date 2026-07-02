@@ -60,7 +60,8 @@ Read for server TSX, Datastar attributes, signals, patches, streams.
 - Prefer SSE helpers.
 - Treat `directHtml`, `directSignals`, `directScript` as escape hatches.
 - `directScript` and `unsafeHtml` need trusted content.
-- Use `reply.navigate` or `event.navigate` for Datastar navigation.
+- Prefer anchors and backend redirects for navigation.
+- Use `reply.navigate` or `event.navigate` only when a Datastar action must redirect.
 
 ## Patches
 

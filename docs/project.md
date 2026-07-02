@@ -79,7 +79,8 @@
 - Middleware adds `http.method`, `http.path`, `http.status`, and `http.durationMs`.
 - `http.durationMs` is based on Worker timers; in production it advances after I/O, not during CPU-only work.
 - Add request fields with `annotate`.
-- Use namespaced fields: `{ d1Counter: { action, ok } }`.
+- Use `annotateAction` for action fields: `{ d1Counter: { action, ok } }`.
+- Use raw `annotate` only for non-action request fields.
 - Keep secrets, tokens, and raw request bodies out of logs.
 - Install structured console logging with `Layer.provideMerge(Logger.layer([Logger.consoleStructured]))`.
 

@@ -2,14 +2,14 @@ import { event } from "datastar-kit"
 import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
-import { annotate } from "@/lib/observability/request-log"
+import { annotateAction } from "@/lib/observability/request-log"
 import {
   type InvalidObjectError,
   maxContentBytes,
   parseObject,
   parseObjectKey,
 } from "@/resources/r2-objects/object"
-import { R2Objects, type R2ObjectsError } from "@/resources/r2-objects/r2-objects"
+import { R2Objects, type StoredObject } from "@/resources/r2-objects/r2-objects"
 import { pageHead } from "@/ui/head"
 import { ObjectList } from "@/pages/r2-demo/components/object-list"
 import { R2Page } from "@/pages/r2-demo/components/page"
@@ -33,13 +33,17 @@ const invalidObjectMessage = (error: InvalidObjectError): string =>
 
 const formError = (message: string) => datastarSignals(r2Form.patch({ errors: { form: message } }))
 
-const logR2Unavailable = (action: string, error: R2ObjectsError) =>
-  annotate({ r2: { ok: false, action, reason: error.reason, cause: error.cause } })
+const objectListStream = (objects: readonly StoredObject[]) =>
+  datastarStream([
+    event.signals(r2Form.patch({ errors: { form: "" } })),
+    event.patch(<ObjectList objects={objects} />),
+  ])
 
 const r2DemoPage = Effect.gen(function* () {
   const r2Objects = yield* R2Objects
-  const objects = yield* r2Objects.list
-  yield* annotate({ r2: { ok: true, action: "list", count: objects.length } })
+  const objects = yield* annotateAction("r2", "list")(r2Objects.list, (objects) => ({
+    count: objects.length,
+  }))
 
   return datastarPage(
     <R2Page
@@ -52,39 +56,31 @@ const r2DemoPage = Effect.gen(function* () {
     },
   )
 }).pipe(
-  Effect.catchTag("R2ObjectsError", (error) =>
-    logR2Unavailable("list", error).pipe(
-      Effect.as(HttpServerResponse.text("R2 demo unavailable", { status: 503 })),
-    ),
+  Effect.catchTag("R2ObjectsError", () =>
+    Effect.succeed(HttpServerResponse.text("R2 demo unavailable", { status: 503 })),
   ),
   Effect.withSpan("r2Demo.page"),
 )
-
-const refreshList = Effect.fn("r2Demo.refreshList")(function* (action: string) {
-  const r2Objects = yield* R2Objects
-  const objects = yield* r2Objects.list
-  yield* annotate({ r2: { ok: true, action, count: objects.length } })
-
-  return datastarStream([
-    event.signals(r2Form.patch({ errors: { form: "" } })),
-    event.patch(<ObjectList objects={objects} />),
-  ])
-})
 
 const put = Effect.fn("r2Demo.put")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const signals = yield* decodeSignals(request, PutObjectSignals)
     const object = yield* parseObject(signals.key, signals.content)
     const r2Objects = yield* R2Objects
-    yield* r2Objects.put(object.key, object.content)
+    const objects = yield* annotateAction("r2", "put")(
+      Effect.gen(function* () {
+        yield* r2Objects.put(object.key, object.content)
+        return yield* r2Objects.list
+      }),
+      (objects) => ({ count: objects.length }),
+    )
 
-    return yield* refreshList("put")
+    return objectListStream(objects)
   },
   Effect.catchTags({
     InvalidSignalsError: () => Effect.succeed(formError("Could not read the form. Try again.")),
     InvalidObjectError: (error) => Effect.succeed(formError(invalidObjectMessage(error))),
-    R2ObjectsError: (error) =>
-      logR2Unavailable("put", error).pipe(Effect.as(formError("Could not reach R2. Try again."))),
+    R2ObjectsError: () => Effect.succeed(formError("Could not reach R2. Try again.")),
   }),
 )
 
@@ -93,17 +89,20 @@ const remove = Effect.fn("r2Demo.remove")(
     const signals = yield* decodeSignals(request, DeleteObjectSignals)
     const key = yield* parseObjectKey(signals.key)
     const r2Objects = yield* R2Objects
-    yield* r2Objects.remove(key)
+    const objects = yield* annotateAction("r2", "delete")(
+      Effect.gen(function* () {
+        yield* r2Objects.remove(key)
+        return yield* r2Objects.list
+      }),
+      (objects) => ({ count: objects.length }),
+    )
 
-    return yield* refreshList("delete")
+    return objectListStream(objects)
   },
   Effect.catchTags({
     InvalidSignalsError: () => Effect.succeed(formError("Could not read the request. Try again.")),
     InvalidObjectError: () => Effect.succeed(formError("That object key is not valid.")),
-    R2ObjectsError: (error) =>
-      logR2Unavailable("delete", error).pipe(
-        Effect.as(formError("Could not reach R2. Try again.")),
-      ),
+    R2ObjectsError: () => Effect.succeed(formError("Could not reach R2. Try again.")),
   }),
 )
 
@@ -112,7 +111,9 @@ const serveObject = Effect.fn("r2Demo.serveObject")(
     const params = yield* HttpRouter.schemaParams(ReadObjectParams)
     const key = yield* parseObjectKey(params.key)
     const r2Objects = yield* R2Objects
-    const content = yield* r2Objects.read(key)
+    const content = yield* annotateAction("r2", "read")(r2Objects.read(key), (content) => ({
+      found: Option.isSome(content),
+    }))
 
     return Option.match(content, {
       onNone: () => HttpServerResponse.text("Object not found", { status: 404 }),
@@ -123,10 +124,8 @@ const serveObject = Effect.fn("r2Demo.serveObject")(
     SchemaError: () => Effect.succeed(HttpServerResponse.text("Invalid key", { status: 400 })),
     InvalidObjectError: () =>
       Effect.succeed(HttpServerResponse.text("Invalid key", { status: 400 })),
-    R2ObjectsError: (error) =>
-      logR2Unavailable("read", error).pipe(
-        Effect.as(HttpServerResponse.text("R2 demo unavailable", { status: 503 })),
-      ),
+    R2ObjectsError: () =>
+      Effect.succeed(HttpServerResponse.text("R2 demo unavailable", { status: 503 })),
   }),
 )
 

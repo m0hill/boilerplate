@@ -2,10 +2,14 @@ import { event } from "datastar-kit"
 import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
-import { annotate } from "@/lib/observability/request-log"
+import { annotateAction } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
 import { ChatRooms, type ChatRoomsError } from "@/resources/chat-room/chat-rooms"
-import { type InvalidMessageError, maxBodyLength } from "@/resources/chat-room/rooms"
+import {
+  type InvalidMessageError,
+  type InvalidRoomError,
+  maxBodyLength,
+} from "@/resources/chat-room/rooms"
 import { pageHead } from "@/ui/head"
 import { MessageList } from "@/pages/do-demo/components/message-list"
 import { DoPage } from "@/pages/do-demo/components/page"
@@ -22,8 +26,8 @@ const messageError = (error: InvalidMessageError): string =>
 const formError = (message: string) =>
   datastarSignals(chatForm.patch({ errors: { form: message } }))
 
-const logRoomUnavailable = (action: string, error: ChatRoomsError) =>
-  annotate({ do: { ok: false, action, reason: error.reason, cause: error.cause } })
+const postFailureFields = (error: InvalidRoomError | InvalidMessageError | ChatRoomsError) =>
+  error._tag === "ChatRoomsError" ? { reason: error.reason, cause: error.cause } : undefined
 
 const roomSearchParam = HttpRouter.schemaParams(RoomSearchParams).pipe(
   Effect.map(({ room }) => room),
@@ -35,10 +39,10 @@ const doDemoPage = Effect.fn("doDemo.page")(
     const chatRooms = yield* ChatRooms
     const rawRoom = yield* roomSearchParam
     const room = yield* chatRooms.selectRoom(rawRoom)
-    const messages = yield* chatRooms.list(room)
-    yield* annotate({
-      do: { ok: true, action: "list", room, count: messages.length },
-    })
+    const messages = yield* annotateAction("do", "list")(chatRooms.list(room), (messages) => ({
+      room,
+      count: messages.length,
+    }))
 
     return datastarPage(
       <DoPage
@@ -52,10 +56,8 @@ const doDemoPage = Effect.fn("doDemo.page")(
       },
     )
   },
-  Effect.catchTag("ChatRoomsError", (error) =>
-    logRoomUnavailable("list", error).pipe(
-      Effect.as(HttpServerResponse.text("Durable Object demo unavailable", { status: 503 })),
-    ),
+  Effect.catchTag("ChatRoomsError", () =>
+    Effect.succeed(HttpServerResponse.text("Durable Object demo unavailable", { status: 503 })),
   ),
 )
 
@@ -66,9 +68,7 @@ const liveMessages = Effect.fn("doDemo.live")(
     const room = yield* chatRooms.selectRoom(rawRoom)
 
     return yield* liveView({
-      subscribe: chatRooms
-        .subscribe(room)
-        .pipe(Effect.tap(() => annotate({ do: { ok: true, action: "subscribe", room } }))),
+      subscribe: annotateAction("do", "subscribe")(chatRooms.subscribe(room), () => ({ room })),
       render: chatRooms.list(room).pipe(
         Effect.map((messages) =>
           event.patch(
@@ -82,10 +82,8 @@ const liveMessages = Effect.fn("doDemo.live")(
       log: { feature: "do", room },
     })
   },
-  Effect.catchTag("ChatRoomsError", (error) =>
-    logRoomUnavailable("subscribe", error).pipe(
-      Effect.as(HttpServerResponse.text("Durable Object demo unavailable", { status: 503 })),
-    ),
+  Effect.catchTag("ChatRoomsError", () =>
+    Effect.succeed(HttpServerResponse.text("Durable Object demo unavailable", { status: 503 })),
   ),
 )
 
@@ -93,8 +91,10 @@ const postMessage = Effect.fn("doDemo.post")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const signals = yield* decodeSignals(request, PostMessageSignals)
     const chatRooms = yield* ChatRooms
-    const room = yield* chatRooms.post(signals)
-    yield* annotate({ do: { ok: true, action: "post", room } })
+    yield* annotateAction("do", "post")(chatRooms.post(signals), {
+      success: (room) => ({ room }),
+      failure: postFailureFields,
+    })
 
     return datastarSignals(chatForm.patch({ body: "", errors: { form: "" } }))
   },
@@ -102,10 +102,7 @@ const postMessage = Effect.fn("doDemo.post")(
     InvalidSignalsError: () => Effect.succeed(formError("Could not read the form. Try again.")),
     InvalidRoomError: () => Effect.succeed(formError("Pick a valid room.")),
     InvalidMessageError: (error) => Effect.succeed(formError(messageError(error))),
-    ChatRoomsError: (error) =>
-      logRoomUnavailable("post", error).pipe(
-        Effect.as(formError("Could not reach the room. Try again.")),
-      ),
+    ChatRoomsError: () => Effect.succeed(formError("Could not reach the room. Try again.")),
   }),
 )
 

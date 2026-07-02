@@ -5,13 +5,7 @@ import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
 import { annotate } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
 import { ChatRooms, type ChatRoomsError } from "@/resources/chat-room/chat-rooms"
-import {
-  defaultRoom,
-  type InvalidMessageError,
-  maxBodyLength,
-  parseMessage,
-  parseRoom,
-} from "@/resources/chat-room/rooms"
+import { type InvalidMessageError, maxBodyLength } from "@/resources/chat-room/rooms"
 import { pageHead } from "@/ui/head"
 import { MessageList } from "@/pages/do-demo/components/message-list"
 import { DoPage } from "@/pages/do-demo/components/page"
@@ -31,20 +25,16 @@ const formError = (message: string) =>
 const logRoomUnavailable = (action: string, error: ChatRoomsError) =>
   annotate({ do: { ok: false, action, reason: error.reason, cause: error.cause } })
 
-const roomFromSearchParams = HttpRouter.schemaParams(RoomSearchParams).pipe(
-  Effect.flatMap(({ room }) =>
-    Option.match(room, {
-      onNone: () => Effect.succeed(defaultRoom),
-      onSome: (rawRoom) => parseRoom(rawRoom).pipe(Effect.orElseSucceed(() => defaultRoom)),
-    }),
-  ),
-  Effect.catchTag("SchemaError", () => Effect.succeed(defaultRoom)),
+const roomSearchParam = HttpRouter.schemaParams(RoomSearchParams).pipe(
+  Effect.map(({ room }) => room),
+  Effect.catchTag("SchemaError", () => Effect.succeed(Option.none<string>())),
 )
 
 const doDemoPage = Effect.fn("doDemo.page")(
   function* () {
-    const room = yield* roomFromSearchParams
     const chatRooms = yield* ChatRooms
+    const rawRoom = yield* roomSearchParam
+    const room = yield* chatRooms.selectRoom(rawRoom)
     const messages = yield* chatRooms.list(room)
     yield* annotate({
       do: { ok: true, action: "list", room, count: messages.length },
@@ -71,8 +61,9 @@ const doDemoPage = Effect.fn("doDemo.page")(
 
 const liveMessages = Effect.fn("doDemo.live")(
   function* () {
-    const room = yield* roomFromSearchParams
     const chatRooms = yield* ChatRooms
+    const rawRoom = yield* roomSearchParam
+    const room = yield* chatRooms.selectRoom(rawRoom)
 
     return yield* liveView({
       subscribe: chatRooms
@@ -101,10 +92,8 @@ const liveMessages = Effect.fn("doDemo.live")(
 const postMessage = Effect.fn("doDemo.post")(
   function* (request: HttpServerRequest.HttpServerRequest) {
     const signals = yield* decodeSignals(request, PostMessageSignals)
-    const room = yield* parseRoom(signals.room)
-    const message = yield* parseMessage(signals.author, signals.body)
     const chatRooms = yield* ChatRooms
-    yield* chatRooms.post(room, message.author, message.body)
+    const room = yield* chatRooms.post(signals)
     yield* annotate({ do: { ok: true, action: "post", room } })
 
     return datastarSignals(chatForm.patch({ body: "", errors: { form: "" } }))

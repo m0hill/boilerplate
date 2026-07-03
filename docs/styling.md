@@ -52,6 +52,17 @@
 - Start with minimal variants.
 - Add new primitives to `/design`.
 
+## Pending state
+
+- Commands show in-flight state, not optimistic success.
+- Use a local signal: `const busy = local<boolean>("saveBusy")`.
+- Put `data-indicator={busy}` on the fetch trigger.
+- Pass the same signal to `Button` `busy`.
+- Busy button CSS lives in `src/styles.css`.
+- Do not put `data-indicator` on long-lived streams.
+- No page overlays.
+- Long jobs stream progress as SSE patches.
+
 ## CSS
 
 - `src/styles.css` owns `@theme`, base, fonts, globals, keyframes, third-party overrides, prose, and awkward selectors.

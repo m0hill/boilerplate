@@ -1,4 +1,5 @@
 import { mod, post } from "datastar-kit"
+import { Button } from "@/ui/button"
 import { Layout } from "@/ui/layout"
 import { KvCount } from "@/pages/kv-demo/components/count"
 
@@ -19,12 +20,12 @@ export const KvPage = ({ count }: { readonly count: number }) => (
     sources={sources}
   >
     <KvCount count={count} />
-    <button
+    <Button
       type="button"
       data-on:click={mod(post("/kv/increment"), { prevent: true })}
-      class="w-fit rounded bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
+      class="w-fit"
     >
       Increment
-    </button>
+    </Button>
   </Layout>
 )

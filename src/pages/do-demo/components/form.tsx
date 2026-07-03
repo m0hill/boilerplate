@@ -1,6 +1,9 @@
 import { get, mod, post } from "datastar-kit"
 import type { RoomName } from "@/resources/chat-room/rooms"
 import type { ChatFormState } from "@/pages/do-demo/state"
+import { Button } from "@/ui/button"
+import { FieldError } from "@/ui/field"
+import { Input } from "@/ui/input"
 
 export const MessageForm = ({
   form,
@@ -17,33 +20,25 @@ export const MessageForm = ({
     class="flex flex-col gap-3"
   >
     <div class="flex flex-wrap gap-3">
-      <input
+      <Input
         name="author"
         autocomplete="off"
         placeholder="Your name"
         data-bind={form.refs.author}
-        class="w-full rounded border border-gray-300 px-3 py-2 text-sm sm:w-40"
+        class="sm:w-40"
       />
-      <input
+      <Input
         name="body"
         autocomplete="off"
         placeholder={`Message #${room}`}
         data-bind={form.refs.body}
-        class="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+        class="min-w-0 flex-1"
       />
-      <button
-        type="submit"
-        class="rounded bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
-      >
-        Post
-      </button>
+      <Button type="submit">Post</Button>
     </div>
-    <small
+    <FieldError
       id="do-error"
-      style="display: none"
-      class="text-red-600"
-      data-show={form.refs.errors.form}
-      data-text={form.refs.errors.form}
-    ></small>
+      signal={form.refs.errors.form}
+    />
   </form>
 )

@@ -1,6 +1,7 @@
 import { DateTime } from "effect"
 import { post } from "datastar-kit"
 import type { StoredObject } from "@/resources/r2-objects/r2-objects"
+import { Button } from "@/ui/button"
 
 const formatBytes = (size: number): string => {
   if (size < 1024) return `${size} B`
@@ -18,9 +19,9 @@ export const ObjectList = ({ objects }: { readonly objects: readonly StoredObjec
   >
     <h2 class="text-lg font-semibold">Objects in the bucket</h2>
     {objects.length === 0 ? (
-      <p class="text-gray-500">The bucket is empty. Save an object above.</p>
+      <p class="text-muted">The bucket is empty. Save an object above.</p>
     ) : (
-      <ul class="flex flex-col divide-y divide-gray-100 rounded border border-gray-200">
+      <ul class="flex flex-col divide-y divide-border rounded-lg border border-border">
         {objects.map((object) => (
           <li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div class="flex min-w-0 flex-col">
@@ -32,18 +33,19 @@ export const ObjectList = ({ objects }: { readonly objects: readonly StoredObjec
               >
                 {object.key}
               </a>
-              <span class="text-xs text-gray-500">
+              <span class="text-xs text-muted">
                 {formatBytes(object.size)} · {formatDate(object.uploaded)}
               </span>
             </div>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               aria-label={`Delete ${object.key}`}
               data-on:click={post("/r2/delete", { payload: { key: object.key } })}
-              class="rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100"
             >
               Delete
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

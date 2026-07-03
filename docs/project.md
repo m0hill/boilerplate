@@ -95,6 +95,7 @@
 - `src/pages/not-found.ts` — catch-all 404.
 - `src/resources/<name>/` — Cloudflare adapters, schemas, DOs, persistence.
 - `src/services/<name>/` — external services and non-Cloudflare capabilities.
+- `src/ui/` — design-system primitives and page chrome; `/design` renders them.
 - `src/lib/` — named glue such as Datastar, observability, realtime.
 - `src/client/` — browser-only web components and modules.
 - `src/test/` — shared test helpers.

@@ -4,6 +4,7 @@ import { makeRequestLog, RequestLog } from "@/lib/observability/request-log"
 import { wideEventLogger } from "@/lib/observability/wide-event"
 import { apiDemoRoutes } from "@/pages/api-demo/index"
 import { d1DemoRoutes } from "@/pages/d1-demo/index"
+import { designRoutes } from "@/pages/design/index"
 import { doDemoRoutes } from "@/pages/do-demo/index"
 import { homeRoutes } from "@/pages/home/index"
 import { kvDemoRoutes } from "@/pages/kv-demo/index"
@@ -29,6 +30,7 @@ export const AppLayer = Layer.mergeAll(
   liveCounterRoutes,
   apiDemoRoutes,
   webComponentDemoRoutes,
+  designRoutes,
   notFoundRoute,
 ).pipe(
   Layer.provide(HttpRouter.middleware(wideEventLogger).layer),

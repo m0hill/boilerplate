@@ -1,4 +1,6 @@
 import { mod } from "datastar-kit"
+import { Field } from "@/ui/field"
+import { Input } from "@/ui/input"
 import { Layout } from "@/ui/layout"
 import type { QrFormState } from "@/pages/web-component-demo/state"
 
@@ -26,20 +28,19 @@ export const WebComponentPage = ({ form }: { readonly form: QrFormState }) => (
       data-signals={mod(form.defaults, { ifMissing: true })}
       class="flex flex-col gap-6"
     >
-      <label class="flex flex-col gap-2">
-        <span class="text-sm font-medium">Text to encode</span>
-        <input
+      <Field label="Text to encode">
+        <Input
           type="text"
           autocomplete="off"
           data-bind={form.refs.text}
-          class="w-full rounded border border-gray-300 px-3 py-2 font-mono text-sm"
+          class="font-mono"
         />
-      </label>
+      </Field>
       <qr-code
         data-attr:text={form.refs.text}
-        class="block h-60 w-60 rounded border border-gray-200"
+        class="block h-60 w-60 rounded-lg border border-border"
       ></qr-code>
-      <p class="text-sm text-gray-500">
+      <p class="text-sm text-muted">
         No network requests and no hand-written event wiring — Datastar's signal flows straight into
         the element's attribute, and it redraws.
       </p>

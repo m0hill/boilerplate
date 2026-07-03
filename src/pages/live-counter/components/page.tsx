@@ -1,4 +1,5 @@
 import { get, mod, post } from "datastar-kit"
+import { Button } from "@/ui/button"
 import { Layout } from "@/ui/layout"
 import { LiveCount } from "@/pages/live-counter/components/count"
 
@@ -34,13 +35,13 @@ export const LiveCounterPage = ({ count }: { readonly count: number }) => (
       class="flex flex-col gap-6"
     >
       <LiveCount count={count} />
-      <button
+      <Button
         type="button"
         data-on:click={mod(post("/live-counter/increment"), { prevent: true })}
-        class="w-fit rounded bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
+        class="w-fit"
       >
         Increment
-      </button>
+      </Button>
     </div>
   </Layout>
 )

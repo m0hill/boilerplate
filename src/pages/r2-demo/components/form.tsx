@@ -1,5 +1,8 @@
 import { mod, post } from "datastar-kit"
 import type { R2FormState } from "@/pages/r2-demo/state"
+import { Button } from "@/ui/button"
+import { Field, FieldError } from "@/ui/field"
+import { Input, Textarea } from "@/ui/input"
 
 export const ObjectForm = ({ form }: { readonly form: R2FormState }) => (
   <form
@@ -8,39 +11,28 @@ export const ObjectForm = ({ form }: { readonly form: R2FormState }) => (
     data-on:submit={mod(post("/r2/put"), { prevent: true })}
     class="flex flex-col gap-3"
   >
-    <label class="flex flex-col gap-1">
-      <span class="text-sm font-medium">Key</span>
-      <input
+    <Field label="Key">
+      <Input
         name="key"
         autocomplete="off"
         placeholder="notes/hello.txt"
         data-bind={form.refs.key}
-        class="w-full rounded border border-gray-300 px-3 py-2 font-mono text-sm"
+        class="font-mono"
       />
-    </label>
-    <label class="flex flex-col gap-1">
-      <span class="text-sm font-medium">Content</span>
-      <textarea
+    </Field>
+    <Field label="Content">
+      <Textarea
         name="content"
         rows="3"
         data-bind={form.refs.content}
-        class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-      ></textarea>
-    </label>
+      ></Textarea>
+    </Field>
     <div class="flex items-center gap-3">
-      <button
-        type="submit"
-        class="w-fit rounded bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
-      >
-        Save object
-      </button>
-      <small
+      <Button type="submit">Save object</Button>
+      <FieldError
         id="r2-error"
-        style="display: none"
-        class="text-red-600"
-        data-show={form.refs.errors.form}
-        data-text={form.refs.errors.form}
-      ></small>
+        signal={form.refs.errors.form}
+      />
     </div>
   </form>
 )

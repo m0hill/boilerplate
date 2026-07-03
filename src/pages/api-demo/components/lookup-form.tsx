@@ -1,5 +1,8 @@
 import { mod, post } from "datastar-kit"
 import type { LookupFormState } from "@/pages/api-demo/state"
+import { Button } from "@/ui/button"
+import { Field, FieldError } from "@/ui/field"
+import { Input } from "@/ui/input"
 
 export const LookupForm = ({ form }: { readonly form: LookupFormState }) => (
   <form
@@ -8,28 +11,23 @@ export const LookupForm = ({ form }: { readonly form: LookupFormState }) => (
     data-on:submit={mod(post("/api/lookup"), { prevent: true })}
     class="flex flex-wrap items-end gap-3"
   >
-    <label class="flex w-full flex-col gap-1 sm:w-auto">
-      <span class="text-sm font-medium">Repository</span>
-      <input
+    <Field
+      label="Repository"
+      class="w-full sm:w-auto"
+    >
+      <Input
         name="repo"
         autocomplete="off"
         placeholder="owner/repo"
         data-bind={form.refs.repo}
-        class="w-full rounded border border-gray-300 px-3 py-2 sm:w-64"
+        class="sm:w-64"
       />
-    </label>
-    <button
-      type="submit"
-      class="rounded bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
-    >
-      Look up
-    </button>
-    <small
+    </Field>
+    <Button type="submit">Look up</Button>
+    <FieldError
       id="repo-error"
-      style="display: none"
-      class="w-full text-red-600"
-      data-show={form.refs.errors.repo}
-      data-text={form.refs.errors.repo}
-    ></small>
+      signal={form.refs.errors.repo}
+      class="w-full"
+    />
   </form>
 )

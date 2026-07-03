@@ -13,7 +13,7 @@ Then read the narrow `docs/` guide for files you touch.
 - `effect.md` — Services, Layers, Schema, typed errors.
 - `code-quality.md` — TypeScript and module boundaries.
 - `testing.md` — Vitest Workers tests and Playwright e2e.
-- `styling.md` — Tailwind v4 and CSS split.
+- `styling.md` — design tokens, `src/ui/` primitives, Tailwind v4.
 - `vendored-repos.md` — read-only reference repos.
 
 ## Global

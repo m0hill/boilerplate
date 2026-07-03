@@ -6,7 +6,7 @@ const formatLanguage = (language: Repo["language"]): string => Option.getOrElse(
 
 const Stat = ({ label, value }: { readonly label: string; readonly value: string }) => (
   <div class="flex flex-col">
-    <dt class="text-sm text-gray-500">{label}</dt>
+    <dt class="text-sm text-muted">{label}</dt>
     <dd class="text-xl font-semibold tabular-nums">{value}</dd>
   </div>
 )
@@ -14,10 +14,10 @@ const Stat = ({ label, value }: { readonly label: string; readonly value: string
 export const RepoResult = ({ result }: { readonly result: Option.Option<Repo> }) => (
   <section
     id="repo-result"
-    class="rounded border border-gray-200 p-4"
+    class="rounded-lg border border-border p-4"
   >
     {Option.match(result, {
-      onNone: () => <p class="text-gray-500">Look up a repository to see its public stats.</p>,
+      onNone: () => <p class="text-muted">Look up a repository to see its public stats.</p>,
       onSome: (repo) => (
         <article class="flex flex-col gap-3">
           <h2 class="text-lg font-semibold">{repo.fullName}</h2>

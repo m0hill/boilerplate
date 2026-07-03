@@ -1,4 +1,5 @@
 import { mod, post } from "datastar-kit"
+import { Button } from "@/ui/button"
 import { Layout } from "@/ui/layout"
 import { D1Count } from "@/pages/d1-demo/components/count"
 
@@ -22,12 +23,12 @@ export const D1Page = ({ count }: { readonly count: number }) => (
     sources={sources}
   >
     <D1Count count={count} />
-    <button
+    <Button
       type="button"
       data-on:click={mod(post("/d1/increment"), { prevent: true })}
-      class="w-fit rounded bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
+      class="w-fit"
     >
       Increment
-    </button>
+    </Button>
   </Layout>
 )

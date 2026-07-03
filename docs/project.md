@@ -99,6 +99,7 @@
 - `src/lib/` — named glue such as Datastar, observability, realtime.
 - `src/client/` — browser-only web components and modules.
 - `src/test/` — shared test helpers.
+- `docs/` — narrow agent guides.
 - `public/` — Worker assets.
 - `repos/` — read-only references.
 

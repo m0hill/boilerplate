@@ -12,6 +12,7 @@ Then read the narrow `docs/` guide for files you touch.
 - `drizzle-effect.md` — Drizzle, D1, DO SQLite, Effect Schema.
 - `effect.md` — Services, Layers, Schema, typed errors.
 - `code-quality.md` — TypeScript and module boundaries.
+- `documentation.md` — writing and maintaining agent docs.
 - `testing.md` — Vitest Workers tests and Playwright e2e.
 - `styling.md` — design tokens, `src/ui/` primitives, Tailwind v4.
 - `vendored-repos.md` — read-only reference repos.
@@ -34,5 +35,6 @@ Then read the narrow `docs/` guide for files you touch.
 - Return user-fixable errors as signal patches.
 - Keep strict TypeScript clean.
 - Use parsed and narrowed types instead of `any`, non-null assertions, and `as Type`.
+- Read `docs/documentation.md` before creating or editing Markdown docs.
 - Run `nub run check` before handoff.
 - Run `nub run test:e2e` when browser behavior changes.

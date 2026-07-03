@@ -41,6 +41,53 @@
   }
 }
 
+@layer components {
+  button[aria-busy="true"] {
+    position: relative;
+    pointer-events: none;
+  }
+
+  button[aria-busy="true"] > span {
+    visibility: hidden;
+    transition: visibility 0s 150ms;
+  }
+
+  button[aria-busy="true"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    height: 1em;
+    width: 1em;
+    border: 2px solid currentColor;
+    border-inline-start-color: transparent;
+    border-radius: 50%;
+    opacity: 0;
+    animation:
+      busy-appear 1ms linear 150ms forwards,
+      busy-spin 600ms linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button[aria-busy="true"]::after {
+      border-inline-start-color: currentColor;
+      animation: busy-appear 1ms linear 150ms forwards;
+    }
+  }
+}
+
+@keyframes busy-appear {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes busy-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 @view-transition {
   navigation: auto;
 }

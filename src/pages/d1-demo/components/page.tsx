@@ -1,4 +1,4 @@
-import { mod, post } from "datastar-kit"
+import { local, mod, post } from "datastar-kit"
 import { Button } from "@/ui/button"
 import { Layout } from "@/ui/layout"
 import { D1Count } from "@/pages/d1-demo/components/count"
@@ -15,6 +15,8 @@ const sources = [
   { path: "migrations/drizzle/", role: "generated migrations applied to D1" },
 ] as const
 
+const incrementBusy = local<boolean>("incrementBusy")
+
 export const D1Page = ({ count }: { readonly count: number }) => (
   <Layout
     title="D1 + Drizzle counter"
@@ -25,7 +27,9 @@ export const D1Page = ({ count }: { readonly count: number }) => (
     <D1Count count={count} />
     <Button
       type="button"
+      data-indicator={incrementBusy}
       data-on:click={mod(post("/d1/increment"), { prevent: true })}
+      busy={incrementBusy}
       class="w-fit"
     >
       Increment

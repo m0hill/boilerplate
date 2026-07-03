@@ -1,4 +1,4 @@
-import { get, mod, post } from "datastar-kit"
+import { get, local, mod, post } from "datastar-kit"
 import { Button } from "@/ui/button"
 import { Layout } from "@/ui/layout"
 import { LiveCount } from "@/pages/live-counter/components/count"
@@ -22,6 +22,8 @@ const sources = [
   },
 ] as const
 
+const incrementBusy = local<boolean>("incrementBusy")
+
 export const LiveCounterPage = ({ count }: { readonly count: number }) => (
   <Layout
     title="Live counter"
@@ -37,7 +39,9 @@ export const LiveCounterPage = ({ count }: { readonly count: number }) => (
       <LiveCount count={count} />
       <Button
         type="button"
+        data-indicator={incrementBusy}
         data-on:click={mod(post("/live-counter/increment"), { prevent: true })}
+        busy={incrementBusy}
         class="w-fit"
       >
         Increment

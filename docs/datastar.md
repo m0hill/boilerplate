@@ -25,7 +25,7 @@ Read for server TSX, Datastar attributes, signals, patches, streams.
 - Links navigate pages.
 - Redirects navigate from backend actions.
 - Do not manage browser history manually.
-- Use loading indicators for pending backend requests.
+- Use loading indicators for pending backend requests: `data-indicator` + Button `busy` (see `styling.md`).
 - Confirm success from backend state.
 - Avoid optimistic success UI.
 - Use semantic HTML first.

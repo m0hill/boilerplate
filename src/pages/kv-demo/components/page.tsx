@@ -1,4 +1,4 @@
-import { mod, post } from "datastar-kit"
+import { local, mod, post } from "datastar-kit"
 import { Button } from "@/ui/button"
 import { Layout } from "@/ui/layout"
 import { KvCount } from "@/pages/kv-demo/components/count"
@@ -12,6 +12,8 @@ const sources = [
   { path: "src/index.tsx", role: "binds COUNTER_KV into the request context" },
 ] as const
 
+const incrementBusy = local<boolean>("incrementBusy")
+
 export const KvPage = ({ count }: { readonly count: number }) => (
   <Layout
     title="KV counter"
@@ -22,7 +24,9 @@ export const KvPage = ({ count }: { readonly count: number }) => (
     <KvCount count={count} />
     <Button
       type="button"
+      data-indicator={incrementBusy}
       data-on:click={mod(post("/kv/increment"), { prevent: true })}
+      busy={incrementBusy}
       class="w-fit"
     >
       Increment

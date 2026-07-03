@@ -1,3 +1,4 @@
+import { get } from "datastar-kit"
 import type { Message } from "@/resources/chat-room/room"
 import type { RoomName } from "@/resources/chat-room/rooms"
 import { Layout } from "@/ui/layout"
@@ -42,13 +43,18 @@ export const DoPage = ({
     sources={sources}
   >
     <RoomSwitcher room={room} />
-    <MessageList
-      room={room}
-      messages={messages}
-    />
-    <MessageForm
-      form={form}
-      room={room}
-    />
+    <div
+      data-init={get(`/do/live?room=${room}`)}
+      class="flex flex-col gap-6"
+    >
+      <MessageList
+        room={room}
+        messages={messages}
+      />
+      <MessageForm
+        form={form}
+        room={room}
+      />
+    </div>
   </Layout>
 )

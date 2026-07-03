@@ -1,4 +1,4 @@
-import type { HtmlElements } from "datastar-kit"
+import { type Expr, type HtmlElements, js } from "datastar-kit"
 import { cx } from "@/ui/cx"
 
 const base =
@@ -18,19 +18,22 @@ const sizes = {
 export type ButtonProps = HtmlElements["button"] & {
   readonly variant?: keyof typeof variants
   readonly size?: keyof typeof sizes
+  readonly busy?: Expr<boolean>
 }
 
 export const Button = ({
   variant = "primary",
   size = "md",
+  busy,
   class: className,
   children,
   ...rest
 }: ButtonProps) => (
   <button
     {...rest}
+    data-attr:aria-busy={busy && js`${busy} ? "true" : false`}
     class={cx(base, variants[variant], sizes[size], className)}
   >
-    {children}
+    <span class="contents">{children}</span>
   </button>
 )

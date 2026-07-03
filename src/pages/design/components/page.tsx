@@ -79,7 +79,13 @@ export const DesignPage = () => (
         >
           Small outline
         </Button>
+        <Button aria-busy="true">Pending</Button>
       </div>
+      <p class="text-sm text-muted">
+        Commands are never optimistic. While a request is in flight, Datastar sets aria-busy from a
+        data-indicator signal and the trigger shows this spinner — wire it with the Button busy
+        prop.
+      </p>
     </Section>
     <Section title="Form controls">
       <div class="flex max-w-md flex-col gap-3">

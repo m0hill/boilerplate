@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm"
 import { Context, Effect, Option, Schema } from "effect"
-import type { D1DrizzleDatabase } from "@/resources/d1/database"
+import { makeD1Database, type D1DrizzleDatabase } from "@/resources/d1/database"
 import { d1CounterRowSchema, d1Counters } from "@/resources/d1/schema"
 
 const countKey = "main"
@@ -66,4 +66,8 @@ export function makeD1Counter(database: D1DrizzleDatabase): D1Counter["Service"]
   }).pipe(Effect.withSpan("D1Counter.increment"))
 
   return D1Counter.of({ current, increment })
+}
+
+export function makeD1CounterContext(env: Pick<CloudflareBindings, "APP_DB">) {
+  return Context.empty().pipe(Context.add(D1Counter, makeD1Counter(makeD1Database(env.APP_DB))))
 }

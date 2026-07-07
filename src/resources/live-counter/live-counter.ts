@@ -1,6 +1,12 @@
 import { Context, Effect, Result, Schema } from "effect"
-import { D1Counter, type D1CounterError } from "@/resources/d1/counter"
-import { LiveRooms, liveRoomName, type LiveRoomError } from "@/resources/live-rooms/live-rooms"
+import { D1Counter, makeD1Counter, type D1CounterError } from "@/resources/d1/counter"
+import { makeD1Database } from "@/resources/d1/database"
+import {
+  LiveRooms,
+  liveRoomName,
+  makeLiveRooms,
+  type LiveRoomError,
+} from "@/resources/live-rooms/live-rooms"
 
 const COUNTER_ROOM = liveRoomName("counter")
 
@@ -71,4 +77,15 @@ export function makeLiveCounter(
   }).pipe(Effect.withSpan("LiveCounter.increment"))
 
   return LiveCounter.of({ current, subscribe, increment })
+}
+
+export function makeLiveCounterContext(env: Pick<CloudflareBindings, "APP_DB" | "LIVE_ROOMS">) {
+  const database = makeD1Database(env.APP_DB)
+  const d1Counter = makeD1Counter(database)
+  const liveRooms = makeLiveRooms(env.LIVE_ROOMS)
+
+  return Context.empty().pipe(
+    Context.add(LiveRooms, liveRooms),
+    Context.add(LiveCounter, makeLiveCounter(d1Counter, liveRooms)),
+  )
 }

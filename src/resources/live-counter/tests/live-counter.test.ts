@@ -1,24 +1,13 @@
 import { env } from "cloudflare:workers"
-import { Context, Effect } from "effect"
+import { Effect } from "effect"
 import { beforeEach, describe, expect, it } from "vitest"
-import { makeD1Counter } from "@/resources/d1/counter"
-import { makeD1Database } from "@/resources/d1/database"
-import { LiveCounter, makeLiveCounter } from "@/resources/live-counter/live-counter"
-import { makeLiveRooms } from "@/resources/live-rooms/live-rooms"
+import { LiveCounter, makeLiveCounterContext } from "@/resources/live-counter/live-counter"
 import { resetD1Counters } from "@/test/utils"
 
 beforeEach(resetD1Counters)
 
-const liveCounterContext = () => {
-  const database = makeD1Database(env.APP_DB)
-  const d1Counter = makeD1Counter(database)
-  const liveRooms = makeLiveRooms(env.LIVE_ROOMS)
-
-  return Context.empty().pipe(Context.add(LiveCounter, makeLiveCounter(d1Counter, liveRooms)))
-}
-
 const runLiveCounter = <A, E>(effect: Effect.Effect<A, E, LiveCounter>): Promise<A> =>
-  Effect.runPromise(effect.pipe(Effect.provideContext(liveCounterContext())))
+  Effect.runPromise(effect.pipe(Effect.provideContext(makeLiveCounterContext(env))))
 
 const current = Effect.flatMap(LiveCounter, (liveCounter) => liveCounter.current)
 const subscribe = Effect.flatMap(LiveCounter, (liveCounter) => liveCounter.subscribe)

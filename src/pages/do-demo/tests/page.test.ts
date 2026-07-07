@@ -11,6 +11,15 @@ import {
   request,
 } from "@/test/utils"
 
+const chatRoomsService = (overrides: Partial<ChatRooms["Service"]> = {}) =>
+  ChatRooms.of({
+    selectRoom: () => Effect.succeed(defaultRoom),
+    list: () => Effect.succeed([]),
+    post: () => Effect.succeed(defaultRoom),
+    subscribe: () => Effect.succeed(new ReadableStream<Uint8Array>()),
+    ...overrides,
+  })
+
 describe("Durable Object demo page", () => {
   it("defaults to the lobby room", async () => {
     const app = await loadApp()
@@ -155,11 +164,8 @@ describe("Durable Object demo page", () => {
       context.pipe(
         Context.add(
           ChatRooms,
-          ChatRooms.of({
-            selectRoom: () => Effect.succeed(defaultRoom),
-            list: () => Effect.succeed([]),
+          chatRoomsService({
             post: () => Effect.fail(new ChatRoomsError({ reason: "write_failed" })),
-            subscribe: () => Effect.succeed(new ReadableStream<Uint8Array>()),
           }),
         ),
       ),

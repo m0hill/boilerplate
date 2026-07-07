@@ -6,6 +6,15 @@ import { loadAppWithServiceOverrides } from "@/test/utils"
 
 beforeEach(clearR2Objects)
 
+const r2ObjectsService = (overrides: Partial<R2Objects["Service"]> = {}) =>
+  R2Objects.of({
+    list: Effect.succeed([]),
+    put: () => Effect.succeed(undefined),
+    read: () => Effect.succeed(Option.none()),
+    remove: () => Effect.succeed(undefined),
+    ...overrides,
+  })
+
 describe("R2 demo page", () => {
   it("renders an empty bucket", async () => {
     const app = await loadApp()
@@ -89,11 +98,8 @@ describe("R2 demo page", () => {
       context.pipe(
         Context.add(
           R2Objects,
-          R2Objects.of({
+          r2ObjectsService({
             list: Effect.fail(new R2ObjectsError({ reason: "list_failed" })),
-            put: () => Effect.succeed(undefined),
-            read: () => Effect.succeed(Option.none()),
-            remove: () => Effect.succeed(undefined),
           }),
         ),
       ),
@@ -111,11 +117,8 @@ describe("R2 demo page", () => {
       context.pipe(
         Context.add(
           R2Objects,
-          R2Objects.of({
-            list: Effect.succeed([]),
+          r2ObjectsService({
             put: () => Effect.fail(new R2ObjectsError({ reason: "put_failed" })),
-            read: () => Effect.succeed(Option.none()),
-            remove: () => Effect.succeed(undefined),
           }),
         ),
       ),

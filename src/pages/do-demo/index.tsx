@@ -1,9 +1,8 @@
-import { event } from "datastar-kit"
 import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { datastarPage, datastarSignals, datastarSignalsEffect, decodeSignals } from "@/lib/datastar"
 import { annotateAction } from "@/lib/observability/request-log"
-import { liveView } from "@/lib/realtime/live-view"
+import { liveRegion } from "@/lib/realtime/live-view"
 import { ChatRooms, type ChatRoomsError } from "@/resources/chat-room/chat-rooms"
 import {
   type InvalidMessageError,
@@ -67,17 +66,14 @@ const liveMessages = Effect.fn("doDemo.live")(
     const rawRoom = yield* roomSearchParam
     const room = yield* chatRooms.selectRoom(rawRoom)
 
-    return yield* liveView({
+    return yield* liveRegion({
       subscribe: annotateAction("do", "subscribe")(chatRooms.subscribe(room), () => ({ room })),
-      render: chatRooms.list(room).pipe(
-        Effect.map((messages) =>
-          event.patch(
-            <MessageList
-              room={room}
-              messages={messages}
-            />,
-          ),
-        ),
+      read: chatRooms.list(room),
+      render: (messages) => (
+        <MessageList
+          room={room}
+          messages={messages}
+        />
       ),
       log: { feature: "do", room },
     })

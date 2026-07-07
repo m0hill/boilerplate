@@ -1,7 +1,7 @@
 import { Effect } from "effect"
 import { HttpServerResponse } from "effect/unstable/http"
 import { describe, expect, it } from "vitest"
-import { liveView } from "@/lib/realtime/live-view"
+import { liveRegion, liveView } from "@/lib/realtime/live-view"
 import { makePulseHub } from "@/lib/realtime/pulse"
 import { openSse, readUntil } from "@/test/utils"
 
@@ -56,5 +56,30 @@ describe("liveView", () => {
 
     expect(failure).toBe(error)
     expect(calls).toEqual(["subscribe"])
+  })
+
+  it("renders current state as a Datastar patch", async () => {
+    const hub = makePulseHub()
+
+    const response = await Effect.runPromise(
+      liveRegion({
+        subscribe: Effect.sync(() => hub.subscribe()),
+        read: Effect.succeed(3),
+        render: (count) => `<output id="count">${count}</output>`,
+        log: { feature: "test" },
+      }),
+    )
+
+    const reader = openSse(HttpServerResponse.toWeb(response))
+    try {
+      const body = await readUntil(reader, [
+        "event: datastar-patch-elements",
+        '&lt;output id="count"&gt;3&lt;/output&gt;',
+      ])
+      expect(body).toContain("event: datastar-patch-elements")
+      expect(body).toContain('&lt;output id="count"&gt;3&lt;/output&gt;')
+    } finally {
+      await reader.cancel()
+    }
   })
 })

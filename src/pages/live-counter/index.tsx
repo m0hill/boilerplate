@@ -1,9 +1,8 @@
-import { event } from "datastar-kit"
 import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { datastarDone, datastarPage } from "@/lib/datastar"
 import { annotateAction } from "@/lib/observability/request-log"
-import { liveView } from "@/lib/realtime/live-view"
+import { liveRegion } from "@/lib/realtime/live-view"
 import { LiveCounter } from "@/resources/live-counter/live-counter"
 import { pageHead } from "@/ui/head"
 import { LiveCount } from "@/pages/live-counter/components/count"
@@ -25,11 +24,10 @@ const liveCounterPage = Effect.gen(function* () {
 const liveCounterStream = Effect.gen(function* () {
   const liveCounter = yield* LiveCounter
 
-  return yield* liveView({
+  return yield* liveRegion({
     subscribe: annotateAction("liveCounter", "subscribe")(liveCounter.subscribe),
-    render: liveCounter.current.pipe(
-      Effect.map((count) => event.patch(<LiveCount count={count} />)),
-    ),
+    read: liveCounter.current,
+    render: (count) => <LiveCount count={count} />,
     log: { feature: "liveCounter" },
   })
 }).pipe(Effect.catchTag("LiveCounterError", unavailable), Effect.withSpan("liveCounter.stream"))

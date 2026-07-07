@@ -1,3 +1,4 @@
+import { event, type HtmlChild } from "datastar-kit"
 import { Cause, Clock, Effect, Stream } from "effect"
 import type { HttpServerResponse } from "effect/unstable/http"
 import { datastarStream } from "@/lib/datastar"
@@ -5,6 +6,13 @@ import { datastarStream } from "@/lib/datastar"
 interface LiveViewOptions<SubscribeError, RenderError, SubscribeR = never, RenderR = never> {
   readonly subscribe: Effect.Effect<ReadableStream<Uint8Array>, SubscribeError, SubscribeR>
   readonly render: Effect.Effect<string, RenderError, RenderR>
+  readonly log: Record<string, unknown>
+}
+
+interface LiveRegionOptions<Value, SubscribeError, ReadError, SubscribeR = never, ReadR = never> {
+  readonly subscribe: Effect.Effect<ReadableStream<Uint8Array>, SubscribeError, SubscribeR>
+  readonly read: Effect.Effect<Value, ReadError, ReadR>
+  readonly render: (value: Value) => HtmlChild
   readonly log: Record<string, unknown>
 }
 
@@ -47,4 +55,13 @@ export const liveView = <SubscribeError, RenderError, SubscribeR = never, Render
 
     const iterable = yield* Stream.toAsyncIterableEffect(events)
     return datastarStream(iterable, { heartbeat: { intervalMs: 15_000, comment: "live" } })
+  })
+
+export const liveRegion = <Value, SubscribeError, ReadError, SubscribeR = never, ReadR = never>(
+  options: LiveRegionOptions<Value, SubscribeError, ReadError, SubscribeR, ReadR>,
+): Effect.Effect<HttpServerResponse.HttpServerResponse, SubscribeError, SubscribeR | ReadR> =>
+  liveView({
+    subscribe: options.subscribe,
+    render: options.read.pipe(Effect.map((value) => event.patch(options.render(value)))),
+    log: options.log,
   })

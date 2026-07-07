@@ -1,7 +1,7 @@
 import { event } from "datastar-kit"
 import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
-import { datastarPage, datastarSignals, decodeSignals } from "@/lib/datastar"
+import { datastarPage, datastarSignals, datastarSignalsEffect, decodeSignals } from "@/lib/datastar"
 import { annotateAction } from "@/lib/observability/request-log"
 import { liveView } from "@/lib/realtime/live-view"
 import { ChatRooms, type ChatRoomsError } from "@/resources/chat-room/chat-rooms"
@@ -24,7 +24,7 @@ const messageError = (error: InvalidMessageError): string =>
   )
 
 const formError = (message: string) =>
-  datastarSignals(chatForm.patch({ errors: { form: message } }))
+  datastarSignalsEffect(chatForm.patch({ errors: { form: message } }))
 
 const postFailureFields = (error: InvalidRoomError | InvalidMessageError | ChatRoomsError) =>
   error._tag === "ChatRoomsError" ? { reason: error.reason, cause: error.cause } : undefined
@@ -99,10 +99,10 @@ const postMessage = Effect.fn("doDemo.post")(
     return datastarSignals(chatForm.patch({ body: "", errors: { form: "" } }))
   },
   Effect.catchTags({
-    InvalidSignalsError: () => Effect.succeed(formError("Could not read the form. Try again.")),
-    InvalidRoomError: () => Effect.succeed(formError("Pick a valid room.")),
-    InvalidMessageError: (error) => Effect.succeed(formError(messageError(error))),
-    ChatRoomsError: () => Effect.succeed(formError("Could not reach the room. Try again.")),
+    InvalidSignalsError: () => formError("Could not read the form. Try again."),
+    InvalidRoomError: () => formError("Pick a valid room."),
+    InvalidMessageError: (error) => formError(messageError(error)),
+    ChatRoomsError: () => formError("Could not reach the room. Try again."),
   }),
 )
 

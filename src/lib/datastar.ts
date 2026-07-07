@@ -35,6 +35,9 @@ export const datastarPatch = (...args: Parameters<typeof reply.patch>) =>
 export const datastarSignals = (...args: Parameters<typeof reply.signals>) =>
   HttpServerResponse.raw(reply.signals(...args))
 
+export const datastarSignalsEffect = (...args: Parameters<typeof reply.signals>) =>
+  Effect.succeed(datastarSignals(...args))
+
 export const datastarStream = (...args: Parameters<typeof reply.stream>) =>
   HttpServerResponse.raw(reply.stream(...args))
 

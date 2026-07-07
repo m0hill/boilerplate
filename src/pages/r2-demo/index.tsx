@@ -1,7 +1,7 @@
 import { event } from "datastar-kit"
 import { Effect, Layer, Match, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
-import { datastarPage, datastarSignals, datastarStream, decodeSignals } from "@/lib/datastar"
+import { datastarPage, datastarSignalsEffect, datastarStream, decodeSignals } from "@/lib/datastar"
 import { annotateAction } from "@/lib/observability/request-log"
 import {
   type InvalidObjectError,
@@ -31,7 +31,8 @@ const invalidObjectMessage = (error: InvalidObjectError): string =>
     Match.exhaustive,
   )
 
-const formError = (message: string) => datastarSignals(r2Form.patch({ errors: { form: message } }))
+const formError = (message: string) =>
+  datastarSignalsEffect(r2Form.patch({ errors: { form: message } }))
 
 const objectListStream = (objects: readonly StoredObject[]) =>
   datastarStream([
@@ -78,9 +79,9 @@ const put = Effect.fn("r2Demo.put")(
     return objectListStream(objects)
   },
   Effect.catchTags({
-    InvalidSignalsError: () => Effect.succeed(formError("Could not read the form. Try again.")),
-    InvalidObjectError: (error) => Effect.succeed(formError(invalidObjectMessage(error))),
-    R2ObjectsError: () => Effect.succeed(formError("Could not reach R2. Try again.")),
+    InvalidSignalsError: () => formError("Could not read the form. Try again."),
+    InvalidObjectError: (error) => formError(invalidObjectMessage(error)),
+    R2ObjectsError: () => formError("Could not reach R2. Try again."),
   }),
 )
 
@@ -100,9 +101,9 @@ const remove = Effect.fn("r2Demo.remove")(
     return objectListStream(objects)
   },
   Effect.catchTags({
-    InvalidSignalsError: () => Effect.succeed(formError("Could not read the request. Try again.")),
-    InvalidObjectError: () => Effect.succeed(formError("That object key is not valid.")),
-    R2ObjectsError: () => Effect.succeed(formError("Could not reach R2. Try again.")),
+    InvalidSignalsError: () => formError("Could not read the request. Try again."),
+    InvalidObjectError: () => formError("That object key is not valid."),
+    R2ObjectsError: () => formError("Could not reach R2. Try again."),
   }),
 )
 

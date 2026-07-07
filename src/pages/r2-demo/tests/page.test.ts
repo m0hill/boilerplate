@@ -10,8 +10,10 @@ const r2ObjectsService = (overrides: Partial<R2Objects["Service"]> = {}) =>
   R2Objects.of({
     list: Effect.succeed([]),
     put: () => Effect.succeed(undefined),
+    putAndList: () => Effect.succeed([]),
     read: () => Effect.succeed(Option.none()),
     remove: () => Effect.succeed(undefined),
+    removeAndList: () => Effect.succeed([]),
     ...overrides,
   })
 
@@ -118,7 +120,7 @@ describe("R2 demo page", () => {
         Context.add(
           R2Objects,
           r2ObjectsService({
-            put: () => Effect.fail(new R2ObjectsError({ reason: "put_failed" })),
+            putAndList: () => Effect.fail(new R2ObjectsError({ reason: "put_failed" })),
           }),
         ),
       ),

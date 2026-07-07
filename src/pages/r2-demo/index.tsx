@@ -69,10 +69,7 @@ const put = Effect.fn("r2Demo.put")(
     const object = yield* parseObject(signals.key, signals.content)
     const r2Objects = yield* R2Objects
     const objects = yield* annotateAction("r2", "put")(
-      Effect.gen(function* () {
-        yield* r2Objects.put(object.key, object.content)
-        return yield* r2Objects.list
-      }),
+      r2Objects.putAndList(object.key, object.content),
       (objects) => ({ count: objects.length }),
     )
 
@@ -91,10 +88,7 @@ const remove = Effect.fn("r2Demo.remove")(
     const key = yield* parseObjectKey(signals.key)
     const r2Objects = yield* R2Objects
     const objects = yield* annotateAction("r2", "delete")(
-      Effect.gen(function* () {
-        yield* r2Objects.remove(key)
-        return yield* r2Objects.list
-      }),
+      r2Objects.removeAndList(key),
       (objects) => ({ count: objects.length }),
     )
 

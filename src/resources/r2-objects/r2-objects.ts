@@ -17,8 +17,15 @@ export class R2Objects extends Context.Service<
   {
     readonly list: Effect.Effect<readonly StoredObject[], R2ObjectsError>
     readonly put: (key: ObjectKey, content: ObjectContent) => Effect.Effect<void, R2ObjectsError>
+    readonly putAndList: (
+      key: ObjectKey,
+      content: ObjectContent,
+    ) => Effect.Effect<readonly StoredObject[], R2ObjectsError>
     readonly read: (key: ObjectKey) => Effect.Effect<Option.Option<string>, R2ObjectsError>
     readonly remove: (key: ObjectKey) => Effect.Effect<void, R2ObjectsError>
+    readonly removeAndList: (
+      key: ObjectKey,
+    ) => Effect.Effect<readonly StoredObject[], R2ObjectsError>
   }
 >()("boilerplate/resources/r2-objects/R2Objects") {}
 
@@ -86,5 +93,17 @@ export function makeR2Objects(bucket: CloudflareBindings["APP_BUCKET"]): R2Objec
       catch: (cause) => new R2ObjectsError({ reason: "delete_failed", cause }),
     }).pipe(Effect.withSpan("R2Objects.remove"))
 
-  return R2Objects.of({ list, put, read, remove })
+  const putAndList = (key: ObjectKey, content: ObjectContent) =>
+    Effect.gen(function* () {
+      yield* put(key, content)
+      return yield* list
+    }).pipe(Effect.withSpan("R2Objects.putAndList"))
+
+  const removeAndList = (key: ObjectKey) =>
+    Effect.gen(function* () {
+      yield* remove(key)
+      return yield* list
+    }).pipe(Effect.withSpan("R2Objects.removeAndList"))
+
+  return R2Objects.of({ list, put, putAndList, read, remove, removeAndList })
 }

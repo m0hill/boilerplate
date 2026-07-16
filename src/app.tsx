@@ -29,7 +29,7 @@ const requestLogMiddleware = HttpRouter.middleware<{ provides: RequestLog }>()(
   Effect.succeed(
     HttpMiddleware.make((httpApp) =>
       Effect.suspend(() =>
-        wideEventLogger(httpApp).pipe(Effect.provideService(RequestLog, makeRequestLog())),
+        wideEventLogger(httpApp).pipe(Effect.provideServiceEffect(RequestLog, makeRequestLog())),
       ),
     ),
   ),

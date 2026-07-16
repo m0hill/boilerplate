@@ -23,13 +23,13 @@ export class RequestLog extends Context.Service<
   }
 >()("boilerplate/lib/observability/RequestLog") {}
 
-export const makeRequestLog = (): RequestLog["Service"] => {
-  const ref = Effect.runSync(Ref.make<LogFields>({}))
+export const makeRequestLog = Effect.fn("RequestLog.make")(function* () {
+  const ref = yield* Ref.make<LogFields>({})
   return RequestLog.of({
     annotate: (fields) => Ref.update(ref, (current) => ({ ...current, ...fields })),
     snapshot: Ref.get(ref),
   })
-}
+})
 
 export const annotate = (fields: LogFields): Effect.Effect<void, never, RequestLog> =>
   Effect.flatMap(RequestLog, (log) => log.annotate(fields))

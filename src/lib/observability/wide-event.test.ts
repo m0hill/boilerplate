@@ -80,6 +80,22 @@ describe("wide-event request logger", () => {
     })
   })
 
+  it("keeps action annotations isolated to their request", async () => {
+    const app = await loadApp()
+    const { events } = await captureWideEvents(async () => {
+      await app.fetch(datastarPost("/api/lookup", { repo: "not-a-repo" }))
+      await app.fetch(request("/api"))
+    })
+
+    expect(events).toHaveLength(2)
+    expect(events[0]?.annotations).toHaveProperty("lookup")
+    expect(events[1]?.annotations).not.toHaveProperty("lookup")
+    expect(events[1]?.annotations).toMatchObject({
+      http: { method: "GET", path: "/api", status: 200 },
+      page: { name: "api" },
+    })
+  })
+
   it("logs unmatched routes as a single warn-level event", async () => {
     const app = await loadApp()
     const { events } = await captureWideEvents(() => app.fetch(request("/nope")))

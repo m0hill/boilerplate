@@ -20,12 +20,11 @@ const realtimePage = Effect.sync(() =>
 
 const stream = Effect.gen(function* () {
   const counter = yield* RealtimeCounter
-  const events = yield* counter.changes.pipe(
+  const events = counter.changes.pipe(
     Stream.map((count) => event.patch(<RealtimeCount count={count} />)),
-    Stream.toAsyncIterableEffect,
   )
 
-  return yield* datastarLiveStream(events, {
+  return datastarLiveStream(events, {
     heartbeat: { intervalMs: 15_000, comment: "sqlite-realtime-counter" },
   })
 }).pipe(Effect.withSpan("realtime.stream"))

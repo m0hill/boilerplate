@@ -2,13 +2,16 @@ import { Effect } from "effect"
 import { describe, expect, it } from "vitest"
 import { annotateAction, makeRequestLog, RequestLog } from "@/lib/observability/request-log"
 
-const runWithRequestLog = <A>(effect: Effect.Effect<A, never, RequestLog>) => {
-  const log = makeRequestLog()
-  const value = Effect.runSync(effect.pipe(Effect.provideService(RequestLog, log)))
-  const snapshot = Effect.runSync(log.snapshot)
+const runWithRequestLog = <A>(effect: Effect.Effect<A, never, RequestLog>) =>
+  Effect.runSync(
+    Effect.gen(function* () {
+      const log = yield* makeRequestLog()
+      const value = yield* effect.pipe(Effect.provideService(RequestLog, log))
+      const snapshot = yield* log.snapshot
 
-  return { snapshot, value }
-}
+      return { snapshot, value }
+    }),
+  )
 
 describe("request action log annotations", () => {
   it("annotates successful actions and preserves reserved fields", () => {

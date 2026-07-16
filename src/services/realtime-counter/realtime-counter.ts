@@ -16,8 +16,10 @@ export class RealtimeCounter extends Context.Service<
     RealtimeCounter,
     Effect.gen(function* () {
       const counter = yield* SqliteCounter
-      const pulses = yield* PubSub.sliding<void>({ capacity: 1 })
-      yield* Effect.addFinalizer(() => PubSub.shutdown(pulses))
+      const pulses = yield* Effect.acquireRelease(
+        PubSub.sliding<void>({ capacity: 1 }),
+        PubSub.shutdown,
+      )
 
       const changes = Stream.unwrap(
         Effect.gen(function* () {
@@ -26,10 +28,8 @@ export class RealtimeCounter extends Context.Service<
 
           return Stream.make(initial).pipe(
             Stream.concat(
-              Stream.fromEffectRepeat(
-                PubSub.take(subscription).pipe(
-                  Effect.andThen(counter.current(sqliteCounterNames.realtime)),
-                ),
+              Stream.fromSubscription(subscription).pipe(
+                Stream.mapEffect(() => counter.current(sqliteCounterNames.realtime)),
               ),
             ),
           )

@@ -1,8 +1,22 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types"]
+    "types": ["node"]
   },
-  "include": ["alchemy.run.ts", "src/**/*.ts", "src/**/*.tsx", "worker-env.d.ts"],
-  "exclude": ["node_modules", "repos", "public", "src/client", "scripts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "repos",
+    "public",
+    "src/client",
+    "scripts",
+    "src/pages/d1-demo",
+    "src/pages/do-demo",
+    "src/pages/kv-demo",
+    "src/pages/live-counter",
+    "src/pages/r2-demo",
+    "src/resources",
+    "src/test/d1-migrations.ts",
+    "src/test/env.d.ts"
+  ]
 }

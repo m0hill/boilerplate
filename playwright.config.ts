@@ -6,6 +6,7 @@ const baseURL = `http://localhost:${PORT}`
 export default defineConfig({
   testDir: "./src",
   testMatch: "**/*.e2e.ts",
+  testIgnore: ["**/do-demo/**", "**/live-counter/**"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -16,7 +17,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "nub run build && exec alchemy dev",
+    command: `nub run build && PORT=${PORT} nub run start`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

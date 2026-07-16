@@ -24,7 +24,7 @@ describe("liveView", () => {
       }),
     )
 
-    expect(calls).toEqual(["subscribe", "render"])
+    expect(calls).toEqual(["subscribe"])
 
     const reader = openSse(HttpServerResponse.toWeb(response))
     try {

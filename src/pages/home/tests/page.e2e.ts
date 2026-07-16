@@ -5,10 +5,10 @@ test.describe("home index", () => {
     await page.goto("/")
 
     await expect(page.getByRole("heading", { name: "Boilerplate" })).toBeVisible()
-    await expect(page.getByRole("link", { name: /KV counter/ })).toBeVisible()
     await expect(page.getByRole("link", { name: /External API/ })).toBeVisible()
+    await expect(page.getByRole("link", { name: /Design system/ })).toBeVisible()
 
-    await page.getByRole("link", { name: /KV counter/ }).click()
-    await expect(page.getByRole("heading", { name: "KV counter" })).toBeVisible()
+    await page.getByRole("link", { name: /Design system/ }).click()
+    await expect(page.getByRole("heading", { name: "Design system" })).toBeVisible()
   })
 })

@@ -1,6 +1,17 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["repos/**", "dist/**", "node_modules/**", "public/**"],
+  "ignorePatterns": [
+    "repos/**",
+    "dist/**",
+    "node_modules/**",
+    "public/**",
+    "src/pages/d1-demo/**",
+    "src/pages/do-demo/**",
+    "src/pages/kv-demo/**",
+    "src/pages/live-counter/**",
+    "src/pages/r2-demo/**",
+    "src/resources/**"
+  ],
   "plugins": ["typescript", "unicorn", "oxc"],
   "categories": {
     "correctness": "error"

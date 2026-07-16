@@ -8,17 +8,15 @@
   "type": "module",
   "main": "src/index.tsx",
   "scripts": {
-    "dev": "nub run build && concurrently -k --pad-prefix -n css,js,cf -c green,yellow,magenta \"nub run css:watch\" \"nub run client:watch\" \"alchemy dev\"",
-    "preview": "nub run build && alchemy dev",
-    "deploy": "nub run build && alchemy deploy",
-    "destroy": "alchemy destroy",
-    "logs": "alchemy logs",
-    "tail": "alchemy tail",
-    "build": "nub run css:build && nub run client:build",
-    "css:build": "tailwindcss -i ./src/styles.css -o ./public/app.css --minify",
-    "css:watch": "tailwindcss -i ./src/styles.css -o ./public/app.css --watch",
+    "dev": "nub run build && concurrently -k --pad-prefix -n css,client,server,node -c green,yellow,cyan,magenta \"nub run css:watch\" \"nub run client:watch\" \"nub run server:watch\" \"node --watch --enable-source-maps dist/server.js\"",
+    "build": "rm -rf dist && concurrently \"nub run css:build\" \"nub run client:build\" \"nub run server:build\"",
+    "start": "node --enable-source-maps dist/server.js",
+    "css:build": "tailwindcss -i ./src/styles.css -o ./dist/public/app.css --minify",
+    "css:watch": "tailwindcss -i ./src/styles.css -o ./dist/public/app.css --watch",
     "client:build": "nub scripts/build-client.ts",
     "client:watch": "nub scripts/build-client.ts --watch",
+    "server:build": "nub scripts/build-server.ts",
+    "server:watch": "nub scripts/build-server.ts --watch",
     "db:generate": "drizzle-kit generate",
     "db:generate:do": "drizzle-kit generate --config=drizzle.config.do.ts && nub scripts/patch-do-migrations.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/client/tsconfig.json && tsc --noEmit -p scripts/tsconfig.json",
@@ -34,6 +32,7 @@
     "prepare": "[ -n \"$CI\" ] || simple-git-hooks"
   },
   "dependencies": {
+    "@effect/platform-node": "4.0.0-beta.91",
     "datastar-kit": "^0.4.0",
     "drizzle-orm": "1.0.0-rc.4",
     "effect": ">=4.0.0-beta.84|| >=4.0.0",
@@ -44,7 +43,6 @@
     "@cloudflare/workers-types": "^4.20260629.1",
     "@effect/language-service": "^0.86.2",
     "@effect/platform-bun": "4.0.0-beta.91",
-    "@effect/platform-node": "4.0.0-beta.91",
     "@msw/cloudflare": "https://pkg.pr.new/mswjs/cloudflare/@msw/cloudflare@beta",
     "@playwright/test": "^1.61.0",
     "@tailwindcss/cli": "^4.1.0",
@@ -74,6 +72,16 @@
     "*.{json,md}": [
       "oxfmt"
     ]
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "nub",
+      "version": "^0.4.5",
+      "onFail": "warn"
+    }
+  },
+  "engines": {
+    "node": ">=24"
   },
   "allowBuilds": {
     "@parcel/watcher": true,

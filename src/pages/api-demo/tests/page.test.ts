@@ -1,13 +1,13 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest"
 import { http, HttpResponse } from "msw"
-import { setupNetwork } from "@msw/cloudflare"
+import { setupServer } from "msw/node"
 import { datastarPost, loadApp, request } from "@/test/utils"
 
-const network = setupNetwork()
+const network = setupServer()
 
-beforeAll(() => network.enable())
+beforeAll(() => network.listen({ onUnhandledRequest: "error" }))
 afterEach(() => network.resetHandlers())
-afterAll(() => network.disable())
+afterAll(() => network.close())
 
 const mockRepo = (body: Record<string, unknown>, init?: ResponseInit) =>
   network.use(

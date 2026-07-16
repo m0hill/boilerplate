@@ -27,19 +27,19 @@ export const decodeSignals = Effect.fn("decodeSignals")(function* <S extends Sch
 })
 
 export const datastarPage = (...args: Parameters<typeof reply.page>) =>
-  HttpServerResponse.raw(reply.page(...args))
+  HttpServerResponse.fromWeb(reply.page(...args))
 
 export const datastarPatch = (...args: Parameters<typeof reply.patch>) =>
-  HttpServerResponse.raw(reply.patch(...args))
+  HttpServerResponse.fromWeb(reply.patch(...args))
 
 export const datastarSignals = (...args: Parameters<typeof reply.signals>) =>
-  HttpServerResponse.raw(reply.signals(...args))
+  HttpServerResponse.fromWeb(reply.signals(...args))
 
 export const datastarSignalsEffect = (...args: Parameters<typeof reply.signals>) =>
   Effect.succeed(datastarSignals(...args))
 
 export const datastarStream = (...args: Parameters<typeof reply.stream>) =>
-  HttpServerResponse.raw(reply.stream(...args))
+  HttpServerResponse.fromWeb(reply.stream(...args))
 
 export const datastarDone = (...args: Parameters<typeof reply.done>) =>
-  HttpServerResponse.raw(reply.done(...args))
+  HttpServerResponse.fromWeb(reply.done(...args))

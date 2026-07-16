@@ -2,7 +2,7 @@ import { readdir } from "node:fs/promises"
 import * as esbuild from "esbuild"
 
 const SRC_DIR = "src/client"
-const OUT_DIR = "public/js"
+const OUT_DIR = "dist/public/js"
 
 const watch = process.argv.includes("--watch")
 

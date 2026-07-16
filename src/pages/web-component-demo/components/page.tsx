@@ -13,7 +13,10 @@ const sources = [
     path: "src/pages/web-component-demo/components/page.tsx",
     role: "Datastar owns the input; data-attr feeds the element",
   },
-  { path: "scripts/build-client.ts", role: "esbuild bundles src/client/*.ts → public/js/*.js" },
+  {
+    path: "scripts/build-client.ts",
+    role: "esbuild bundles src/client/*.ts → dist/public/js/*.js",
+  },
 ] as const
 
 export const WebComponentPage = ({ form }: { readonly form: QrFormState }) => (

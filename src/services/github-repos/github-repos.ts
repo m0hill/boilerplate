@@ -1,7 +1,7 @@
 import { Context, Effect, Schema } from "effect"
 import type { RepoName } from "@/services/github-repos/repo-name"
 
-const userAgent = "boilerplate-worker"
+const userAgent = "boilerplate-node"
 
 export class Repo extends Schema.Class<Repo>("Repo")({
   fullName: Schema.NonEmptyString,

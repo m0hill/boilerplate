@@ -7,7 +7,7 @@ import type { LookupFormState } from "@/pages/api-demo/state"
 const sources = [
   {
     path: "src/services/github-repos/github-repos.ts",
-    role: "GitHubRepos: Worker fetch + Schema-parsed body",
+    role: "GitHubRepos: Effect service fetch + Schema-parsed body",
   },
   { path: "src/pages/api-demo/index.tsx", role: "routes, tagged-error handling, SSE patches" },
   { path: "src/pages/api-demo/tests/page.test.ts", role: "the outbound call mocked with MSW" },

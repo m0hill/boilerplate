@@ -5,8 +5,6 @@ data/
 *.db
 *.db-shm
 *.db-wal
-public/app.css
-public/js/
 *.log
 .DS_Store
 .env

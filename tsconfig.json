@@ -4,5 +4,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "repos", "public", "src/client", "scripts"]
+  "exclude": ["node_modules", "repos", "src/client", "scripts"]
 }

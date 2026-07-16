@@ -5,7 +5,7 @@ import { join } from "node:path"
 import { DatabaseSync } from "node:sqlite"
 import { afterEach, describe, expect, it } from "vitest"
 import { ServerConfig } from "@/server/config"
-import { SqliteCounter, SqliteCounterError } from "@/services/sqlite/counter"
+import { SqliteCounter, SqliteCounterError, sqliteCounterNames } from "@/services/sqlite/counter"
 import {
   migrateSqlite,
   sqliteDatabaseLayer,
@@ -59,7 +59,11 @@ describe("SQLite counter", () => {
         databasePath,
         Effect.gen(function* () {
           const counter = yield* SqliteCounter
-          return [yield* counter.current, yield* counter.increment, yield* counter.increment]
+          return [
+            yield* counter.current(sqliteCounterNames.sqlite),
+            yield* counter.increment(sqliteCounterNames.sqlite),
+            yield* counter.increment(sqliteCounterNames.sqlite),
+          ]
         }),
       ),
     ).resolves.toEqual([0, 1, 2])
@@ -69,10 +73,32 @@ describe("SQLite counter", () => {
         databasePath,
         Effect.gen(function* () {
           const counter = yield* SqliteCounter
-          return yield* counter.current
+          return yield* counter.current(sqliteCounterNames.sqlite)
         }),
       ),
     ).resolves.toBe(2)
+  })
+
+  it("keeps the SQLite and realtime counters independent", async () => {
+    const databasePath = temporaryDatabasePath()
+    await migrateDatabase(databasePath)
+
+    await expect(
+      runCounter(
+        databasePath,
+        Effect.gen(function* () {
+          const counter = yield* SqliteCounter
+          yield* counter.increment(sqliteCounterNames.sqlite)
+          yield* counter.increment(sqliteCounterNames.realtime)
+          yield* counter.increment(sqliteCounterNames.realtime)
+
+          return [
+            yield* counter.current(sqliteCounterNames.sqlite),
+            yield* counter.current(sqliteCounterNames.realtime),
+          ]
+        }),
+      ),
+    ).resolves.toEqual([1, 2])
   })
 
   it("rejects an invalid stored row at the database boundary", async () => {
@@ -86,7 +112,7 @@ describe("SQLite counter", () => {
       databasePath,
       Effect.gen(function* () {
         const counter = yield* SqliteCounter
-        return yield* counter.current.pipe(Effect.flip)
+        return yield* counter.current(sqliteCounterNames.sqlite).pipe(Effect.flip)
       }),
     )
 

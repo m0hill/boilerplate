@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { onTestFinished } from "vitest"
 import { ServerConfig } from "@/server/config"
 import { type SqliteCounter } from "@/services/sqlite/counter"
+import { type RealtimeCounter } from "@/services/realtime-counter/realtime-counter"
 import { migrateSqlite, sqliteMigrationDatabaseLayer } from "@/services/sqlite/database"
 
 type AppOptions = {
@@ -12,12 +13,14 @@ type AppOptions = {
   readonly publicDirectory?: string
   readonly databasePath?: string
   readonly sqliteCounterLayer?: Layer.Layer<SqliteCounter>
+  readonly realtimeCounterLayer?: Layer.Layer<RealtimeCounter, never, SqliteCounter>
 }
 
 export const loadApp = async (
   options: AppOptions = {},
 ): Promise<{
   readonly fetch: (request: Request) => Promise<Response>
+  readonly dispose: () => Promise<void>
 }> => {
   const databaseDirectory = mkdtempSync(join(tmpdir(), "boilerplate-test-"))
   const databasePath = options.databasePath ?? join(databaseDirectory, "app.db")
@@ -31,12 +34,18 @@ export const loadApp = async (
 
   const app = await import("@/app")
   const { handler, dispose } = app.makeAppHandler({ ...options, databasePath })
-  onTestFinished(async () => {
+  let disposed = false
+  const disposeOnce = async () => {
+    if (disposed) return
+    disposed = true
     await dispose()
+  }
+  onTestFinished(async () => {
+    await disposeOnce()
     rmSync(databaseDirectory, { recursive: true, force: true })
   })
 
-  return { fetch: (request) => handler(request) }
+  return { fetch: (request) => handler(request), dispose: disposeOnce }
 }
 
 export const request = (path: string, init: RequestInit = {}): Request =>

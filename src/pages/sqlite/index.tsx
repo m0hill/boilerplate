@@ -4,7 +4,7 @@ import { datastarPage, datastarPatch } from "@/lib/datastar"
 import { annotateAction } from "@/lib/observability/request-log"
 import { SqliteCount } from "@/pages/sqlite/components/count"
 import { SqlitePage } from "@/pages/sqlite/components/page"
-import { SqliteCounter } from "@/services/sqlite/counter"
+import { SqliteCounter, sqliteCounterNames } from "@/services/sqlite/counter"
 import { pageHead } from "@/ui/head"
 
 const sqliteUnavailable = () =>
@@ -12,7 +12,10 @@ const sqliteUnavailable = () =>
 
 const sqlitePage = Effect.gen(function* () {
   const counter = yield* SqliteCounter
-  const count = yield* annotateAction("sqliteCounter", "view")(counter.current)
+  const count = yield* annotateAction(
+    "sqliteCounter",
+    "view",
+  )(counter.current(sqliteCounterNames.sqlite))
 
   return datastarPage(<SqlitePage count={count} />, {
     title: "SQLite + Drizzle counter",
@@ -22,7 +25,10 @@ const sqlitePage = Effect.gen(function* () {
 
 const increment = Effect.gen(function* () {
   const counter = yield* SqliteCounter
-  const count = yield* annotateAction("sqliteCounter", "increment")(counter.increment)
+  const count = yield* annotateAction(
+    "sqliteCounter",
+    "increment",
+  )(counter.increment(sqliteCounterNames.sqlite))
 
   return datastarPatch(<SqliteCount count={count} />)
 }).pipe(

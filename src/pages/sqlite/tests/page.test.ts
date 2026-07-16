@@ -33,8 +33,8 @@ describe("SQLite page", () => {
     const app = await loadApp({
       sqliteCounterLayer: Layer.succeed(SqliteCounter)(
         SqliteCounter.of({
-          current: Effect.fail(new SqliteCounterError({ reason: "read_failed" })),
-          increment: Effect.succeed(0),
+          current: () => Effect.fail(new SqliteCounterError({ reason: "read_failed" })),
+          increment: () => Effect.succeed(0),
         }),
       ),
     })
@@ -50,7 +50,10 @@ describe("SQLite page", () => {
     const app = await loadApp({
       sqliteCounterLayer: Layer.sync(SqliteCounter)(() => {
         acquisitions += 1
-        return SqliteCounter.of({ current: Effect.succeed(0), increment: Effect.succeed(1) })
+        return SqliteCounter.of({
+          current: () => Effect.succeed(0),
+          increment: () => Effect.succeed(1),
+        })
       }),
     })
 

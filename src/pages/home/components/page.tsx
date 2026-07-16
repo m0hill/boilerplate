@@ -3,6 +3,12 @@ import { DemoCard, type Demo } from "@/pages/home/components/demo-card"
 
 const demos: readonly Demo[] = [
   {
+    href: "/realtime",
+    title: "SQLite realtime",
+    tag: "SSE · Effect PubSub",
+    blurb: "Keep a durable SQLite counter converged across browser tabs with Datastar streams.",
+  },
+  {
     href: "/sqlite",
     title: "SQLite persistence",
     tag: "Drizzle · Effect Schema",

@@ -7,9 +7,11 @@ import { apiDemoRoutes } from "@/pages/api-demo/index"
 import { designRoutes } from "@/pages/design/index"
 import { homeRoutes } from "@/pages/home/index"
 import { notFoundRoute } from "@/pages/not-found"
+import { realtimeRoutes } from "@/pages/realtime/index"
 import { sqliteRoutes } from "@/pages/sqlite/index"
 import { webComponentDemoRoutes } from "@/pages/web-component-demo/index"
 import { GitHubRepos, makeGitHubRepos } from "@/services/github-repos/github-repos"
+import { RealtimeCounter } from "@/services/realtime-counter/realtime-counter"
 import { SqliteCounter } from "@/services/sqlite/counter"
 import { sqliteDatabaseLayer } from "@/services/sqlite/database"
 import { ServerConfig } from "@/server/config"
@@ -20,6 +22,7 @@ type AppOptions = {
   readonly publicDirectory?: string
   readonly databasePath?: string
   readonly sqliteCounterLayer?: Layer.Layer<SqliteCounter>
+  readonly realtimeCounterLayer?: Layer.Layer<RealtimeCounter, never, SqliteCounter>
 }
 
 const requestLogMiddleware = HttpRouter.middleware<{ provides: RequestLog }>()(
@@ -37,13 +40,19 @@ export const makeAppLayer = (options: AppOptions = {}) =>
     staticAssetRoutes(options.publicDirectory ?? "dist/public"),
     homeRoutes,
     sqliteRoutes,
+    realtimeRoutes,
     apiDemoRoutes,
     webComponentDemoRoutes,
     designRoutes,
     notFoundRoute,
   ).pipe(
     HttpRouter.provideRequest(
-      options.sqliteCounterLayer ?? SqliteCounter.layer.pipe(Layer.provide(sqliteDatabaseLayer)),
+      (options.realtimeCounterLayer ?? RealtimeCounter.layer).pipe(
+        Layer.provideMerge(
+          options.sqliteCounterLayer ??
+            SqliteCounter.layer.pipe(Layer.provide(sqliteDatabaseLayer)),
+        ),
+      ),
     ),
     HttpRouter.provideRequest(
       Layer.succeed(GitHubRepos)(makeGitHubRepos(options.fetch ?? globalThis.fetch)),

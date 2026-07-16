@@ -25,6 +25,7 @@ describe("home index", () => {
     const html = await response.text()
 
     expect(html).toContain('href="/api"')
+    expect(html).toContain('href="/realtime"')
     expect(html).toContain('href="/web-component"')
     expect(html).toContain('href="/design"')
     expect(html).not.toContain('href="/kv"')

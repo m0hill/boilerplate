@@ -3,7 +3,12 @@ import { Context, Effect, Layer, Schema } from "effect"
 import { SqliteDatabase } from "@/services/sqlite/database"
 import { sqliteCounterRowSchema, sqliteCounters } from "@/services/sqlite/schema"
 
-const countKey = "main"
+export const sqliteCounterNames = {
+  sqlite: "main",
+  realtime: "realtime",
+} as const
+
+export type SqliteCounterName = (typeof sqliteCounterNames)[keyof typeof sqliteCounterNames]
 
 export class SqliteCounterError extends Schema.TaggedErrorClass<SqliteCounterError>()(
   "SqliteCounterError",
@@ -21,8 +26,8 @@ const decodeCounterRow = (row: unknown) =>
 export class SqliteCounter extends Context.Service<
   SqliteCounter,
   {
-    readonly current: Effect.Effect<number, SqliteCounterError>
-    readonly increment: Effect.Effect<number, SqliteCounterError>
+    readonly current: (name: SqliteCounterName) => Effect.Effect<number, SqliteCounterError>
+    readonly increment: (name: SqliteCounterName) => Effect.Effect<number, SqliteCounterError>
   }
 >()("boilerplate/services/sqlite/SqliteCounter") {
   static readonly layer = Layer.effect(
@@ -30,51 +35,53 @@ export class SqliteCounter extends Context.Service<
     Effect.gen(function* () {
       const database = yield* SqliteDatabase
 
-      const current = Effect.gen(function* () {
-        const rows = yield* Effect.try({
-          try: () =>
-            database.drizzle
-              .select()
-              .from(sqliteCounters)
-              .where(eq(sqliteCounters.name, countKey))
-              .limit(1)
-              .all(),
-          catch: (cause) => new SqliteCounterError({ reason: "read_failed", cause }),
-        })
-        const row = rows[0]
-        if (row === undefined) return 0
+      const current = (name: SqliteCounterName) =>
+        Effect.gen(function* () {
+          const rows = yield* Effect.try({
+            try: () =>
+              database.drizzle
+                .select()
+                .from(sqliteCounters)
+                .where(eq(sqliteCounters.name, name))
+                .limit(1)
+                .all(),
+            catch: (cause) => new SqliteCounterError({ reason: "read_failed", cause }),
+          })
+          const row = rows[0]
+          if (row === undefined) return 0
 
-        const decoded = yield* decodeCounterRow(row)
-        return decoded.value
-      }).pipe(Effect.withSpan("SqliteCounter.current"))
+          const decoded = yield* decodeCounterRow(row)
+          return decoded.value
+        }).pipe(Effect.withSpan("SqliteCounter.current", { attributes: { name } }))
 
-      const increment = Effect.gen(function* () {
-        const rows = yield* Effect.try({
-          try: () =>
-            database.drizzle
-              .insert(sqliteCounters)
-              .values({ name: countKey, value: 1 })
-              .onConflictDoUpdate({
-                target: sqliteCounters.name,
-                set: { value: sql`${sqliteCounters.value} + 1` },
-              })
-              .returning()
-              .all(),
-          catch: (cause) => new SqliteCounterError({ reason: "write_failed", cause }),
-        })
-        const row = rows[0]
-        if (row === undefined) {
-          return yield* Effect.fail(
-            new SqliteCounterError({
-              reason: "write_failed",
-              cause: "SQLite did not return a counter row",
-            }),
-          )
-        }
+      const increment = (name: SqliteCounterName) =>
+        Effect.gen(function* () {
+          const rows = yield* Effect.try({
+            try: () =>
+              database.drizzle
+                .insert(sqliteCounters)
+                .values({ name, value: 1 })
+                .onConflictDoUpdate({
+                  target: sqliteCounters.name,
+                  set: { value: sql`${sqliteCounters.value} + 1` },
+                })
+                .returning()
+                .all(),
+            catch: (cause) => new SqliteCounterError({ reason: "write_failed", cause }),
+          })
+          const row = rows[0]
+          if (row === undefined) {
+            return yield* Effect.fail(
+              new SqliteCounterError({
+                reason: "write_failed",
+                cause: "SQLite did not return a counter row",
+              }),
+            )
+          }
 
-        const decoded = yield* decodeCounterRow(row)
-        return decoded.value
-      }).pipe(Effect.withSpan("SqliteCounter.increment"))
+          const decoded = yield* decodeCounterRow(row)
+          return decoded.value
+        }).pipe(Effect.withSpan("SqliteCounter.increment", { attributes: { name } }))
 
       return SqliteCounter.of({ current, increment })
     }),

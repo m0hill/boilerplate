@@ -1,6 +1,10 @@
 node_modules/
 repos/
 dist/
+data/
+*.db
+*.db-shm
+*.db-wal
 public/app.css
 public/js/
 *.log

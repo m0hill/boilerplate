@@ -7,13 +7,19 @@ import { apiDemoRoutes } from "@/pages/api-demo/index"
 import { designRoutes } from "@/pages/design/index"
 import { homeRoutes } from "@/pages/home/index"
 import { notFoundRoute } from "@/pages/not-found"
+import { sqliteRoutes } from "@/pages/sqlite/index"
 import { webComponentDemoRoutes } from "@/pages/web-component-demo/index"
 import { GitHubRepos, makeGitHubRepos } from "@/services/github-repos/github-repos"
+import { SqliteCounter } from "@/services/sqlite/counter"
+import { sqliteDatabaseLayer } from "@/services/sqlite/database"
+import { ServerConfig } from "@/server/config"
 import { staticAssetRoutes } from "@/server/static-assets"
 
 type AppOptions = {
   readonly fetch?: typeof globalThis.fetch
   readonly publicDirectory?: string
+  readonly databasePath?: string
+  readonly sqliteCounterLayer?: Layer.Layer<SqliteCounter>
 }
 
 const requestLogMiddleware = HttpRouter.middleware<{ provides: RequestLog }>()(
@@ -30,11 +36,15 @@ export const makeAppLayer = (options: AppOptions = {}) =>
   Layer.mergeAll(
     staticAssetRoutes(options.publicDirectory ?? "dist/public"),
     homeRoutes,
+    sqliteRoutes,
     apiDemoRoutes,
     webComponentDemoRoutes,
     designRoutes,
     notFoundRoute,
   ).pipe(
+    HttpRouter.provideRequest(
+      options.sqliteCounterLayer ?? SqliteCounter.layer.pipe(Layer.provide(sqliteDatabaseLayer)),
+    ),
     HttpRouter.provideRequest(
       Layer.succeed(GitHubRepos)(makeGitHubRepos(options.fetch ?? globalThis.fetch)),
     ),
@@ -46,6 +56,17 @@ export const AppLayer = makeAppLayer()
 
 export const makeAppHandler = (options: AppOptions = {}) =>
   HttpRouter.toWebHandler(
-    makeAppLayer(options).pipe(HttpRouter.provideRequest(NodeHttpServer.layerHttpServices)),
+    makeAppLayer(options).pipe(
+      Layer.provide(
+        Layer.succeed(ServerConfig)(
+          ServerConfig.of({
+            host: "127.0.0.1",
+            port: 3000,
+            databasePath: options.databasePath ?? "./data/app.db",
+          }),
+        ),
+      ),
+      HttpRouter.provideRequest(NodeHttpServer.layerHttpServices),
+    ),
     { disableLogger: true },
   )

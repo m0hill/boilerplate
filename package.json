@@ -11,6 +11,8 @@
     "dev": "nub run build && concurrently -k --pad-prefix -n css,client,server,node -c green,yellow,cyan,magenta \"nub run css:watch\" \"nub run client:watch\" \"nub run server:watch\" \"node --watch --enable-source-maps dist/server.js\"",
     "build": "rm -rf dist && concurrently \"nub run css:build\" \"nub run client:build\" \"nub run server:build\"",
     "start": "node --enable-source-maps dist/server.js",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "nub src/server/migrate.ts",
     "css:build": "tailwindcss -i ./src/styles.css -o ./dist/public/app.css --minify",
     "css:watch": "tailwindcss -i ./src/styles.css -o ./dist/public/app.css --watch",
     "client:build": "nub scripts/build-client.ts",

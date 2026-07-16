@@ -1,6 +1,17 @@
+import { Effect, Layer } from "effect"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { onTestFinished } from "vitest"
+import { ServerConfig } from "@/server/config"
+import { type SqliteCounter } from "@/services/sqlite/counter"
+import { migrateSqlite, sqliteMigrationDatabaseLayer } from "@/services/sqlite/database"
+
 type AppOptions = {
   readonly fetch?: typeof globalThis.fetch
   readonly publicDirectory?: string
+  readonly databasePath?: string
+  readonly sqliteCounterLayer?: Layer.Layer<SqliteCounter>
 }
 
 export const loadApp = async (
@@ -8,8 +19,23 @@ export const loadApp = async (
 ): Promise<{
   readonly fetch: (request: Request) => Promise<Response>
 }> => {
+  const databaseDirectory = mkdtempSync(join(tmpdir(), "boilerplate-test-"))
+  const databasePath = options.databasePath ?? join(databaseDirectory, "app.db")
+  const configLayer = Layer.succeed(ServerConfig)(
+    ServerConfig.of({ host: "127.0.0.1", port: 3000, databasePath }),
+  )
+
+  await Effect.runPromise(
+    migrateSqlite.pipe(Effect.provide(sqliteMigrationDatabaseLayer), Effect.provide(configLayer)),
+  )
+
   const app = await import("@/app")
-  const { handler } = app.makeAppHandler(options)
+  const { handler, dispose } = app.makeAppHandler({ ...options, databasePath })
+  onTestFinished(async () => {
+    await dispose()
+    rmSync(databaseDirectory, { recursive: true, force: true })
+  })
+
   return { fetch: (request) => handler(request) }
 }
 

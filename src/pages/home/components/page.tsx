@@ -3,6 +3,13 @@ import { DemoCard, type Demo } from "@/pages/home/components/demo-card"
 
 const demos: readonly Demo[] = [
   {
+    href: "/sqlite",
+    title: "SQLite persistence",
+    tag: "Drizzle · Effect Schema",
+    blurb:
+      "Increment a counter persisted through Node's built-in SQLite and decoded at the boundary.",
+  },
+  {
     href: "/api",
     title: "External API",
     tag: "Fetch · MSW",

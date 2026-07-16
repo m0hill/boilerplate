@@ -5,6 +5,7 @@ test.describe("home index", () => {
     await page.goto("/")
 
     await expect(page.getByRole("heading", { name: "Boilerplate" })).toBeVisible()
+    await expect(page.getByRole("link", { name: /SQLite persistence/ })).toBeVisible()
     await expect(page.getByRole("link", { name: /External API/ })).toBeVisible()
     await expect(page.getByRole("link", { name: /Design system/ })).toBeVisible()
 

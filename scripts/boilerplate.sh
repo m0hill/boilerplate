@@ -45,7 +45,6 @@ git init -q -b main
 
 echo "==> Renaming project to '$NAME'"
 perl -i -pe "s/\"name\": \"boilerplate\"/\"name\": \"$NAME\"/" package.json
-perl -i -pe "s/Boilerplate/$NAME/g; s/boilerplate/$NAME/g" alchemy.run.ts
 perl -i -pe "s/^# boilerplate$/# $NAME/" README.md
 
 rm -f scripts/boilerplate.sh

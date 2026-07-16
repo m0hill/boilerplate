@@ -45,6 +45,8 @@ Read when creating or editing Markdown.
 ## Checks
 
 - New docs should be useful without surrounding chat.
+- Node-branch docs should not require readers to consult another branch.
+- Verify documented commands, environment variables, routes, and paths against the current code.
 - Headings should name the decision area.
 - Rules should survive copy-paste into a task prompt.
 - Run `nub run check` before handoff.

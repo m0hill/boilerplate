@@ -103,7 +103,7 @@ export const DesignPage = () => (
     <Section title="Badges">
       <div class="flex flex-wrap gap-2">
         <Badge>Default</Badge>
-        <Badge>KV · Drizzle</Badge>
+        <Badge>SQLite · Drizzle</Badge>
       </div>
     </Section>
   </Layout>

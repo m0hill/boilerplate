@@ -2,137 +2,67 @@
 
 ## Boundary
 
-- Use Effect where nearby code uses Effect.
-- Routes, request handling, services, schemas, failures, and resource wiring use Effect.
+- Routes, request handling, services, schemas, failures, configuration, and resource wiring use Effect.
 - Browser-only `src/client` code stays plain browser TypeScript.
-- Pure sync helpers with no dependencies or expected failures stay plain TypeScript.
-- Helpers with services, time, randomness, I/O, parsing failures, or domain failures use Effect.
-- Avoid `async`/`await` and `try`/`catch` inside Effect workflows; convert promises and exceptions at external seams.
-- Keep protocol rendering at HTTP boundaries; services should not construct raw `Response` objects.
-- Promise APIs use `Effect.runPromise` at the seam.
-- Durable Object RPC methods and `blockConcurrencyWhile` callbacks are seams.
-- Keep Durable Object RPC values structured-clone-safe.
+- Pure synchronous helpers with no dependencies or expected failures stay plain TypeScript.
+- Convert promises and thrown platform errors to Effect at external seams.
+- Keep protocol rendering at HTTP boundaries.
+- Use `NodeRuntime.runMain` only at executable entrypoints.
 
 ## Composition
 
 - Prefer `Effect.gen` for multi-step workflows.
-- Avoid `Effect.Do` unless matching nearby code.
-- Avoid nested `flatMap` or `andThen`; use `Effect.gen`.
-- Use data-last dual APIs inside `.pipe(...)` chains.
-- Use data-first dual APIs for one-off transforms when it is shorter.
-- Keep the source effect visually first.
-- Do not mix data-first and data-last in one chain.
+- Avoid nested `flatMap`; keep the source effect visually first in pipelines.
 - Use `.andThen` only for one-step sequencing when the previous value is not needed.
+- Build route and service Layers at `src/app.tsx` or another explicit composition root.
 
-## Services
+## Services And Configuration
 
 - Dependency-bearing modules use Services, Tags, and Layers.
-- Prefer `yield* Service` from `Context.Service` inside Effect code.
-- Avoid `Context.getUnsafe`.
-- Middleware fiber-context reads use `Context.getOption`.
-- Missing framework services are defects.
-- Do not thread dependency bags through long call chains.
-- Layers own construction.
-- Layers own config parsing.
-- Layers own resource wiring.
-- Domain operations receive dependencies through services.
-- Adapt Cloudflare bindings into narrow services.
-- Multi-resource operations use feature services.
-- Feature services hide resource names, order, fanout, retries, and error mapping.
-- Build feature services at composition root.
-- Name layers by role: `Service.layer`, `Service.layerFromEnv`, `Service.layerMemory`. Avoid `Live`.
+- Prefer `yield* Service` inside Effect code.
+- Layers own construction, configuration parsing, and cleanup.
+- Do not thread dependency bags through call chains.
+- Name layers by role: `layer`, `layerFromConfig`, or `layerMemory`.
+- Parse `HOST`, `PORT`, and `DATABASE_PATH` once through `ServerConfig`.
+- Actual environment values override optional `.env` fallback values.
+- Application modules do not read `process.env` directly.
 
 ## Errors
 
-- Expected failures stay in the typed error channel.
-- Domain, parse, auth, persistence, dependency, and workflow failures are expected failures.
-- Defects are bugs and startup misconfiguration.
-- Use local tagged-error style.
-- Prefer `Schema.TaggedErrorClass` across Effect or Schema boundaries.
-- Catch or switch expected failures by tag.
-- Keep feature error unions precise.
-- Do not widen precise module errors to `unknown` at module boundaries.
-- Handle broad app failures near orchestration, rendering, logging, or entrypoints.
-- Stored or external decode failures map to `invalid_row` or `invalid_value`.
-- Defaults mean absence, not corruption.
-- In `Effect.gen`, expected failures use `yield* Effect.fail(...)`.
-
-## Matching
-
-- Use `Effect.catchTag` or `Effect.catchTags` for tagged error recovery.
-- Use `Effect.match` only when folding success and failure into a pure value.
-- Use `Effect.matchEffect` when either fold branch returns an Effect.
-- Use `Effect.matchCause*` only when Cause, defects, or interruption matter.
-- Use `Option.match` for `Option`.
-- Use `Match.value` or `Match.type` for value unions.
-- Prefer `Match.tag` or `Match.typeTags` for `_tag` unions.
-- Prefer `Match.exhaustive` over fallback defaults for closed unions.
-- Plain `if` is fine for one branch.
+- Expected parse, persistence, dependency, and workflow failures stay in the typed error channel.
+- Use local `Schema.TaggedErrorClass` style.
+- Catch expected failures by tag.
+- Keep module error unions precise.
+- Treat malformed startup configuration and violated internal invariants as startup failures or defects.
+- Keep causes and messages useful without leaking secrets.
 
 ## Schema
 
-- Use Effect `Schema` at boundaries.
-- Parse refined and branded domain values with Schema.
-- Use `Schema.brand` when Schema owns validation.
-- Use `Brand.nominal` only for nominal values without runtime validation.
-- Do not export raw aliases like `type UserId = string`.
-- Parse Datastar signals, params, bodies, external JSON, env, config, and runtime-hop payloads.
-- Let parsed refined values flow inward.
-- Use codecs when Effect owns both sides of a projection.
-- Stored or external timestamps entering domain use `Schema.DateTimeUtcFrom*`.
-- Convert `DateTime` and Effect runtime objects at Durable Object RPC seams.
-- Nullable boundary fields become `Option` with `Schema.OptionFrom*`.
-- Services expose `Option`, not `Schema.NullOr`, unless `null` is domain.
-- Use `Schema.decodeUnknownEffect` when parse errors matter.
-- Use `Schema.decodeUnknownOption` only when invalid means absent.
-
-## Secrets
-
-- Wrap secrets in `Redacted`.
-- Unwrap only inside the external-system adapter.
-- Keep raw secrets out of errors, logs, traces, metrics, snapshots, and HTML.
-
-## Runtime values
-
-- Use `Option` for internal absence in Effect code.
-- Convert `null` and `undefined` at external seams.
-- Use Effect `Clock` and DateTime APIs for time inside Effect workflows.
-- Server TSX uses `Option`, not optional props, for real empty states.
-- Format Effect-owned timestamps with `DateTime.format*`.
-- Plain `Date` stays at platform edges.
-- Match Effect data types through module matchers.
-- Use `Exit.match`, not `_tag`.
-- Recovered outcomes use `Effect.result(...)` and `Result.match`.
-- Use `Duration` for intervals, timeouts, TTLs, and elapsed time.
-- Convert `Duration` only at numeric API seams.
-- In deployed Workers, timers advance only after I/O.
-- Do not use Worker timers for CPU profiling.
-- CPU-only `durationMs` can be `0` in production.
-- Use `DateTime.now` or `Clock.currentTimeMillis` for persisted timestamps.
-- Use `BigDecimal` only for exact decimal math.
-- Use `HashSet` only for set algebra.
-- Use `Chunk` only for collection-heavy immutable Effect code.
+- Use Effect `Schema` at untrusted, environment, external API, and database boundaries.
+- Let parsed and refined values flow inward.
+- Convert nullable boundary fields to `Option` when absence is part of the domain.
+- Decode stored rows before returning them from persistence services.
 
 ## Lifecycle
 
-- Layers acquire cleanup-requiring resources.
-- Layers own cleanup.
-- Shared test layers preserve teardown.
-- Shared test layers isolate mutable fixture state.
-- Throwable initialization uses `Effect.sync` or `Effect.try`.
-- Synchronous host seams use `Effect.runSync`.
-- Promise or async host seams use `Effect.runPromise`.
-- Never wrap sync init in `Effect.runPromise(Effect.sync(...))`.
-- Never hide init failures in `async` callbacks.
+- Acquire cleanup-requiring resources with scoped Layers or `Effect.acquireRelease`.
+- The SQLite Layer owns connection closure.
+- The Node HTTP Layer owns server closure.
+- The realtime Layer owns PubSub shutdown and stream subscriptions.
+- `NodeRuntime.runMain` owns process signal interruption for the executable server.
+- Test helpers must expose or register disposal for built Layers and open streams.
+
+## Realtime
+
+- Keep SQLite as truth and PubSub payload-free.
+- Subscribe before the initial read.
+- Re-read persistence after every pulse.
+- Ensure HTTP response cancellation interrupts the Effect stream scope.
+- Keep the application Layer shared so open requests use one PubSub instance.
 
 ## Tests
 
 - Use Effect-aware tests for Effect services and workflows.
-- Use `it.effect` for effects under test services.
-- Use `it.live` for live runtime behavior.
-- Use `layer(...)` or nested `it.layer(...)` for service tests.
-- Use `TestClock.adjust(...)` for Effect time tests.
-- Fork sleeping or recurring effects before adjusting `TestClock`.
-- Prefer schema-derived generated values.
-- Property callbacks assert or return a failing Effect.
-- Parse unknown test payloads with Schema, not ad hoc guards or `JSON.parse` blocks.
+- Use real Layers and temporary SQLite databases for persistence behavior.
+- Use `TestClock` for Effect time.
+- Test observable service and HTTP behavior rather than private implementation shapes.

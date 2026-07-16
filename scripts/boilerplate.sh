@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BOILERPLATE_REPO="${BOILERPLATE_REPO:-git@github.com:m0hill/boilerplate.git}"
+BOILERPLATE_REPO="${BOILERPLATE_REPO:-https://github.com/m0hill/boilerplate.git}"
 
 NAME="${1:-}"
 if [ -z "$NAME" ]; then
@@ -33,7 +33,7 @@ if [ -e "$DEST" ]; then
 fi
 
 echo "==> Cloning boilerplate into $DEST"
-git clone --depth 1 "$BOILERPLATE_REPO" "$DEST"
+git clone --branch node --single-branch --depth 1 "$BOILERPLATE_REPO" "$DEST"
 
 cd "$DEST"
 
@@ -65,6 +65,7 @@ echo "Done. Your project is ready at: $DEST"
 echo
 echo "Next steps:"
 printf '  cd %q\n' "$DEST"
+echo "  nub run db:migrate"
 echo "  nub run dev"
 echo
 echo "When ready to push:"

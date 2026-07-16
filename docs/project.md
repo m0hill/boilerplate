@@ -2,18 +2,26 @@
 
 ## Stack
 
-- `alchemy.run.ts` owns Cloudflare resources, bindings, assets, and stages.
-- `src/index.tsx` exports the Worker `fetch` handler and DO classes.
-- `src/app.tsx` owns route composition, middleware, and request-context service wiring.
-- HTTP uses Effect `HttpRouter`.
-- Keep hypermedia and SSE routes on `HttpRouter`.
-- Use small `HttpApi` contract slices when JSON APIs need schema-first routing.
+- Require Node 24 or newer.
+- `src/index.tsx` owns startup through `@effect/platform-node`.
+- `src/app.tsx` owns route composition, middleware, and application-scoped service wiring.
+- HTTP uses Effect `HttpRouter` and Node's HTTP server.
 - UI is server-rendered TSX through `datastar-kit`.
 - Datastar helpers live in `src/lib/datastar.ts`.
-- Tailwind builds `src/styles.css` to `public/app.css`.
-- `scripts/build-client.ts` bundles `src/client/` to `public/js/`.
-- Vitest runs in the Workers runtime.
-- Playwright runs against `alchemy dev`.
+- Drizzle uses Node's built-in synchronous SQLite driver through `drizzle-orm/node-sqlite`.
+- Tailwind builds `src/styles.css` to `dist/public/app.css`.
+- `scripts/build-client.ts` bundles `src/client/` to `dist/public/js/`.
+- `scripts/build-server.ts` bundles application code to `dist/server.js` and keeps npm packages external.
+- Vitest runs in Node.
+- Playwright runs against the compiled Node server with a migrated temporary database.
+
+## Runtime Configuration
+
+- `src/server/config.ts` owns `HOST`, `PORT`, and `DATABASE_PATH` through Effect Config.
+- Defaults are `0.0.0.0`, `3000`, and `./data/app.db`.
+- Actual environment variables override optional `.env` values.
+- Application modules do not read `process.env` directly.
+- Malformed configuration fails startup.
 
 ## UI
 
@@ -27,80 +35,65 @@
 
 ## State
 
-- Prefer Durable Objects for stateful features.
-- Prefer DO-owned SQLite for strongly consistent owner state.
-- Use one named DO instance per consistency boundary.
-- Address DOs with `NAMESPACE.idFromName(name)`.
-- Name DO instances by owner: `room:<id>`, `user:<id>`, `doc:<id>`.
-- Keep DO SQLite schema and logic with the DO resource.
-- Expose narrow DO RPC methods.
-- Return parsed structured-clone-safe DTOs from DO RPC methods.
-- Adapt DO namespaces into worker-side services before page code uses them.
-- Run Effect at the DO seam with `Effect.runPromise` or `Effect.runSync`.
-- Use D1 for global relational queries across owners.
-- Use KV for cheap eventually-consistent reads.
-- Do not turn public KV misses into Durable Object fallback reads.
-- For D1 + live UI, use a DO as an invalidation hub.
-- `/do` shows DO-owned state.
-- `/live-counter` shows D1 + invalidation DO.
-
-## Feature Workflows
-
-- Multi-resource features get one workflow `Context.Service`.
-- Cloudflare workflows: `src/resources/<feature>/`.
-- External workflows: `src/services/<feature>/`.
-- Workflow services own cross-resource order and errors.
-- `makeRequestContext` builds workflows from narrow adapters.
-- Pages depend on workflow services.
-- Pages translate HTTP, Datastar, rendering, and user errors.
-- Keep lower-level adapters only when reused directly.
+- Put persistent server state behind a typed Effect service.
+- Use `src/services/sqlite/database.ts` for the scoped database lifecycle.
+- Keep Drizzle tables in `src/services/sqlite/schema.ts`.
+- Decode stored rows at the persistence boundary.
+- Keep migrations explicit; server startup validates schema readiness and never applies migrations.
+- `DATABASE_PATH` may be relative to the process working directory or absolute.
+- The database layer creates the configured parent directory.
+- Node's built-in SQLite API is synchronous and can block the event loop during long operations.
+- `/sqlite` shows the persistent counter pattern.
 
 ## Realtime
 
-- Truth lives in D1, KV, or a DO.
-- Subscribe before first read.
+- SQLite is durable truth.
+- Application-scoped Effect PubSub carries payload-free invalidation pulses.
+- Subscribe before the first database read.
 - Render current state as the first event.
-- Commands mutate truth.
-- Commands publish a payload-free pulse.
-- Streams re-read truth after each pulse.
-- Reconnects render current backend state.
-- Streams patch live regions.
-- Commands do not patch shared live regions with durable markup.
-- Commands return `datastarDone()` for success-only updates.
-- Commands patch signals for form cleanup or user-fixable errors.
-- Use `src/lib/realtime/pulse.ts` for DO-local sliding pulses.
-- Use `src/lib/realtime/live-view.ts` for Datastar streams.
+- Commands persist, publish, and return `datastarDone()`.
+- Commands do not patch the shared live region directly.
+- Streams re-read SQLite after each pulse and patch the live region.
+- Reconnects and server restarts recover current SQLite state.
+- Cancelled responses release stream subscriptions and scopes.
+- This pattern coordinates tabs connected to one Node process only.
+- Add an external broker before running realtime state across multiple processes or replicas.
 
 ## Observability
 
 - Each request emits one structured wide event.
 - `wideEventLogger` writes it.
-- The wide event is the per-request Worker log record.
 - Middleware adds `http.method`, `http.path`, `http.status`, and `http.durationMs`.
-- `http.durationMs` is based on Worker timers; in production it advances after I/O, not during CPU-only work.
-- Add request fields with `annotate`.
-- Use `annotateAction` for action fields: `{ d1Counter: { action, ok } }`.
-- Use raw `annotate` only for non-action request fields.
+- Add action fields with `annotateAction`.
 - Keep secrets, tokens, and raw request bodies out of logs.
-- Install structured console logging with `Layer.provideMerge(Logger.layer([Logger.consoleStructured]))`.
+- Install structured console logging at application composition.
+
+## Routes
+
+- `/` — landing page.
+- `/sqlite` — persistent SQLite counter.
+- `/realtime` — SQLite-backed single-process realtime counter.
+- `/api` — external GitHub API example.
+- `/web-component` — browser custom-element example.
+- `/design` — UI token and primitive showcase.
+- Static assets are served from `dist/public` before application routes.
+- Missing assets and unknown application routes return separate `404` responses.
 
 ## Layout
 
-- `src/index.tsx` — Worker entry and DO exports.
-- `src/app.tsx` — route merge, middleware, and request-context service wiring.
-- `src/lib/datastar.ts` — Datastar/Effect bridge and signal decoding.
-- `src/pages/<name>/index.tsx` — routes, handlers, Datastar state, parse errors.
-- `src/pages/<name>/components/` — page-local TSX.
-- `src/pages/<name>/tests/` — route and browser tests.
-- `src/pages/not-found.ts` — catch-all 404.
-- `src/resources/<name>/` — Cloudflare adapters, schemas, DOs, persistence.
-- `src/services/<name>/` — external services and non-Cloudflare capabilities.
-- `src/ui/` — design-system primitives and page chrome; `/design` renders them.
-- `src/lib/` — named glue such as Datastar, observability, realtime.
+- `src/index.tsx` — Node entrypoint and scoped server launch.
+- `src/app.tsx` — route merge, middleware, and application service wiring.
+- `src/server/` — configuration, static assets, and migration entrypoint.
+- `src/services/sqlite/` — database lifecycle, schema, and persistence service.
+- `src/services/realtime-counter/` — application-scoped PubSub workflow.
+- `src/services/<name>/` — external services and other server capabilities.
+- `src/pages/<name>/` — routes, handlers, components, and tests.
+- `src/ui/` — design-system primitives and page chrome.
+- `src/lib/` — named shared glue such as Datastar and observability.
 - `src/client/` — browser-only web components and modules.
-- `src/test/` — shared test helpers.
-- `docs/` — narrow agent guides.
-- `public/` — Worker assets.
+- `src/test/` — shared Node test helpers.
+- `migrations/sqlite/` — generated SQLite migrations.
+- `dist/` — generated production server and assets.
 - `repos/` — read-only references.
 
 ## Add A Page
@@ -109,28 +102,22 @@
 - Export a route `Layer`.
 - Register routes with `HttpRouter.add(...)`.
 - Use `Layer.mergeAll(...)` when a page has multiple routes.
-- Keep small page state in `index.tsx`.
-- Move larger page state to `src/pages/<name>/state.ts`.
-- Put page TSX in `components/`.
-- Put resource code in `src/resources/<resource>/`.
-- Put external API code in `src/services/<service>/`.
-- Add a workflow service when a page coordinates multiple resources.
+- Put page TSX in `components/` and tests in `tests/`.
+- Put persistence and external I/O behind a service in `src/services/`.
 - Merge the route in `src/app.tsx`.
-- Wire bindings, adapters, and workflow services in `makeRequestContext`.
-- Test with `loadApp()` and `app.fetch(request("/..."))`.
-- Use `loadAppWithContext(() => makeRequestContext(...))` when a route test needs explicit service adapters.
+- Provide service Layers at the application composition root.
+- Test through `loadApp()` and its returned `fetch` function.
 
 ## Commands
 
-- `nub run dev` — build, watch CSS/client JS, run `alchemy dev`.
-- `nub run build` — build CSS and browser JS.
-- `nub run preview` — build once, run `alchemy dev`.
-- `nub run deploy` — build, deploy selected stage.
-- `nub run destroy` — destroy selected stage.
-- `nub run logs` / `nub run tail` — Worker logs.
-- `nub run test` — Vitest Workers tests.
-- `nub run test:e2e` — Playwright on port 8787.
-- `nub run check` — typecheck, lint, format check, Vitest.
+- `nub run dev` — build once, watch CSS/client/server output, and restart compiled Node on changes.
+- `nub run build` — recreate `dist/` with the server and static assets.
+- `nub run start` — run `dist/server.js` with Node.
+- `nub run db:generate` — generate migrations from the Drizzle schema.
+- `nub run db:migrate` — explicitly apply pending migrations.
+- `nub run test` — run Node Vitest tests.
+- `nub run test:e2e` — run Playwright against a compiled server and temporary migrated database.
+- `nub run check` — typecheck, lint, format check, and Vitest.
 - `nub run lint:fix` / `nub run format` — autofix.
 
-Three TS projects exist: Worker (`tsconfig.json`), `src/client`, and `scripts`.
+Three TypeScript projects exist: server application, `src/client`, and `scripts`.

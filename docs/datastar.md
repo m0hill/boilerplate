@@ -74,14 +74,18 @@ Read for server TSX, Datastar attributes, signals, patches, streams.
 
 ## Realtime
 
-- Use `src/lib/realtime/live-view.ts`.
+- Use the application-scoped `RealtimeCounter` service for SQLite-backed invalidation streams.
 - First event renders current truth.
 - Pulses mean only “something changed”.
-- Streams re-read truth after pulses.
+- Subscribe before the first SQLite read.
+- Streams re-read SQLite after pulses.
 - Commands mutate truth.
 - Commands publish pulses.
 - Commands return `datastarDone()` or signal cleanup/errors.
 - Commands do not patch shared live regions.
+- Use `datastarLiveStream` for long-lived Node responses so cancellation closes the Effect stream scope.
+- Keep PubSub payload-free and application-scoped.
+- Treat realtime convergence as single-process unless an external broker is added.
 - Test subscribe-before-write by opening stream before command.
 - One live view is one SSE connection per tab.
 - Keep proxy buffering/timeouts safe for `text/event-stream`.

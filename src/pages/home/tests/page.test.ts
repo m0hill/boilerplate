@@ -25,14 +25,10 @@ describe("home index", () => {
     const html = await response.text()
 
     expect(html).toContain('href="/api"')
+    expect(html).toContain('href="/sqlite"')
     expect(html).toContain('href="/realtime"')
     expect(html).toContain('href="/web-component"')
     expect(html).toContain('href="/design"')
-    expect(html).not.toContain('href="/kv"')
-    expect(html).not.toContain('href="/d1"')
-    expect(html).not.toContain('href="/r2"')
-    expect(html).not.toContain('href="/do"')
-    expect(html).not.toContain('href="/live-counter"')
     expect(html).toContain('data-nav-prefetch="true"')
   })
 

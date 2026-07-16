@@ -2,55 +2,45 @@
 
 ## Test Choice
 
-- Use `*.test.ts` for Worker/runtime behavior.
-- Cover routes, Datastar payloads, Effect/domain logic, bindings, and MSW-backed external HTTP.
+- Use `*.test.ts` for Node server, route, service, persistence, and Datastar behavior.
 - Use `*.e2e.ts` only for browser behavior.
-- Cover DOM updates, real clicks, focus, keyboard, and web components.
-- `nub run check` runs Vitest.
-- `nub run check` does not run Playwright.
-- Run `nub run test:e2e` when browser behavior or Playwright config changes.
+- `nub run check` runs Vitest but not Playwright.
+- Run `nub run test:e2e` when browser behavior, streaming, build output, or Playwright configuration changes.
 
 ## Vitest
 
-- Colocate tests with covered code.
-- Page tests live in `src/pages/<page>/tests/`.
-- Resource tests live in `src/resources/<resource>/tests/`.
-- Service tests live in `src/services/<service>/tests/`.
-- Prefer vertical tracer bullets: one public behavior test, one implementation, then repeat.
-- Do not write large batches of imagined tests before implementation; they lock design too early.
-- Test public seams and real code paths, not private helpers or internal shapes.
-- Test workflows through their service tag.
-- Build workflow services from lower-level adapters.
-- Drive server behavior through `loadApp()`.
-- Use `src/test/utils.ts` for app loading, service overrides, and shared fixture cleanup.
-- Use service overrides for page-level service failures.
-- Test storage corruption and adapter failures at the resource seam.
-- Use `app.fetch(request("/..."))`.
-- Use `app.fetch(datastarPost("/...", signals))`.
-- Assert status, content type, HTML, SSE events, signal patches, and user copy.
-- Mock only outside the app boundary.
-- Use `@msw/cloudflare` for external HTTP.
-- Prefer real seams, in-memory adapters, Worker test bindings, and deterministic inputs.
-- Use `TestClock` from `effect/testing` for Effect time.
-- Fork sleeping or recurring effects before `TestClock.adjust(...)`.
-- Do not wait real time for `Effect.sleep`, `Effect.delay`, retries, schedules, or timeouts.
-- Keep pure domain tests on exported parsers, constructors, and domain functions.
+- Vitest runs in ordinary Node.
+- Colocate page tests under `src/pages/<page>/tests/` and service tests under `src/services/<service>/tests/`.
+- Test public seams and real code paths.
+- Drive HTTP behavior through `loadApp()` and its returned `fetch` function.
+- `loadApp()` creates, migrates, and removes an isolated temporary SQLite database.
+- Cancel SSE readers and dispose app handlers in cleanup-sensitive tests.
+- Use service Layer overrides for page-level failure cases.
+- Mock only outside the application boundary.
+- Use `msw/node` for external HTTP.
+- Use `TestClock` instead of real waits for Effect time.
+
+## SQLite
+
+- Use a new temporary database path per test scope.
+- Apply migrations explicitly before building the normal application Layer.
+- Cover missing and outdated schema startup failures.
+- Cover scoped connection closure, migration idempotency, stored-row decoding, and persistence across application restarts.
+- Never share the development `./data/app.db` with tests.
 
 ## Realtime
 
 - Test the initial SSE patch.
 - Open the stream before the command that publishes.
-- Assert subscribe-before-write delivery.
-- Commands that update live regions mutate and publish.
-- Those commands return `datastarDone()` or signal cleanup.
-- Cover at least one convergence case for shared live state.
-- Concurrent commands should eventually render durable current state.
-- Cancel stream readers when testing cleanup-sensitive code.
+- Assert subscribe-before-write delivery and fresh durable rereads.
+- Assert failed persistence does not publish.
+- Cover pulse coalescing, multiple subscribers, reconnect, restart recovery, and cancellation cleanup.
+- Commands persist and publish but do not patch the shared live region directly.
 
 ## Playwright
 
-- Keep e2e offline.
-- Keep e2e deterministic.
-- Put external-dependent happy paths in MSW-backed Vitest tests.
-- Prove the browser round trip: page load, action, Datastar request, SSE patch, DOM update.
-- Browser tests use port 8787.
+- Keep e2e offline and deterministic.
+- Playwright uses port `8787` by default.
+- `playwright.config.ts` creates a temporary database, runs `nub run build`, explicitly runs `nub run db:migrate`, and starts the compiled server.
+- Prove real browser round trips: page load, action, Datastar request, SSE patch, and DOM update.
+- Use multiple pages in one browser context for realtime convergence.

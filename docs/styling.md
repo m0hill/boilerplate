@@ -72,6 +72,7 @@
 
 ## Check
 
+- `nub run build` emits the stylesheet at `dist/public/app.css`.
 - No palette colors in TSX.
 - No arbitrary color utilities in TSX.
 - No raw colors in component TSX.
